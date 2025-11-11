@@ -1,1 +1,94 @@
 # LightJockey
+
+Audio-reactive lighting control application for Philips Hue Entertainment using C# and WPF.
+
+## Overview
+
+LightJockey is a Windows desktop application that synchronizes Philips Hue smart lights with audio input in real-time. The application analyzes audio streams using FFT (Fast Fourier Transform) and beat detection to create dynamic lighting effects that respond to music.
+
+## Features (Planned)
+
+- **Audio Analysis**: Real-time audio processing with FFT and beat detection
+- **Philips Hue Integration**: Support for both HTTPS API and Entertainment V2 (DTLS/UDP)
+- **Effect Engine**: Multiple lighting effect modes (slow/fast)
+- **Visual Feedback**: Real-time audio visualization
+- **Preset Management**: Save and load lighting configurations
+- **Modern UI**: WPF-based interface with dark/light themes
+
+## Architecture
+
+This project follows the **MVVM (Model-View-ViewModel)** architectural pattern with dependency injection.
+
+### Project Structure
+
+```
+LightJockey/
+├── src/
+│   └── LightJockey/           # Main WPF application
+│       ├── Models/            # Data models
+│       ├── ViewModels/        # Presentation logic
+│       ├── Views/             # XAML UI components
+│       ├── Services/          # Business logic services
+│       └── Utilities/         # Helper classes
+├── tests/
+│   └── LightJockey.Tests/     # Unit tests
+├── docs/
+│   ├── adr/                   # Architecture Decision Records
+│   └── tasks/                 # Task documentation
+└── .github/
+    └── workflows/             # CI/CD workflows
+```
+
+## Prerequisites
+
+- .NET 9.0 SDK or later
+- Windows 10/11
+- Philips Hue Bridge (for testing with actual lights)
+
+## Getting Started
+
+### Build the Project
+
+```bash
+dotnet restore
+dotnet build
+```
+
+### Run Tests
+
+```bash
+dotnet test
+```
+
+### Run the Application
+
+```bash
+dotnet run --project src/LightJockey/LightJockey.csproj
+```
+
+## Development
+
+### Architecture Decision Records
+
+See [docs/adr/README.md](docs/adr/README.md) for important architectural decisions.
+
+### Contributing
+
+This project follows a task-based development approach. See [LIGHTJOCKEY_Entwicklungsplan.md](LIGHTJOCKEY_Entwicklungsplan.md) for the complete development plan.
+
+## Technology Stack
+
+- **Framework**: .NET 9.0
+- **UI**: WPF (Windows Presentation Foundation)
+- **Architecture**: MVVM pattern
+- **DI Container**: Microsoft.Extensions.DependencyInjection
+- **Testing**: xUnit
+- **CI/CD**: GitHub Actions
+
+## License
+
+TBD
+
+## Status
+
+🚧 **In Development** - Currently implementing Task 0 (Project Setup)
