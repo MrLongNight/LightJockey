@@ -64,6 +64,7 @@ public partial class App : Application
 
         // Register application services
         services.AddSingleton<Services.IExampleService, Services.ExampleService>();
+        services.AddSingleton<Services.IAudioService, Services.AudioService>();
 
         // Register views
         services.AddSingleton<MainWindow>();
