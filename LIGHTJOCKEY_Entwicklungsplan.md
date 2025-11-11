@@ -165,16 +165,35 @@ Ergebnis:
 
 Task 5 — Entertainment V2 (DTLS/UDP)
 
+**✅ ABGESCHLOSSEN** - 2025-11-11
+
 Beschreibung: UDP/DTLS Client für Entertainment V2 Lichteffekte.
 PR-Bezeichnung: Task5_EntertainmentV2
 KI-Prompt:
 
 Erstelle EntertainmentV2 Service:
-- DTLS/UDP Verbindung aufbauen
-- Paketformat wie Philips Hue Entertainment V2
-- Ereignisse aus AudioService zur Lichteffektsteuerung
-- Dokumentation + Tests für Paket-Transportsicherheit
-- CI/CD Build Check
+- ✅ Umsetzung mit https://www.nuget.org/packages/HueApi.Entertainment
+- ✅ DTLS/UDP Verbindung aufbauen
+- ✅ Paketformat wie Philips Hue Entertainment V2
+- ✅ Ereignisse aus AudioService zur Lichteffektsteuerung
+- ✅ Dokumentation + Tests für Paket-Transportsicherheit
+- ✅ CI/CD Build Check
+
+Ergebnis:
+- HueApi.Entertainment 3.0.0 für DTLS/UDP Streaming integriert
+- Portable.BouncyCastle 1.9.0 für DTLS-Verschlüsselung
+- EntertainmentArea, LightChannel, LightJockeyEntertainmentConfig Models erstellt
+- IEntertainmentService Interface mit Events für Streaming-Status
+- EntertainmentService Implementation mit:
+  - DTLS/UDP Verbindung über StreamingHueClient
+  - Entertainment Area Discovery und Initialisierung
+  - High-Performance Streaming Loop (25-60 FPS)
+  - Audio-reaktive Beleuchtung mit konfigurierbarer Sensitivität
+  - Thread-sichere Channel-Updates
+  - Automatisches Frame-Rate Limiting
+- 20+ Unit-Tests für Service, Models und Integration
+- Vollständige Dokumentation in docs/tasks/Task5_EntertainmentV2.md
+
 
 
 ---
@@ -352,7 +371,7 @@ Task	PR-Bezeichnung	Umsetzung abgeschlossen	Doku-Link	QA-Check (manuell)
 2	Task2_AudioService	✅	[docs/tasks/Task2_AudioService.md](docs/tasks/Task2_AudioService.md)	✅
 3	Task3_FFT_BeatDetector	✅	[docs/tasks/Task3_FFT_BeatDetector.md](docs/tasks/Task3_FFT_BeatDetector.md)	✅
 4	Task4_HueService	✅	[docs/tasks/Task4_HueService.md](docs/tasks/Task4_HueService.md)	✅
-5	Task5_EntertainmentV2	⬜	[link]	⬜
+5	Task5_EntertainmentV2	✅	[docs/tasks/Task5_EntertainmentV2.md](docs/tasks/Task5_EntertainmentV2.md)	✅
 6	Task6_EffectEngine	⬜	[link]	⬜
 7	Task7_UI_Visualizer	⬜	[link]	⬜
 8	Task8_PresetService	⬜	[link]	⬜
