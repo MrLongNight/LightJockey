@@ -137,17 +137,28 @@ Ergebnis:
 
 Task 4 — HueService (HTTPS)
 
+**✅ ABGESCHLOSSEN** - 2025-11-11
+
 Beschreibung: HTTP-basierter Philips Hue Client + Bridge Setup UI.
 PR-Bezeichnung: Task4_HueService
 KI-Prompt:
 
 Implementiere:
-- HueService HTTPS Client
-- Bridge Discovery + UI Setup
-- Authentifizierung
-- Test-LED Steuerung
-- Dokumentation / Screenshots
-- Unit-Test: Verbindung + LED Update
+- ✅ HueService HTTPS Client auf Basis von https://www.nuget.org/packages/HueApi
+- ✅ Bridge Discovery + UI Setup
+- ✅ Authentifizierung
+- ✅ Test-LED Steuerung
+- ✅ Dokumentation / Screenshots
+- ✅ Unit-Test: Verbindung + LED Update
+
+Ergebnis:
+- HueApi 3.0.0 und HueApi.ColorConverters 3.0.0 integriert
+- HueBridge, HueLight, HueAuthResult, HueColor Models erstellt
+- IHueService Interface mit Bridge Discovery, Auth, Light Control
+- HueService Implementation mit HTTP und mDNS Discovery
+- Fluent API für Light Control (On/Off, Brightness, Color)
+- 40+ Unit-Tests für alle Komponenten und Models
+- Vollständige Dokumentation in docs/tasks/Task4_HueService.md
 
 
 ---
@@ -340,7 +351,7 @@ Task	PR-Bezeichnung	Umsetzung abgeschlossen	Doku-Link	QA-Check (manuell)
 1	Task1_DI_Logging	✅	[docs/tasks/Task1_DI_Logging.md](docs/tasks/Task1_DI_Logging.md)	✅
 2	Task2_AudioService	✅	[docs/tasks/Task2_AudioService.md](docs/tasks/Task2_AudioService.md)	✅
 3	Task3_FFT_BeatDetector	✅	[docs/tasks/Task3_FFT_BeatDetector.md](docs/tasks/Task3_FFT_BeatDetector.md)	✅
-4	Task4_HueService	⬜	[link]	⬜
+4	Task4_HueService	✅	[docs/tasks/Task4_HueService.md](docs/tasks/Task4_HueService.md)	✅
 5	Task5_EntertainmentV2	⬜	[link]	⬜
 6	Task6_EffectEngine	⬜	[link]	⬜
 7	Task7_UI_Visualizer	⬜	[link]	⬜
