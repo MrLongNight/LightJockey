@@ -9,6 +9,16 @@
     <AssemblyName>LightJockey</AssemblyName>
     <RootNamespace>LightJockey</RootNamespace>
     <EnableWindowsTargeting>true</EnableWindowsTargeting>
+    
+    <!-- Assembly Information -->
+    <Version>1.0.0</Version>
+    <AssemblyVersion>1.0.0.0</AssemblyVersion>
+    <FileVersion>1.0.0.0</FileVersion>
+    <Product>LightJockey</Product>
+    <Company>LightJockey</Company>
+    <Copyright>Copyright © 2025 LightJockey</Copyright>
+    <Description>Audio-reactive lighting control application for Philips Hue Entertainment</Description>
+    <Authors>LightJockey</Authors>
   </PropertyGroup>
 
   <ItemGroup>

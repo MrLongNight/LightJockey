@@ -1,5 +1,9 @@
 # LightJockey
 
+[![Build & Package](https://github.com/MrLongNight/LightJockey/actions/workflows/ci-cd-msi.yml/badge.svg)](https://github.com/MrLongNight/LightJockey/actions/workflows/ci-cd-msi.yml)
+[![Unit Tests](https://github.com/MrLongNight/LightJockey/actions/workflows/Unit-Tests.yml/badge.svg)](https://github.com/MrLongNight/LightJockey/actions/workflows/Unit-Tests.yml)
+[![codecov](https://codecov.io/gh/MrLongNight/LightJockey/branch/main/graph/badge.svg)](https://codecov.io/gh/MrLongNight/LightJockey)
+
 Audio-reactive lighting control application for Philips Hue Entertainment using C# and WPF.
 
 ## Overview
@@ -47,20 +51,30 @@ LightJockey/
 
 ## Getting Started
 
-### Build the Project
+### Download and Install
+
+Download the latest MSI installer from the [Releases](https://github.com/MrLongNight/LightJockey/releases) page.
+
+**Requirements**:
+- Windows 10/11 (x64)
+- [.NET 9.0 Desktop Runtime](https://dotnet.microsoft.com/download/dotnet/9.0)
+
+### Build from Source
+
+#### Build the Project
 
 ```bash
 dotnet restore
 dotnet build
 ```
 
-### Run Tests
+#### Run Tests
 
 ```bash
 dotnet test
 ```
 
-### Run the Application
+#### Run the Application
 
 ```bash
 dotnet run --project src/LightJockey/LightJockey.csproj
@@ -95,7 +109,7 @@ TBD
 
 ## Status
 
-🚧 **In Development** - Currently implementing Task 7 (UI & Visualizer)
+🚧 **In Development** - Implementing CI/CD & MSI Packaging
 
 ### Completed Tasks
 
@@ -106,4 +120,6 @@ TBD
 - ✅ **Task 4**: HueService (HTTPS bridge discovery, authentication, light control)
 - ✅ **Task 5**: Entertainment V2 (DTLS/UDP streaming, audio-reactive lighting)
 - ✅ **Task 6**: EffectEngine (Plugin-based architecture with SlowHttpsEffect and FastEntertainmentEffect)
+- ✅ **Task 7**: UI & Visualizer (MainWindow, AudioVisualizerControl, Dark/Light themes)
 - ✅ **Task 8**: PresetService (Preset management with auto-save, import/export)
+- ✅ **Task 9**: Tests & Performance (179+ unit tests, performance metrics, CI/CD integration)
