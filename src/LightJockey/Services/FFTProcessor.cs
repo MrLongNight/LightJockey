@@ -106,7 +106,7 @@ public class FFTProcessor : IFFTProcessor
         }
 
         double binWidth = (double)sampleRate / _fftSize;
-        return (int)Math.Round(frequency / binWidth);
+        return Math.Min((int)Math.Round(frequency / binWidth), _fftSize / 2 - 1);
     }
 
     /// <inheritdoc/>

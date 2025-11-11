@@ -106,7 +106,7 @@ public class BeatDetector : IBeatDetector
                 _currentBPM = CalculateBPM();
 
                 // Calculate confidence based on how much energy exceeds threshold
-                double confidence = Math.Min(energy / threshold - 1.0, 1.0);
+                double confidence = Math.Clamp(energy / threshold - 1.0, 0.0, 1.0);
 
                 // Raise beat detected event
                 var eventArgs = new BeatDetectedEventArgs(energy, _currentBPM, confidence);
