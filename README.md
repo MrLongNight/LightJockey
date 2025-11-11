@@ -85,7 +85,7 @@ This project follows a task-based development approach. See [LIGHTJOCKEY_Entwick
 - **Logging**: Serilog
 - **Audio**: NAudio 2.2.1
 - **FFT**: MathNet.Numerics 5.0.0
-- **Hue Integration**: HueApi 3.0.0
+- **Hue Integration**: HueApi 3.0.0, HueApi.Entertainment 3.0.0
 - **Testing**: xUnit with Moq
 - **CI/CD**: GitHub Actions
 
@@ -95,7 +95,7 @@ TBD
 
 ## Status
 
-🚧 **In Development** - Currently implementing Task 5 (Entertainment V2)
+🚧 **In Development** - Currently implementing Task 6 (EffectEngine)
 
 ### Completed Tasks
 
@@ -104,3 +104,4 @@ TBD
 - ✅ **Task 2**: AudioService (Device enumeration, audio streaming)
 - ✅ **Task 3**: FFTProcessor & BeatDetector (Audio analysis, beat detection)
 - ✅ **Task 4**: HueService (HTTPS bridge discovery, authentication, light control)
+- ✅ **Task 5**: Entertainment V2 (DTLS/UDP streaming, audio-reactive lighting)
