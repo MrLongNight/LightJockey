@@ -79,18 +79,29 @@ Ergebnis:
 
 Task 2 — AudioService
 
+**✅ ABGESCHLOSSEN** - 2025-11-11
+
 Beschreibung: Audio-Geräteauswahl, Loopback, Input Stream bereitstellen.
 PR-Bezeichnung: Task2_AudioService
 KI-Prompt:
 
 Erstelle AudioService:
-- Listet verfügbare Audio-Devices
-- Ermöglicht Auswahl per UI
-- Stream-Loopback für Effektberechnung
-- FFT-kompatibles Output-Event
-- Dokumentation + Beispielcode
-- CI/CD Build Check
-- Unit-Test: Device Auswahl, Stream Events
+- ✅ Listet verfügbare Audio-Devices
+- ✅ Ermöglicht Auswahl per UI
+- ✅ Stream-Loopback für Effektberechnung
+- ✅ FFT-kompatibles Output-Event
+- ✅ Dokumentation + Beispielcode
+- ✅ CI/CD Build Check
+- ✅ Unit-Test: Device Auswahl, Stream Events
+
+Ergebnis:
+- NAudio 2.2.1 für Windows-Audio-APIs integriert
+- AudioDevice und AudioDataEventArgs Models erstellt
+- IAudioService Interface mit Device-Enumeration und Streaming
+- AudioService Implementation mit WASAPI Loopback und WaveIn
+- FFT-kompatible float[] Samples mit Event-basierter Bereitstellung
+- Umfassende Unit-Tests für alle Funktionen
+- Dokumentation erstellt in docs/tasks/Task2_AudioService.md
 
 
 ---
@@ -315,7 +326,7 @@ Task	PR-Bezeichnung	Umsetzung abgeschlossen	Doku-Link	QA-Check (manuell)
 
 0	Task0_ProjectSetup	✅	[docs/tasks/Task0_ProjectSetup.md](docs/tasks/Task0_ProjectSetup.md)	✅
 1	Task1_DI_Logging	✅	[docs/tasks/Task1_DI_Logging.md](docs/tasks/Task1_DI_Logging.md)	✅
-2	Task2_AudioService	⬜	[link]	⬜
+2	Task2_AudioService	✅	[docs/tasks/Task2_AudioService.md](docs/tasks/Task2_AudioService.md)	✅
 3	Task3_FFT_BeatDetector	⬜	[link]	⬜
 4	Task4_HueService	⬜	[link]	⬜
 5	Task5_EntertainmentV2	⬜	[link]	⬜
