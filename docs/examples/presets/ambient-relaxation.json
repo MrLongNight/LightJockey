@@ -1,0 +1,17 @@
+{
+  "id": "ambient-relaxation",
+  "name": "Ambient Relaxation",
+  "description": "Smooth, subtle lighting for relaxation and ambient music",
+  "activeEffectName": "SlowHttpsEffect",
+  "effectConfig": {
+    "intensity": 0.5,
+    "speed": 0.3,
+    "brightness": 0.6,
+    "audioReactive": true,
+    "audioSensitivity": 0.3,
+    "smoothTransitions": true,
+    "transitionDurationMs": 500
+  },
+  "createdAt": "2025-11-11T00:00:00Z",
+  "modifiedAt": "2025-11-11T00:00:00Z"
+}

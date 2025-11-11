@@ -82,6 +82,9 @@ public partial class App : Application
         // Register EffectEngine
         services.AddSingleton<Services.IEffectEngine, Services.EffectEngine>();
 
+        // Register PresetService
+        services.AddSingleton<Services.IPresetService, Services.PresetService>();
+
         // Register views
         services.AddSingleton<MainWindow>();
     }

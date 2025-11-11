@@ -1,0 +1,17 @@
+{
+  "id": "cinema-mode",
+  "name": "Cinema Mode",
+  "description": "Dim, responsive lighting for watching movies with background music",
+  "activeEffectName": "SlowHttpsEffect",
+  "effectConfig": {
+    "intensity": 0.3,
+    "speed": 0.5,
+    "brightness": 0.4,
+    "audioReactive": true,
+    "audioSensitivity": 0.4,
+    "smoothTransitions": true,
+    "transitionDurationMs": 300
+  },
+  "createdAt": "2025-11-11T00:00:00Z",
+  "modifiedAt": "2025-11-11T00:00:00Z"
+}

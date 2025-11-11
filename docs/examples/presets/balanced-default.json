@@ -1,0 +1,17 @@
+{
+  "id": "balanced-default",
+  "name": "Balanced Default",
+  "description": "Balanced settings suitable for most music types",
+  "activeEffectName": "FastEntertainmentEffect",
+  "effectConfig": {
+    "intensity": 0.8,
+    "speed": 1.0,
+    "brightness": 0.8,
+    "audioReactive": true,
+    "audioSensitivity": 0.5,
+    "smoothTransitions": true,
+    "transitionDurationMs": 100
+  },
+  "createdAt": "2025-11-11T00:00:00Z",
+  "modifiedAt": "2025-11-11T00:00:00Z"
+}
