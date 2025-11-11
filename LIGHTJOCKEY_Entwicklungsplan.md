@@ -372,7 +372,7 @@ Task	PR-Bezeichnung	Umsetzung abgeschlossen	Doku-Link	QA-Check (manuell)
 3	Task3_FFT_BeatDetector	✅	[docs/tasks/Task3_FFT_BeatDetector.md](docs/tasks/Task3_FFT_BeatDetector.md)	✅
 4	Task4_HueService	✅	[docs/tasks/Task4_HueService.md](docs/tasks/Task4_HueService.md)	✅
 5	Task5_EntertainmentV2	✅	[docs/tasks/Task5_EntertainmentV2.md](docs/tasks/Task5_EntertainmentV2.md)	✅
-6	Task6_EffectEngine	⬜	[link]	⬜
+6	Task6_EffectEngine	✅	[docs/tasks/Task6_EffectEngine.md](docs/tasks/Task6_EffectEngine.md)	✅
 7	Task7_UI_Visualizer	⬜	[link]	⬜
 8	Task8_PresetService	⬜	[link]	⬜
 9	Task9_Tests_Performance	⬜	[link]	⬜
