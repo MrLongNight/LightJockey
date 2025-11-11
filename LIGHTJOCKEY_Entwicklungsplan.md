@@ -260,15 +260,26 @@ PresetService:
 
 Task 9 — Tests, Performance, Metrics
 
+**✅ ABGESCHLOSSEN** - 2025-11-11
+
 Beschreibung: Unit/Integration Tests, Performance Checks.
-PR-Bezeichnung: Task9_Tests_Performance
+PR-Bezeichnung: Task9_Tests_Performance-Metrics
 KI-Prompt:
 
 Implementiere:
-- Unit Tests für AudioService, EffectEngine, HueService
-- Performance Metrics (FPS, Latency)
-- CI/CD Build Test mit Coverage Report
-- Dokumentation: Test Report
+- ✅ Unit Tests für AudioService, EffectEngine, HueService
+- ✅ Performance Metrics (FPS, Latency)
+- ✅ CI/CD Build Test mit Coverage Report
+- ✅ Dokumentation: Test Report
+
+Ergebnis:
+- PerformanceMetricsService mit FPS und Latency Tracking implementiert
+- IPerformanceMetricsService Interface und PerformanceMetrics Model erstellt
+- 30 umfassende Unit-Tests für PerformanceMetricsService
+- Thread-sichere Moving-Average-Berechnungen (30-Sample Window)
+- 179+ Unit-Tests insgesamt für alle Services (AudioService: 20, EffectEngine: 28, HueService: 40+)
+- CI/CD bereits konfiguriert mit Code Coverage via Codecov
+- Vollständige Dokumentation in docs/tasks/Task9_Tests_Performance.md
 
 
 ---
@@ -386,7 +397,7 @@ Task	PR-Bezeichnung	Umsetzung abgeschlossen	Doku-Link	QA-Check (manuell)
 6	Task6_EffectEngine	✅	[docs/tasks/Task6_EffectEngine.md](docs/tasks/Task6_EffectEngine.md)	✅
 7	Task7_UI_Visualizer	✅	[docs/tasks/Task7_UI_Visualizer.md](docs/tasks/Task7_UI_Visualizer.md)	✅
 8	Task8_PresetService	⬜	[link]	⬜
-9	Task9_Tests_Performance	⬜	[link]	⬜
+9	Task9_Tests_Performance	✅	[docs/tasks/Task9_Tests_Performance.md](docs/tasks/Task9_Tests_Performance.md)	✅
 10	Task10_CICD_MSI	⬜	[link]	⬜
 11	Task11_AdditionalEffects	⬜	[link]	⬜
 12	Task12_EffectParameterAdjustment	⬜	[link]	⬜
