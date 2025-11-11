@@ -42,6 +42,9 @@ public class MainWindowViewModel : ViewModelBase, IDisposable
     private double _audioSensitivity = 0.5;
     private bool _audioReactive = true;
     private bool _smoothTransitions = true;
+    private double _hueVariation = 0.5;
+    private double _saturation = 0.8;
+    private double _colorTemperature = 0.5;
 
     // Visualizer data
     private float[] _spectralData = Array.Empty<float>();
@@ -231,6 +234,42 @@ public class MainWindowViewModel : ViewModelBase, IDisposable
         set
         {
             if (SetProperty(ref _smoothTransitions, value))
+            {
+                UpdateEffectConfig();
+            }
+        }
+    }
+
+    public double HueVariation
+    {
+        get => _hueVariation;
+        set
+        {
+            if (SetProperty(ref _hueVariation, value))
+            {
+                UpdateEffectConfig();
+            }
+        }
+    }
+
+    public double Saturation
+    {
+        get => _saturation;
+        set
+        {
+            if (SetProperty(ref _saturation, value))
+            {
+                UpdateEffectConfig();
+            }
+        }
+    }
+
+    public double ColorTemperature
+    {
+        get => _colorTemperature;
+        set
+        {
+            if (SetProperty(ref _colorTemperature, value))
             {
                 UpdateEffectConfig();
             }
@@ -520,7 +559,10 @@ public class MainWindowViewModel : ViewModelBase, IDisposable
             Brightness = Brightness,
             AudioReactive = AudioReactive,
             AudioSensitivity = AudioSensitivity,
-            SmoothTransitions = SmoothTransitions
+            SmoothTransitions = SmoothTransitions,
+            HueVariation = HueVariation,
+            Saturation = Saturation,
+            ColorTemperature = ColorTemperature
         };
     }
 
