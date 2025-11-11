@@ -66,6 +66,11 @@ public partial class App : Application
         services.AddSingleton<Services.IExampleService, Services.ExampleService>();
         services.AddSingleton<Services.IAudioService, Services.AudioService>();
 
+        // Register audio analysis services
+        services.AddSingleton<Services.IFFTProcessor, Services.FFTProcessor>();
+        services.AddSingleton<Services.ISpectralAnalyzer, Services.SpectralAnalyzer>();
+        services.AddSingleton<Services.IBeatDetector, Services.BeatDetector>();
+
         // Register views
         services.AddSingleton<MainWindow>();
     }
