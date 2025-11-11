@@ -1,6 +1,6 @@
 # LightJockey
 
-[![Build & Package](https://github.com/MrLongNight/LightJockey/actions/workflows/ci-cd-msi.yml/badge.svg)](https://github.com/MrLongNight/LightJockey/actions/workflows/ci-cd-msi.yml)
+[![Build](https://github.com/MrLongNight/LightJockey/actions/workflows/build.yml/badge.svg)](https://github.com/MrLongNight/LightJockey/actions/workflows/build.yml)
 [![Unit Tests](https://github.com/MrLongNight/LightJockey/actions/workflows/Unit-Tests.yml/badge.svg)](https://github.com/MrLongNight/LightJockey/actions/workflows/Unit-Tests.yml)
 [![codecov](https://codecov.io/gh/MrLongNight/LightJockey/branch/main/graph/badge.svg)](https://codecov.io/gh/MrLongNight/LightJockey)
 
