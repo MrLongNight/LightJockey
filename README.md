@@ -82,7 +82,11 @@ This project follows a task-based development approach. See [LIGHTJOCKEY_Entwick
 - **UI**: WPF (Windows Presentation Foundation)
 - **Architecture**: MVVM pattern
 - **DI Container**: Microsoft.Extensions.DependencyInjection
-- **Testing**: xUnit
+- **Logging**: Serilog
+- **Audio**: NAudio 2.2.1
+- **FFT**: MathNet.Numerics 5.0.0
+- **Hue Integration**: HueApi 3.0.0
+- **Testing**: xUnit with Moq
 - **CI/CD**: GitHub Actions
 
 ## License
@@ -91,7 +95,7 @@ TBD
 
 ## Status
 
-🚧 **In Development** - Currently implementing Task 3 (FFT & Beat Detection)
+🚧 **In Development** - Currently implementing Task 5 (Entertainment V2)
 
 ### Completed Tasks
 
@@ -99,3 +103,4 @@ TBD
 - ✅ **Task 1**: DI, Logging, Global Error Handling
 - ✅ **Task 2**: AudioService (Device enumeration, audio streaming)
 - ✅ **Task 3**: FFTProcessor & BeatDetector (Audio analysis, beat detection)
+- ✅ **Task 4**: HueService (HTTPS bridge discovery, authentication, light control)
