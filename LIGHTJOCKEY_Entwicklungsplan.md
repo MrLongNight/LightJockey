@@ -216,17 +216,28 @@ EffectEngine:
 
 Task 7 — UI (MainWindow) + Visualizer + Controls
 
+**✅ ABGESCHLOSSEN** - 2025-11-11
+
 Beschreibung: Visualisierung der Effekte, Steuerung von Parametern, Device Auswahl.
-PR-Bezeichnung: Task7_UI_Visualizer
+PR-Bezeichnung: Task7_UI_Visualizer-MainWindow
 KI-Prompt:
 
 MainWindow UI:
-- Device Selection, Effect Selection, Parameter Sliders
-- Visualizer für AudioInput
-- Dark/Light Mode implementiert
-- MVVM Bindings korrekt
-- Dokumentation Screenshots
-- UI Unit-Tests: Bindings, Commands
+- ✅ Device Selection, Effect Selection, Parameter Sliders
+- ✅ Visualizer für AudioInput
+- ✅ Dark/Light Mode implementiert
+- ✅ MVVM Bindings korrekt
+- ✅ Dokumentation Screenshots
+- ✅ UI Unit-Tests: Bindings, Commands
+
+Ergebnis:
+- MainWindowViewModel mit vollständigem MVVM-Support implementiert
+- AudioVisualizerControl für Echtzeit-Spektralvisualisierung erstellt
+- Dark und Light Theme ResourceDictionaries implementiert
+- Umfassendes UI-Layout in MainWindow.xaml mit allen Controls
+- Theme-Switching-Funktionalität hinzugefügt
+- 17 Unit-Tests für MainWindowViewModel erstellt
+- Vollständige Dokumentation in docs/tasks/Task7_UI_Visualizer.md
 
 
 ---
@@ -373,7 +384,7 @@ Task	PR-Bezeichnung	Umsetzung abgeschlossen	Doku-Link	QA-Check (manuell)
 4	Task4_HueService	✅	[docs/tasks/Task4_HueService.md](docs/tasks/Task4_HueService.md)	✅
 5	Task5_EntertainmentV2	✅	[docs/tasks/Task5_EntertainmentV2.md](docs/tasks/Task5_EntertainmentV2.md)	✅
 6	Task6_EffectEngine	✅	[docs/tasks/Task6_EffectEngine.md](docs/tasks/Task6_EffectEngine.md)	✅
-7	Task7_UI_Visualizer	⬜	[link]	⬜
+7	Task7_UI_Visualizer	✅	[docs/tasks/Task7_UI_Visualizer.md](docs/tasks/Task7_UI_Visualizer.md)	✅
 8	Task8_PresetService	⬜	[link]	⬜
 9	Task9_Tests_Performance	⬜	[link]	⬜
 10	Task10_CICD_MSI	⬜	[link]	⬜
