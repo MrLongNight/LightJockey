@@ -91,4 +91,11 @@ TBD
 
 ## Status
 
-🚧 **In Development** - Currently implementing Task 0 (Project Setup)
+🚧 **In Development** - Currently implementing Task 3 (FFT & Beat Detection)
+
+### Completed Tasks
+
+- ✅ **Task 0**: Project Setup & ADR
+- ✅ **Task 1**: DI, Logging, Global Error Handling
+- ✅ **Task 2**: AudioService (Device enumeration, audio streaming)
+- ✅ **Task 3**: FFTProcessor & BeatDetector (Audio analysis, beat detection)
