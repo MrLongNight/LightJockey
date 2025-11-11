@@ -340,14 +340,24 @@ KI-Prompt:
 
 Task 12 — Effektparameter feinjustierbar
 
+**✅ ABGESCHLOSSEN** - 2025-11-11
+
 PR-Bezeichnung: Task12_EffectParameterAdjustment
 Beschreibung: Intensität, Geschwindigkeit, Farbvariationen einstellbar
 KI-Prompt:
-- Slider Controls in UI
-- EffectEngine Bindings
-- Persistenz über PresetService
-- Unit-Test für Parameteränderung
-- Dokumentation mit Beispiel Screenshots
+- ✅ Slider Controls in UI
+- ✅ EffectEngine Bindings
+- ✅ Persistenz über PresetService
+- ✅ Unit-Test für Parameteränderung
+- ✅ Dokumentation mit Beispiel Screenshots
+
+Ergebnis:
+- Drei neue Farbvariationsparameter hinzugefügt: HueVariation, Saturation, ColorTemperature
+- UI-Slider mit Tooltips und Echtzeit-Feedback implementiert
+- Automatische Konfigurationsaktualisierung über EffectEngine
+- PresetService-Integration für automatische Persistenz
+- 8 neue Unit-Tests (6 ViewModel-Tests, 2 PresetService-Tests)
+- Vollständige Dokumentation in docs/tasks/Task12_EffectParameterAdjustment.md
 
 Task 13 — Preset-Sharing / Cloud
 
@@ -427,7 +437,7 @@ Task	PR-Bezeichnung	Umsetzung abgeschlossen	Doku-Link	QA-Check (manuell)
 9	Task9_Tests_Performance	✅	[docs/tasks/Task9_Tests_Performance.md](docs/tasks/Task9_Tests_Performance.md)	✅
 10	Task10_CICD_MSI	✅	[docs/tasks/Task10_CICD_MSI.md](docs/tasks/Task10_CICD_MSI.md)	✅
 11	Task11_AdditionalEffects	⬜	[link]	⬜
-12	Task12_EffectParameterAdjustment	⬜	[link]	⬜
+12	Task12_EffectParameterAdjustment	✅	[docs/tasks/Task12_EffectParameterAdjustment.md](docs/tasks/Task12_EffectParameterAdjustment.md)	✅
 13	Task13_PresetCloudIntegration	⬜	[link]	⬜
 14	Task14_SecureKeys	⬜	[link]	⬜
 15	Task15_AdvancedLoggingMetrics	⬜	[link]	⬜

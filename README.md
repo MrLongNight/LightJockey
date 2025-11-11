@@ -109,7 +109,7 @@ TBD
 
 ## Status
 
-🚧 **In Development** - Implementing CI/CD & MSI Packaging
+🚧 **In Development** - Implementing Advanced Features
 
 ### Completed Tasks
 
@@ -123,3 +123,5 @@ TBD
 - ✅ **Task 7**: UI & Visualizer (MainWindow, AudioVisualizerControl, Dark/Light themes)
 - ✅ **Task 8**: PresetService (Preset management with auto-save, import/export)
 - ✅ **Task 9**: Tests & Performance (179+ unit tests, performance metrics, CI/CD integration)
+- ✅ **Task 10**: CI/CD & MSI Packaging (GitHub Actions, automated builds, MSI installer)
+- ✅ **Task 12**: Effect Parameter Adjustment (Fine-tunable parameters with color variations)

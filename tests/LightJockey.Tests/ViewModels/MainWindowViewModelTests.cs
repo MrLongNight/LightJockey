@@ -324,4 +324,130 @@ public class MainWindowViewModelTests
         Assert.False(viewModel.SmoothTransitions);
         Assert.True(propertyChangedFired);
     }
+
+    [Fact]
+    public void HueVariation_UpdatesProperty()
+    {
+        // Arrange
+        var viewModel = CreateViewModel();
+        var propertyChangedFired = false;
+        viewModel.PropertyChanged += (s, e) =>
+        {
+            if (e.PropertyName == nameof(MainWindowViewModel.HueVariation))
+                propertyChangedFired = true;
+        };
+
+        // Act
+        viewModel.HueVariation = 0.75;
+
+        // Assert
+        Assert.Equal(0.75, viewModel.HueVariation);
+        Assert.True(propertyChangedFired);
+    }
+
+    [Fact]
+    public void Saturation_UpdatesProperty()
+    {
+        // Arrange
+        var viewModel = CreateViewModel();
+        var propertyChangedFired = false;
+        viewModel.PropertyChanged += (s, e) =>
+        {
+            if (e.PropertyName == nameof(MainWindowViewModel.Saturation))
+                propertyChangedFired = true;
+        };
+
+        // Act
+        viewModel.Saturation = 0.9;
+
+        // Assert
+        Assert.Equal(0.9, viewModel.Saturation);
+        Assert.True(propertyChangedFired);
+    }
+
+    [Fact]
+    public void ColorTemperature_UpdatesProperty()
+    {
+        // Arrange
+        var viewModel = CreateViewModel();
+        var propertyChangedFired = false;
+        viewModel.PropertyChanged += (s, e) =>
+        {
+            if (e.PropertyName == nameof(MainWindowViewModel.ColorTemperature))
+                propertyChangedFired = true;
+        };
+
+        // Act
+        viewModel.ColorTemperature = 0.3;
+
+        // Assert
+        Assert.Equal(0.3, viewModel.ColorTemperature);
+        Assert.True(propertyChangedFired);
+    }
+
+    [Fact]
+    public void HueVariation_UpdatesEffectConfig_WhenEffectRunning()
+    {
+        // Arrange
+        _mockEffectEngine.Setup(e => e.GetAvailableEffects()).Returns(new List<string> { "TestEffect" });
+        _mockEffectEngine.Setup(e => e.SetActiveEffectAsync(It.IsAny<string>(), It.IsAny<EffectConfig>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(true);
+        _mockHueService.Setup(s => s.IsConnected).Returns(true);
+        
+        var viewModel = CreateViewModel();
+        viewModel.SelectedEffect = "TestEffect";
+        viewModel.IsHueConnected = true;
+        viewModel.IsEffectRunning = true;
+
+        // Act
+        viewModel.HueVariation = 0.8;
+
+        // Assert
+        _mockEffectEngine.Verify(e => e.UpdateActiveEffectConfig(It.Is<EffectConfig>(
+            c => c.HueVariation == 0.8)), Times.Once);
+    }
+
+    [Fact]
+    public void Saturation_UpdatesEffectConfig_WhenEffectRunning()
+    {
+        // Arrange
+        _mockEffectEngine.Setup(e => e.GetAvailableEffects()).Returns(new List<string> { "TestEffect" });
+        _mockEffectEngine.Setup(e => e.SetActiveEffectAsync(It.IsAny<string>(), It.IsAny<EffectConfig>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(true);
+        _mockHueService.Setup(s => s.IsConnected).Returns(true);
+        
+        var viewModel = CreateViewModel();
+        viewModel.SelectedEffect = "TestEffect";
+        viewModel.IsHueConnected = true;
+        viewModel.IsEffectRunning = true;
+
+        // Act
+        viewModel.Saturation = 0.95;
+
+        // Assert
+        _mockEffectEngine.Verify(e => e.UpdateActiveEffectConfig(It.Is<EffectConfig>(
+            c => c.Saturation == 0.95)), Times.Once);
+    }
+
+    [Fact]
+    public void ColorTemperature_UpdatesEffectConfig_WhenEffectRunning()
+    {
+        // Arrange
+        _mockEffectEngine.Setup(e => e.GetAvailableEffects()).Returns(new List<string> { "TestEffect" });
+        _mockEffectEngine.Setup(e => e.SetActiveEffectAsync(It.IsAny<string>(), It.IsAny<EffectConfig>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(true);
+        _mockHueService.Setup(s => s.IsConnected).Returns(true);
+        
+        var viewModel = CreateViewModel();
+        viewModel.SelectedEffect = "TestEffect";
+        viewModel.IsHueConnected = true;
+        viewModel.IsEffectRunning = true;
+
+        // Act
+        viewModel.ColorTemperature = 0.2;
+
+        // Assert
+        _mockEffectEngine.Verify(e => e.UpdateActiveEffectConfig(It.Is<EffectConfig>(
+            c => c.ColorTemperature == 0.2)), Times.Once);
+    }
 }

@@ -528,4 +528,74 @@ public class PresetServiceTests : IDisposable
         
         newService.Dispose();
     }
+
+    [Fact]
+    public async Task SavePresetAsync_PersistsColorVariationParameters()
+    {
+        // Arrange
+        var effectConfig = new EffectConfig
+        {
+            Intensity = 0.9,
+            Speed = 2.5,
+            Brightness = 0.7,
+            AudioSensitivity = 0.6,
+            HueVariation = 0.8,
+            Saturation = 0.95,
+            ColorTemperature = 0.3
+        };
+        
+        var preset = new Preset
+        {
+            Name = "Color Variation Test",
+            EffectConfig = effectConfig
+        };
+
+        // Act
+        var savedPreset = await _service.SavePresetAsync(preset);
+
+        // Assert
+        Assert.NotNull(savedPreset.EffectConfig);
+        Assert.Equal(0.8, savedPreset.EffectConfig.HueVariation);
+        Assert.Equal(0.95, savedPreset.EffectConfig.Saturation);
+        Assert.Equal(0.3, savedPreset.EffectConfig.ColorTemperature);
+        
+        // Verify persistence to disk
+        var retrievedPreset = _service.GetPreset(savedPreset.Id);
+        Assert.NotNull(retrievedPreset);
+        Assert.NotNull(retrievedPreset.EffectConfig);
+        Assert.Equal(0.8, retrievedPreset.EffectConfig.HueVariation);
+        Assert.Equal(0.95, retrievedPreset.EffectConfig.Saturation);
+        Assert.Equal(0.3, retrievedPreset.EffectConfig.ColorTemperature);
+    }
+
+    [Fact]
+    public async Task ExportImportPreset_PreservesColorVariationParameters()
+    {
+        // Arrange
+        var effectConfig = new EffectConfig
+        {
+            HueVariation = 0.75,
+            Saturation = 0.85,
+            ColorTemperature = 0.4
+        };
+        
+        var preset = new Preset
+        {
+            Name = "Export Test",
+            EffectConfig = effectConfig
+        };
+        
+        var savedPreset = await _service.SavePresetAsync(preset);
+        var exportPath = Path.Combine(_testPresetsDirectory, "export_test.json");
+
+        // Act
+        await _service.ExportPresetAsync(savedPreset.Id, exportPath);
+        var importedPreset = await _service.ImportPresetAsync(exportPath);
+
+        // Assert
+        Assert.NotNull(importedPreset.EffectConfig);
+        Assert.Equal(0.75, importedPreset.EffectConfig.HueVariation);
+        Assert.Equal(0.85, importedPreset.EffectConfig.Saturation);
+        Assert.Equal(0.4, importedPreset.EffectConfig.ColorTemperature);
+    }
 }
