@@ -78,7 +78,18 @@ public class AudioService : IAudioService
             using (var enumerator = new MMDeviceEnumerator())
             {
                 var outputDevices = enumerator.EnumerateAudioEndPoints(DataFlow.Render, DeviceState.Active);
-                var defaultDevice = enumerator.GetDefaultAudioEndpoint(DataFlow.Render, Role.Multimedia);
+                
+                // Try to get the default device, but handle the case where none exists
+                MMDevice? defaultDevice = null;
+                try
+                {
+                    defaultDevice = enumerator.GetDefaultAudioEndpoint(DataFlow.Render, Role.Multimedia);
+                }
+                catch (System.Runtime.InteropServices.COMException ex) when (ex.HResult == unchecked((int)0x80070490))
+                {
+                    // Element not found - no default audio device available
+                    _logger.LogWarning("No default audio endpoint found");
+                }
 
                 foreach (var device in outputDevices)
                 {
@@ -87,7 +98,7 @@ public class AudioService : IAudioService
                         Id = device.ID,
                         Name = device.FriendlyName,
                         DeviceType = AudioDeviceType.Output,
-                        IsDefault = device.ID == defaultDevice.ID
+                        IsDefault = defaultDevice != null && device.ID == defaultDevice.ID
                     });
                 }
             }

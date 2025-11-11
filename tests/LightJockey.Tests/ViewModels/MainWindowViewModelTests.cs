@@ -25,6 +25,10 @@ public class MainWindowViewModelTests
         _mockFFTProcessor = new Mock<IFFTProcessor>();
         _mockSpectralAnalyzer = new Mock<ISpectralAnalyzer>();
         _mockBeatDetector = new Mock<IBeatDetector>();
+        
+        // Setup default return values to prevent null reference exceptions in constructor
+        _mockAudioService.Setup(s => s.GetOutputDevices()).Returns(new List<AudioDevice>());
+        _mockEffectEngine.Setup(e => e.GetAvailableEffects()).Returns(new List<string>());
     }
 
     private MainWindowViewModel CreateViewModel()

@@ -94,7 +94,7 @@ public class HueServiceTests : IDisposable
         var bridge = new HueBridge { IpAddress = "192.168.1.1", BridgeId = "test" };
 
         // Act & Assert
-        var exception = await Assert.ThrowsAsync<ArgumentException>(
+        var exception = await Assert.ThrowsAsync<ArgumentNullException>(
             () => _service.RegisterAsync(bridge, null!, "TestDevice"));
     }
 
@@ -105,7 +105,7 @@ public class HueServiceTests : IDisposable
         var bridge = new HueBridge { IpAddress = "192.168.1.1", BridgeId = "test" };
 
         // Act & Assert
-        var exception = await Assert.ThrowsAsync<ArgumentException>(
+        var exception = await Assert.ThrowsAsync<ArgumentNullException>(
             () => _service.RegisterAsync(bridge, "TestApp", null!));
     }
 
@@ -125,7 +125,7 @@ public class HueServiceTests : IDisposable
         var bridge = new HueBridge { IpAddress = "192.168.1.1", BridgeId = "test" };
 
         // Act & Assert
-        var exception = await Assert.ThrowsAsync<ArgumentException>(
+        var exception = await Assert.ThrowsAsync<ArgumentNullException>(
             () => _service.ConnectAsync(bridge, null!));
     }
 
@@ -142,7 +142,7 @@ public class HueServiceTests : IDisposable
     public async Task SetLightOnOffAsync_WithNullLightId_ThrowsArgumentException()
     {
         // Act & Assert
-        var exception = await Assert.ThrowsAsync<ArgumentException>(
+        var exception = await Assert.ThrowsAsync<ArgumentNullException>(
             () => _service.SetLightOnOffAsync(null!, true));
     }
 
@@ -159,7 +159,7 @@ public class HueServiceTests : IDisposable
     public async Task SetLightBrightnessAsync_WithNullLightId_ThrowsArgumentException()
     {
         // Act & Assert
-        var exception = await Assert.ThrowsAsync<ArgumentException>(
+        var exception = await Assert.ThrowsAsync<ArgumentNullException>(
             () => _service.SetLightBrightnessAsync(null!, 128));
     }
 
@@ -179,7 +179,7 @@ public class HueServiceTests : IDisposable
         var color = new HueColor(255, 0, 0);
 
         // Act & Assert
-        var exception = await Assert.ThrowsAsync<ArgumentException>(
+        var exception = await Assert.ThrowsAsync<ArgumentNullException>(
             () => _service.SetLightColorAsync(null!, color));
     }
 
