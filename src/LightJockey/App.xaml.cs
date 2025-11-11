@@ -104,8 +104,21 @@ public partial class App : Application
         services.AddSingleton<Services.IEntertainmentService, Services.EntertainmentService>();
 
         // Register effect plugins
+        // Slow HTTPS effects
         services.AddTransient<Services.Effects.SlowHttpsEffect>();
+        services.AddTransient<Services.Effects.RainbowCycleEffect>();
+        services.AddTransient<Services.Effects.SmoothFadeEffect>();
+        services.AddTransient<Services.Effects.FFTLowFrequencyEffect>();
+        services.AddTransient<Services.Effects.FFTMidFrequencyEffect>();
+        services.AddTransient<Services.Effects.StrobeManualEffect>();
+        
+        // Fast DTLS effects
         services.AddTransient<Services.Effects.FastEntertainmentEffect>();
+        services.AddTransient<Services.Effects.FFTHighFrequencyEffect>();
+        services.AddTransient<Services.Effects.RainbowFastEffect>();
+        services.AddTransient<Services.Effects.PulseEffect>();
+        services.AddTransient<Services.Effects.ChaseEffect>();
+        services.AddTransient<Services.Effects.SparkleEffect>();
 
         // Register EffectEngine with plugin registration
         services.AddSingleton<Services.IEffectEngine>(sp =>
@@ -116,9 +129,21 @@ public partial class App : Application
                 sp.GetRequiredService<Services.ISpectralAnalyzer>(),
                 sp.GetRequiredService<Services.IBeatDetector>());
             
-            // Register plugins
+            // Register slow HTTPS effect plugins
             engine.RegisterPlugin(sp.GetRequiredService<Services.Effects.SlowHttpsEffect>());
+            engine.RegisterPlugin(sp.GetRequiredService<Services.Effects.RainbowCycleEffect>());
+            engine.RegisterPlugin(sp.GetRequiredService<Services.Effects.SmoothFadeEffect>());
+            engine.RegisterPlugin(sp.GetRequiredService<Services.Effects.FFTLowFrequencyEffect>());
+            engine.RegisterPlugin(sp.GetRequiredService<Services.Effects.FFTMidFrequencyEffect>());
+            engine.RegisterPlugin(sp.GetRequiredService<Services.Effects.StrobeManualEffect>());
+            
+            // Register fast DTLS effect plugins
             engine.RegisterPlugin(sp.GetRequiredService<Services.Effects.FastEntertainmentEffect>());
+            engine.RegisterPlugin(sp.GetRequiredService<Services.Effects.FFTHighFrequencyEffect>());
+            engine.RegisterPlugin(sp.GetRequiredService<Services.Effects.RainbowFastEffect>());
+            engine.RegisterPlugin(sp.GetRequiredService<Services.Effects.PulseEffect>());
+            engine.RegisterPlugin(sp.GetRequiredService<Services.Effects.ChaseEffect>());
+            engine.RegisterPlugin(sp.GetRequiredService<Services.Effects.SparkleEffect>());
             
             return engine;
         });
