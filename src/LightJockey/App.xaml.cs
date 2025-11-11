@@ -96,6 +96,9 @@ public partial class App : Application
         services.AddSingleton<Services.ISpectralAnalyzer, Services.SpectralAnalyzer>();
         services.AddSingleton<Services.IBeatDetector, Services.BeatDetector>();
 
+        // Register performance metrics service
+        services.AddSingleton<Services.IPerformanceMetricsService, Services.PerformanceMetricsService>();
+
         // Register Hue services
         services.AddSingleton<Services.IHueService, Services.HueService>();
         services.AddSingleton<Services.IEntertainmentService, Services.EntertainmentService>();
