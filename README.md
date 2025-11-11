@@ -1,45 +1,23 @@
 # LightJockey
 
+[![Build](https://github.com/MrLongNight/LightJockey/actions/workflows/build.yml/badge.svg)](https://github.com/MrLongNight/LightJockey/actions/workflows/build.yml)
+[![Unit Tests](https://github.com/MrLongNight/LightJockey/actions/workflows/Unit-Tests.yml/badge.svg)](https://github.com/MrLongNight/LightJockey/actions/workflows/Unit-Tests.yml)
+[![codecov](https://codecov.io/gh/MrLongNight/LightJockey/branch/main/graph/badge.svg)](https://codecov.io/gh/MrLongNight/LightJockey)
+
 Audio-reactive lighting control application for Philips Hue Entertainment using C# and WPF.
 
 ## Overview
 
 LightJockey is a Windows desktop application that synchronizes Philips Hue smart lights with audio input in real-time. The application analyzes audio streams using FFT (Fast Fourier Transform) and beat detection to create dynamic lighting effects that respond to music.
 
-## Features
+## Features (Planned)
 
-### Implemented ✅
-
-- **Real-time Audio Analysis**: FFT-based audio processing with spectral analysis and beat detection
-- **Philips Hue Integration**: 
-  - HTTP/HTTPS API support for bridge discovery and authentication
-  - Entertainment V2 (DTLS/UDP) for high-performance streaming (25-60 FPS)
-- **Effect Engine**: Plugin-based architecture with slow (HTTPS) and fast (Entertainment V2) effects
-- **Visual Feedback**: Real-time audio visualization with spectral display
-- **Preset Management**: Save, load, import/export lighting configurations with auto-save
-- **Modern UI**: 
-  - WPF-based interface with MVVM architecture
-  - Dark and Light theme support
-  - Audio device selection
-  - Hue bridge and light management
-  - Real-time effect parameter adjustment
-- **Performance Monitoring**: FPS and latency tracking
-- **Comprehensive Testing**: 179+ unit tests with CI/CD integration
-
-### Planned 📋
-
-- **Additional Effects**: Rainbow, Strobe, Smooth Fade, and more
-- **Enhanced Parameters**: Fine-tunable intensity, speed, and color variations
-- **Multi-Zone Support**: Control multiple Entertainment Areas simultaneously
-- **System Tray Integration**: Quick access and background operation
-- **Keyboard Shortcuts**: Hotkeys for common actions
-- **Auto-Update**: Automatic update checking and installation
-- **Error Recovery**: Automatic reconnection and graceful degradation
-- **Cloud Preset Sharing**: Import/export presets online
-- **Security Enhancements**: Encrypted storage for sensitive data
-- **Advanced Logging**: Detailed logs and metrics history
-- **Theme Customization**: User-defined colors and persistent theme settings
-- **Windows Store Deployment**: Professional MSI installer and Store distribution
+- **Audio Analysis**: Real-time audio processing with FFT and beat detection
+- **Philips Hue Integration**: Support for both HTTPS API and Entertainment V2 (DTLS/UDP)
+- **Effect Engine**: Multiple lighting effect modes (slow/fast)
+- **Visual Feedback**: Real-time audio visualization
+- **Preset Management**: Save and load lighting configurations
+- **Modern UI**: WPF-based interface with dark/light themes
 
 ## Architecture
 
@@ -73,20 +51,30 @@ LightJockey/
 
 ## Getting Started
 
-### Build the Project
+### Download and Install
+
+Download the latest MSI installer from the [Releases](https://github.com/MrLongNight/LightJockey/releases) page.
+
+**Requirements**:
+- Windows 10/11 (x64)
+- [.NET 9.0 Desktop Runtime](https://dotnet.microsoft.com/download/dotnet/9.0)
+
+### Build from Source
+
+#### Build the Project
 
 ```bash
 dotnet restore
 dotnet build
 ```
 
-### Run Tests
+#### Run Tests
 
 ```bash
 dotnet test
 ```
 
-### Run the Application
+#### Run the Application
 
 ```bash
 dotnet run --project src/LightJockey/LightJockey.csproj
@@ -121,7 +109,7 @@ TBD
 
 ## Status
 
-✅ **MVP Completed** - Core functionality implemented (Tasks 0-9)
+🚧 **In Development** - Implementing CI/CD & MSI Packaging
 
 ### Completed Tasks
 
@@ -132,13 +120,6 @@ TBD
 - ✅ **Task 4**: HueService (HTTPS bridge discovery, authentication, light control)
 - ✅ **Task 5**: Entertainment V2 (DTLS/UDP streaming, audio-reactive lighting)
 - ✅ **Task 6**: EffectEngine (Plugin-based architecture with SlowHttpsEffect and FastEntertainmentEffect)
-- ✅ **Task 7**: UI & Visualizer (MainWindow, AudioVisualizer, Dark/Light themes)
+- ✅ **Task 7**: UI & Visualizer (MainWindow, AudioVisualizerControl, Dark/Light themes)
 - ✅ **Task 8**: PresetService (Preset management with auto-save, import/export)
-- ✅ **Task 9**: Tests, Performance & Metrics (179+ unit tests, performance tracking)
-
-### In Progress / Planned
-
-- 🔄 **Task 10**: CI/CD & MSI Packaging (Basic CI/CD done, MSI packaging pending)
-- 📋 **Tasks 11-24**: Enhancement features and Windows Store deployment
-
-See [LIGHTJOCKEY_Entwicklungsplan.md](LIGHTJOCKEY_Entwicklungsplan.md) for the complete development plan.
+- ✅ **Task 9**: Tests & Performance (179+ unit tests, performance metrics, CI/CD integration)
