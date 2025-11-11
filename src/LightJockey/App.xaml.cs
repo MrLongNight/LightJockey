@@ -71,6 +71,17 @@ public partial class App : Application
         services.AddSingleton<Services.ISpectralAnalyzer, Services.SpectralAnalyzer>();
         services.AddSingleton<Services.IBeatDetector, Services.BeatDetector>();
 
+        // Register Hue services
+        services.AddSingleton<Services.IHueService, Services.HueService>();
+        services.AddSingleton<Services.IEntertainmentService, Services.EntertainmentService>();
+
+        // Register effect plugins
+        services.AddTransient<Services.Effects.SlowHttpsEffect>();
+        services.AddTransient<Services.Effects.FastEntertainmentEffect>();
+
+        // Register EffectEngine
+        services.AddSingleton<Services.IEffectEngine, Services.EffectEngine>();
+
         // Register views
         services.AddSingleton<MainWindow>();
     }
