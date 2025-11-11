@@ -37,6 +37,15 @@ jobs:
       with:
         dotnet-version: ${{ env.DOTNET_VERSION }}
 
+    - name: Cache NuGet packages
+      uses: actions/cache@v4
+      with:
+        path: |
+          ~/.nuget/packages
+        key: nuget-packages-${{ runner.os }}-${{ hashFiles('**/*.sln', '**/*.csproj') }}
+        restore-keys: |
+          nuget-packages-${{ runner.os }}-
+
     - name: Get version
       id: get_version
       shell: pwsh
@@ -54,7 +63,7 @@ jobs:
         echo "Version: $version"
 
     - name: Restore dependencies
-      run: dotnet restore ${{ env.PROJECT_PATH }}
+      run: dotnet restore ${{ env.SOLUTION_PATH }}
 
     - name: Build solution
       run: dotnet build ${{ env.SOLUTION_PATH }} --no-restore --configuration ${{ env.BUILD_CONFIGURATION }}
@@ -68,7 +77,8 @@ jobs:
           --configuration ${{ env.BUILD_CONFIGURATION }} `
           --runtime win-x64 `
           --self-contained false `
-          --output ${{ env.PUBLISH_DIR }}
+          --output ${{ env.PUBLISH_DIR }} `
+          --no-build
 
     - name: Install WiX Toolset
       run: |
