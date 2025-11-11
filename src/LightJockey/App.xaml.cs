@@ -123,6 +123,9 @@ public partial class App : Application
         // Register ViewModels
         services.AddSingleton<MainWindowViewModel>();
 
+        // Register PresetService
+        services.AddSingleton<Services.IPresetService, Services.PresetService>();
+
         // Register views
         services.AddSingleton<MainWindow>();
     }

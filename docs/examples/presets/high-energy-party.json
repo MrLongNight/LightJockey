@@ -1,0 +1,17 @@
+{
+  "id": "high-energy-party",
+  "name": "High Energy Party",
+  "description": "Fast, responsive lighting perfect for high-energy music and parties",
+  "activeEffectName": "FastEntertainmentEffect",
+  "effectConfig": {
+    "intensity": 1.0,
+    "speed": 2.5,
+    "brightness": 0.9,
+    "audioReactive": true,
+    "audioSensitivity": 0.8,
+    "smoothTransitions": false,
+    "transitionDurationMs": 50
+  },
+  "createdAt": "2025-11-11T00:00:00Z",
+  "modifiedAt": "2025-11-11T00:00:00Z"
+}

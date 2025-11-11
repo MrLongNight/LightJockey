@@ -106,3 +106,4 @@ TBD
 - ✅ **Task 4**: HueService (HTTPS bridge discovery, authentication, light control)
 - ✅ **Task 5**: Entertainment V2 (DTLS/UDP streaming, audio-reactive lighting)
 - ✅ **Task 6**: EffectEngine (Plugin-based architecture with SlowHttpsEffect and FastEntertainmentEffect)
+- ✅ **Task 8**: PresetService (Preset management with auto-save, import/export)
