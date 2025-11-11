@@ -233,6 +233,26 @@ public class AudioServiceTests : IDisposable
         _service.Dispose();
     }
 
+    [Fact]
+    public void StartCapture_WithInvalidInputDeviceId_ThrowsInvalidOperationException()
+    {
+        // Arrange
+        var device = new AudioDevice
+        {
+            Id = "invalid-id",
+            Name = "Test Device",
+            DeviceType = AudioDeviceType.Input,
+            IsDefault = false
+        };
+
+        // Act
+        _service.SelectDevice(device);
+
+        // Assert
+        var exception = Assert.Throws<InvalidOperationException>(() => _service.StartCapture());
+        Assert.Contains("Invalid device ID", exception.Message);
+    }
+
     public void Dispose()
     {
         _service?.Dispose();

@@ -172,7 +172,12 @@ public class AudioService : IAudioService
 
     private void StartInputCapture()
     {
-        var deviceNumber = int.Parse(_selectedDevice!.Id);
+        if (!int.TryParse(_selectedDevice!.Id, out var deviceNumber))
+        {
+            _logger.LogError("Invalid device ID: {DeviceId}", _selectedDevice.Id);
+            throw new InvalidOperationException($"Invalid device ID: {_selectedDevice.Id}");
+        }
+
         _waveIn = new WaveInEvent
         {
             DeviceNumber = deviceNumber,
@@ -201,6 +206,10 @@ public class AudioService : IAudioService
             var eventArgs = new AudioDataEventArgs(monoSamples, waveFormat.SampleRate, 1);
             AudioDataAvailable?.Invoke(this, eventArgs);
         }
+        catch (NotSupportedException ex)
+        {
+            _logger.LogError(ex, "Unsupported audio format in loopback capture");
+        }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error processing loopback audio data");
@@ -219,6 +228,10 @@ public class AudioService : IAudioService
 
             var eventArgs = new AudioDataEventArgs(samples, waveFormat.SampleRate, waveFormat.Channels);
             AudioDataAvailable?.Invoke(this, eventArgs);
+        }
+        catch (NotSupportedException ex)
+        {
+            _logger.LogError(ex, "Unsupported audio format in input capture");
         }
         catch (Exception ex)
         {
@@ -245,6 +258,12 @@ public class AudioService : IAudioService
                 short sample = BitConverter.ToInt16(buffer, i * 2);
                 samples[i] = sample / 32768f;
             }
+        }
+        else
+        {
+            _logger.LogWarning("Unsupported audio format: Encoding={Encoding}, BitsPerSample={BitsPerSample}", 
+                waveFormat.Encoding, waveFormat.BitsPerSample);
+            throw new NotSupportedException($"Unsupported audio format: Encoding={waveFormat.Encoding}, BitsPerSample={waveFormat.BitsPerSample}");
         }
 
         return samples;
@@ -333,9 +352,17 @@ public class AudioService : IAudioService
             _disposed = true;
             _logger.LogDebug("AudioService disposed");
         }
+        catch (ObjectDisposedException ex)
+        {
+            _logger.LogWarning(ex, "Object already disposed during AudioService.Dispose()");
+        }
+        catch (InvalidOperationException ex)
+        {
+            _logger.LogError(ex, "Invalid operation during AudioService.Dispose()");
+        }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error disposing AudioService");
+            _logger.LogError(ex, "Unexpected error disposing AudioService");
         }
 
         GC.SuppressFinalize(this);
