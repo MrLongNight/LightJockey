@@ -5,6 +5,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Serilog;
 using LightJockey.Views;
+using LightJockey.ViewModels;
 
 namespace LightJockey;
 
@@ -33,7 +34,31 @@ public partial class App : Application
         Log.Information("LightJockey application starting");
 
         var mainWindow = _serviceProvider.GetRequiredService<MainWindow>();
+        
+        // Subscribe to theme changes
+        var viewModel = _serviceProvider.GetRequiredService<MainWindowViewModel>();
+        viewModel.PropertyChanged += (s, args) =>
+        {
+            if (args.PropertyName == nameof(MainWindowViewModel.IsDarkTheme))
+            {
+                SwitchTheme(viewModel.IsDarkTheme);
+            }
+        };
+        
         mainWindow.Show();
+    }
+
+    private void SwitchTheme(bool isDarkTheme)
+    {
+        var themeName = isDarkTheme ? "DarkTheme.xaml" : "LightTheme.xaml";
+        var themeUri = new Uri($"Themes/{themeName}", UriKind.Relative);
+        
+        var newTheme = new ResourceDictionary { Source = themeUri };
+        
+        Resources.MergedDictionaries.Clear();
+        Resources.MergedDictionaries.Add(newTheme);
+        
+        Log.Information("Switched to {Theme} theme", isDarkTheme ? "Dark" : "Light");
     }
 
     private void ConfigureLogging()
@@ -79,8 +104,24 @@ public partial class App : Application
         services.AddTransient<Services.Effects.SlowHttpsEffect>();
         services.AddTransient<Services.Effects.FastEntertainmentEffect>();
 
-        // Register EffectEngine
-        services.AddSingleton<Services.IEffectEngine, Services.EffectEngine>();
+        // Register EffectEngine with plugin registration
+        services.AddSingleton<Services.IEffectEngine>(sp =>
+        {
+            var engine = new Services.EffectEngine(
+                sp.GetRequiredService<ILogger<Services.EffectEngine>>(),
+                sp.GetRequiredService<Services.IAudioService>(),
+                sp.GetRequiredService<Services.ISpectralAnalyzer>(),
+                sp.GetRequiredService<Services.IBeatDetector>());
+            
+            // Register plugins
+            engine.RegisterPlugin(sp.GetRequiredService<Services.Effects.SlowHttpsEffect>());
+            engine.RegisterPlugin(sp.GetRequiredService<Services.Effects.FastEntertainmentEffect>());
+            
+            return engine;
+        });
+
+        // Register ViewModels
+        services.AddSingleton<MainWindowViewModel>();
 
         // Register PresetService
         services.AddSingleton<Services.IPresetService, Services.PresetService>();
