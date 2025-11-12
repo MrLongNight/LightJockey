@@ -4,6 +4,61 @@ This directory contains automated CI/CD workflows for the LightJockey project.
 
 ⚠️ **Important Note on Automation**: The workflow creates issues/PRs automatically but **GitHub Copilot Workspace must be manually activated** to implement tasks. See [AUTO_TASK_TROUBLESHOOTING.md](../docs/AUTO_TASK_TROUBLESHOOTING.md) for details.
 
+## 🆕 Jules API Workflows (RECOMMENDED)
+
+The new **Jules API integration** provides near-complete automation (~98%) by leveraging Google Jules API to process tasks programmatically. See [JULES_API_INTEGRATION.md](../../docs/JULES_API_INTEGRATION.md) for complete documentation.
+
+### Flow Jules 01: Submit Task to Jules API
+**File**: `flow-jules_01-submit-task.yml`
+
+**Purpose**: Automatically submits tasks to Jules AI agent via API.
+
+**Triggers**:
+- On push to `main` branch
+- Manual workflow dispatch
+
+**What it does**:
+- Finds next uncompleted task from development plan
+- Creates Jules session via API with detailed prompt
+- Creates GitHub tracking issue
+- No manual activation required!
+
+**Configuration**: Requires `JULES_AUTOMATION_ENABLED` variable and `JULES_API_KEY` secret.
+
+### Flow Jules 02: Monitor Session and Review PR
+**File**: `flow-jules_02-monitor-and-review.yml`
+
+**Purpose**: Monitors Jules sessions and triggers Copilot review when PR is created.
+
+**Triggers**:
+- Scheduled (every 15 minutes)
+- Manual workflow dispatch
+
+**What it does**:
+- Monitors active Jules sessions via API
+- Detects when Jules creates a PR
+- Updates tracking issue with PR information
+- Triggers Copilot Agent for code review
+- Adds appropriate labels
+
+### Flow Jules 03: Auto-Merge After Review
+**File**: `flow-jules_03-auto-merge.yml`
+
+**Purpose**: Automatically merges PRs after Copilot review and successful CI tests.
+
+**Triggers**:
+- PR review submitted
+- Check suite completed
+- Manual workflow dispatch
+
+**What it does**:
+- Verifies all CI checks passed
+- Verifies Copilot review completed
+- Converts draft PR to ready if needed
+- Merges PR automatically
+- Closes tracking issue
+- Cycle continues with next task
+
 ## Workflow Structure
 
 ### Auto-Task Workflows

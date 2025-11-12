@@ -1,8 +1,63 @@
-# Task Creation Scripts
+# LightJockey Scripts
 
-This directory contains scripts to help create branches and issues for Tasks 13-21.
+This directory contains helper scripts for task automation and Jules API integration.
 
-## Scripts
+## 🆕 Jules API Helper (Recommended)
+
+### `jules_api_helper.py`
+
+A comprehensive Python script for interacting with the Google Jules API.
+
+**Features:**
+- List available sources
+- Create Jules sessions
+- Monitor session progress
+- List session activities
+- Get session details
+
+**Installation:**
+```bash
+# No dependencies needed - uses standard library only!
+chmod +x scripts/jules_api_helper.py
+```
+
+**Usage:**
+```bash
+# Set API key
+export JULES_API_KEY="your-jules-api-key"
+
+# List available sources
+./scripts/jules_api_helper.py list-sources
+
+# Find source for this repository
+./scripts/jules_api_helper.py get-source --owner MrLongNight --repo LightJockey
+
+# Create a new session
+./scripts/jules_api_helper.py create-session \
+  --source "sources/github/MrLongNight/LightJockey" \
+  --title "Task 13: Preset-Sharing" \
+  --prompt "Implement cloud backup functionality"
+
+# Get session details
+./scripts/jules_api_helper.py get-session SESSION_ID
+
+# List all sessions
+./scripts/jules_api_helper.py list-sessions
+
+# Monitor a session until completion
+./scripts/jules_api_helper.py monitor SESSION_ID
+
+# List session activities
+./scripts/jules_api_helper.py list-activities SESSION_ID
+```
+
+**Quick Start:**
+See [docs/JULES_API_QUICKSTART.md](../docs/JULES_API_QUICKSTART.md) for complete setup guide.
+
+**API Key:**
+Get your Jules API key from [jules.google.com/settings#api](https://jules.google.com/settings#api)
+
+## Task Creation Scripts
 
 ### 1. `create_task_branches.sh`
 
