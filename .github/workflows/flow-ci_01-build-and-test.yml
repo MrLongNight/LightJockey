@@ -1,9 +1,9 @@
-name: Unit Tests
+name: "Flow CI 01: Build & Test"
 
 on:
-  push:
-    branches: [ main, develop ]
   pull_request:
+    branches: [ main, develop ]
+  push:
     branches: [ main, develop ]
 
 jobs:
