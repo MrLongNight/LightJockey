@@ -14,7 +14,7 @@ on:
 
 jobs:
   auto-merge:
-    uses: ./.github/workflows/_reusable/jules-auto-merge.yml
+    uses: ./.github/workflows/reusable-jules-auto-merge.yml
     with:
       automation_enabled: ${{ vars.JULES_AUTOMATION_ENABLED }}
       pr_number: ${{ inputs.pr_number || 0 }}

@@ -8,7 +8,7 @@ on:
 
 jobs:
   submit-task:
-    uses: ./.github/workflows/_reusable/jules-submit-task.yml
+    uses: ./.github/workflows/reusable-jules-submit-task.yml
     secrets:
       jules_api_key: ${{ secrets.JulesAPIKey }}
     with:
