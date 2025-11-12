@@ -157,6 +157,9 @@ public partial class App : Application
         // Register BackupService
         services.AddSingleton<Services.IBackupService, Services.BackupService>();
 
+        // Register ConfigurationService for secure data storage
+        services.AddSingleton<Services.IConfigurationService, Services.ConfigurationService>();
+
         // Register views
         services.AddSingleton<MainWindow>();
     }
