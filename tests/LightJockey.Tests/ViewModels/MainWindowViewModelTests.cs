@@ -58,7 +58,8 @@ public class MainWindowViewModelTests
         Assert.False(viewModel.IsHueConnected);
         Assert.False(viewModel.IsEffectRunning);
         Assert.True(viewModel.IsDarkTheme);
-        Assert.Equal("Ready", viewModel.StatusMessage);
+        // StatusMessage is set by RefreshAudioDevices() in constructor
+        Assert.Equal("Found 0 audio device(s)", viewModel.StatusMessage);
     }
 
     [Fact]
