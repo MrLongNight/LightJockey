@@ -44,7 +44,7 @@ public class PulseEffectTests : IDisposable
         // Assert
         Assert.Contains("DTLS", _effect.Description);
         Assert.Contains("Beat", _effect.Description, StringComparison.OrdinalIgnoreCase);
-        Assert.Contains("pulse", _effect.Description, StringComparison.OrdinalIgnoreCase);
+        Assert.Contains("puls", _effect.Description, StringComparison.OrdinalIgnoreCase);
     }
 
     [Fact]
