@@ -361,10 +361,10 @@ Ergebnis:
 
 Task 13 — Preset-Sharing / Cloud
 
-PR-Bezeichnung: Task13_PresetCloudIntegration
-Beschreibung: JSON Preset Export/Import online
-KI-Prompt:
-- Service zur Cloud Speicherung
+PR-Bezeichnung: Task13_PresetImportExport
+Beschreibung: JSON Preset Export/Import:
+- automatischer Backup Service zur Speicherung von kompletter Konfiguration inklusive Definition wie viele Sicherungen vorgehalten werden und wann gelöscht werden 
+- Presets Export Import für Farbgruppen, UI Anpassung per Drag and Drop, lichteffekt Konfiguration 
 - UI Import/Export Buttons
 - Tests: Upload/Download korrekt
 - Dokumentation Screenshots + API Beispiel
@@ -399,18 +399,25 @@ KI-Prompt:
 - Unit-Test: Theme Wechsel korrekt
 - Dokumentation Screenshots
 
-Task 17 — CI/CD + Windows Store Deployment
+Task 17 — Hue Bridge Multisupport
 
-PR-Bezeichnung: Task17_CICD_StoreDeployment
+PR-Bezeichnung: Task17_Hue-Bridge-MultiSupport
+Beschreibung: Option eine weitere Bridge zu verwenden um so weitere 10 Lampen für die Entertainment lichteffekte zu verwenden 
+- die 2. Bridge inklusive der 2. Entertainment Gruppe sollte man in verschiedenen Modis nutzen können. A) völlig unabhängig voneinander B) beide Bridges vereint C) Matrix Mode (man kann die jeweils 10 Lampen der beiden Entertainment Gruppen mit einer App internen Gruppierung vollständig individuell anpassen) 
+
+
+Task 20 — CI/CD + Windows Store Deployment
+
+PR-Bezeichnung: Task20_CICD_StoreDeployment
 Beschreibung: Signierte MSI + Windows Store Deployment
 KI-Prompt:
 - GitHub Actions anpassen: SignTool + Store-ready
 - Test: Signierte MSI korrekt
 - Dokumentation CI/CD Workflow
 
-Task 18 — Comprehensive QA & Documentation
+Task 21 — Comprehensive QA & Documentation
 
-PR-Bezeichnung: Task18_QA_Documentation
+PR-Bezeichnung: Task21_QA_Documentation
 Beschreibung: Vollständige Testabdeckung + Dokumentation aktualisiert
 KI-Prompt:
 - Tests auswerten
@@ -442,5 +449,6 @@ Task	PR-Bezeichnung	Umsetzung abgeschlossen	Doku-Link	QA-Check (manuell)
 14	Task14_SecureKeys	⬜	[link]	⬜
 15	Task15_AdvancedLoggingMetrics	⬜	[link]	⬜
 16	Task16_ThemeEnhancements	⬜	[link]	⬜
-17	Task17_CICD_StoreDeployment	⬜	[link]	⬜
-18	Task18_QA_Documentation	⬜	[link]	⬜
+17	Task17_Hue-Bridge-MultiSupport	⬜	[link]	⬜
+20	Task20_CICD_StoreDeployment	⬜	[link]	⬜
+21	Task21_QA_Documentation	⬜	[link]	⬜
