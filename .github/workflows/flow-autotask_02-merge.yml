@@ -89,22 +89,25 @@ jobs:
           script: |
             const prNumber = ${{ fromJSON(steps.get_pr.outputs.result).pr_number }};
             
+            // Get PR node_id
+            const pr = await github.rest.pulls.get({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              pull_number: prNumber
+            });
+            
             // Convert from draft to ready for review
             await github.graphql(`
-              mutation {
-                markPullRequestReadyForReview(input: {pullRequestId: "${
-                  await github.rest.pulls.get({
-                    owner: context.repo.owner,
-                    repo: context.repo.repo,
-                    pull_number: prNumber
-                  }).then(pr => pr.data.node_id)
-                }"}) {
+              mutation($pullRequestId: ID!) {
+                markPullRequestReadyForReview(input: {pullRequestId: $pullRequestId}) {
                   pullRequest {
                     id
                   }
                 }
               }
-            `);
+            `, {
+              pullRequestId: pr.data.node_id
+            });
             
             console.log(`Converted PR #${prNumber} to ready for review`);
       
