@@ -234,30 +234,34 @@ If no uncompleted tasks are found:
 
 The automation expects the development plan (`LIGHTJOCKEY_Entwicklungsplan.md`) to follow this format:
 
+**Task Definitions:**
 ```markdown
 Task 11 — Additional Light Effects
 
 PR-Designation: Task11_AdditionalEffects
 Description: New effects (Rainbow, Strobe, Smooth Fade)
 ...
-
-Task 12 — Effect Parameter Adjustment
-
-**✅ COMPLETED** - 2025-11-11
-
-...
-
-Task 13 — Preset-Sharing / Cloud
-
-PR-Designation: Task13_PresetCloudIntegration
-Description: JSON Preset Export/Import online
-...
 ```
 
-**Task Detection:**
-- Uncompleted: Line starting with `- [ ]` (checkbox unchecked)
-- Completed: Line starting with `- [x]` or `✅ COMPLETED`
-- Task number extracted from text (e.g., "Task 13")
+**Master Checklist Table:**
+```markdown
+4. Master Checkliste (Execution Checklist)
+
+Task	PR-Bezeichnung	Umsetzung abgeschlossen	Doku-Link	QA-Check (manuell)
+
+11	Task11_AdditionalEffects	⬜	[link]	⬜
+12	Task12_EffectParameterAdjustment	✅	[docs/tasks/Task12_EffectParameterAdjustment.md](docs/tasks/Task12_EffectParameterAdjustment.md)	✅
+```
+
+**Task Detection Logic:**
+1. The workflow parses the "Master Checkliste" table to identify completed tasks (marked with ✅)
+2. It finds all task definitions in the document (lines starting with `Task N —`)
+3. It identifies the first task number that appears in the document but is NOT marked as completed in the checklist
+4. Task numbers must be sequential integers (0, 1, 2, etc.)
+
+**Completion Status:**
+- Uncompleted: Checkbox in checklist shows `⬜`
+- Completed: Checkbox in checklist shows `✅`
 
 ## File Structure
 
