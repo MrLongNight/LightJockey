@@ -4,12 +4,28 @@ This directory contains automated CI/CD workflows for the LightJockey project.
 
 ⚠️ **Important Note on Automation**: The workflow creates issues/PRs automatically but **GitHub Copilot Workspace must be manually activated** to implement tasks. See [AUTO_TASK_TROUBLESHOOTING.md](../docs/AUTO_TASK_TROUBLESHOOTING.md) for details.
 
+## Workflow Organization Structure
+
+All workflows are organized using GitHub's **reusable workflows** pattern for better maintainability:
+
+- **Caller workflows** (in root directory): Small workflow files that define triggers and call reusable workflows
+- **Reusable workflows** (in `_reusable/` directory): Contains the actual workflow logic that can be called from multiple places
+
+This structure provides:
+- ✅ Better organization and separation of concerns
+- ✅ Easier maintenance (logic in one place)
+- ✅ Workflows visible in GitHub Actions UI (only root-level files appear)
+- ✅ Code reusability across different triggers
+
 ## 🆕 Jules API Workflows (RECOMMENDED)
 
 The new **Jules API integration** provides near-complete automation (~98%) by leveraging Google Jules API to process tasks programmatically. See [JULES_API_INTEGRATION.md](../../docs/JULES_API_INTEGRATION.md) for complete documentation.
 
+**Structure**: Each Jules workflow consists of a caller workflow (e.g., `flow-jules_01-submit-task.yml`) that calls a reusable workflow in `_reusable/` (e.g., `jules-submit-task.yml`).
+
 ### Flow Jules 01: Submit Task to Jules API
-**File**: `flow-jules_01-submit-task.yml`
+**Caller File**: `flow-jules_01-submit-task.yml`  
+**Reusable Workflow**: `_reusable/jules-submit-task.yml`
 
 **Purpose**: Automatically submits tasks to Jules AI agent via API.
 
@@ -26,7 +42,8 @@ The new **Jules API integration** provides near-complete automation (~98%) by le
 **Configuration**: Requires `JULES_AUTOMATION_ENABLED` variable and `JULES_API_KEY` secret.
 
 ### Flow Jules 02: Monitor Session and Review PR
-**File**: `flow-jules_02-monitor-and-review.yml`
+**Caller File**: `flow-jules_02-monitor-and-review.yml`  
+**Reusable Workflow**: `_reusable/jules-monitor-review.yml`
 
 **Purpose**: Monitors Jules sessions and triggers Copilot review when PR is created.
 
@@ -42,7 +59,8 @@ The new **Jules API integration** provides near-complete automation (~98%) by le
 - Adds appropriate labels
 
 ### Flow Jules 03: Auto-Merge After Review
-**File**: `flow-jules_03-auto-merge.yml`
+**Caller File**: `flow-jules_03-auto-merge.yml`  
+**Reusable Workflow**: `_reusable/jules-auto-merge.yml`
 
 **Purpose**: Automatically merges PRs after Copilot review and successful CI tests.
 
