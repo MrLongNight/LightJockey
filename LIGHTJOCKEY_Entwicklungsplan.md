@@ -330,13 +330,24 @@ Ergebnis:
 
 Task 11 — Zusätzliche Lichteffekte
 
+**✅ ABGESCHLOSSEN** - 2025-11-11
+
+
 PR-Bezeichnung: Task11_AdditionalEffects
 Beschreibung: Neue Effekte (Rainbow, Strobe, Smooth Fade)
 KI-Prompt:
-- Effekt-Implementierung in EffectEngine
-- UI Dropdown Auswahl
-- Unit-Test: Effekt korrekt rendern
-- Dokumentation Screenshots
+- ✅ Effekt-Implementierung in EffectEngine
+- ✅ UI Dropdown Auswahl
+- ✅ Unit-Test: Effekt korrekt rendern
+- ✅ Dokumentation Screenshots
+
+Ergebnis:
+- 10 neue Lichteffekt-Plugins implementiert (5 HTTPS, 5 DTLS)
+- RainbowCycleEffect, SmoothFadeEffect, FFTLowFrequencyEffect, FFTMidFrequencyEffect, StrobeManualEffect implementiert
+- FFTHighFrequencyEffect, RainbowFastEffect, PulseEffect, ChaseEffect, SparkleEffect implementiert
+- Alle Effekte in App.xaml.cs registriert
+- Umfassende Unit-Tests für alle Effekte erstellt
+- Vollständige Dokumentation in TASK11_SUMMARY.md und docs/Task11_Additional_Effect_Plugins.md
 
 Task 12 — Effektparameter feinjustierbar
 
@@ -937,7 +948,7 @@ Task	PR-Bezeichnung	Umsetzung abgeschlossen	Doku-Link	QA-Check (manuell)
 8	Task8_PresetService	✅	[docs/tasks/Task8_PresetService.md](docs/tasks/Task8_PresetService.md)	✅
 9	Task9_Tests_Performance	✅	[docs/tasks/Task9_Tests_Performance.md](docs/tasks/Task9_Tests_Performance.md)	✅
 10	Task10_CICD_MSI	✅	[docs/tasks/Task10_CICD_MSI.md](docs/tasks/Task10_CICD_MSI.md)	✅
-11	Task11_AdditionalEffects	⬜	[link]	⬜
+11	Task11_AdditionalEffects	✅	[TASK11_SUMMARY.md](TASK11_SUMMARY.md)	✅
 12	Task12_EffectParameterAdjustment	✅	[docs/tasks/Task12_EffectParameterAdjustment.md](docs/tasks/Task12_EffectParameterAdjustment.md)	✅
 13	Task13_PresetCloudIntegration	⬜	[link]	⬜
 14	Task14_SecureKeys	⬜	[link]	⬜
@@ -949,49 +960,3 @@ Task	PR-Bezeichnung	Umsetzung abgeschlossen	Doku-Link	QA-Check (manuell)
 20	Task20_CICD_StoreDeployment	⬜	[link]	⬜
 21	Task21_QA_Documentation
 
-Task 20 — CI/CD + Windows Store Deployment
-
-PR-Bezeichnung: Task20_CICD_StoreDeployment
-Beschreibung: Signierte MSI + Windows Store Deployment
-KI-Prompt:
-- GitHub Actions anpassen: SignTool + Store-ready
-- Test: Signierte MSI korrekt
-- Dokumentation CI/CD Workflow
-
-Task 21 — Comprehensive QA & Documentation
-
-PR-Bezeichnung: Task21_QA_Documentation
-Beschreibung: Vollständige Testabdeckung + Dokumentation aktualisiert
-KI-Prompt:
-- Tests auswerten
-- Performance und Coverage Reports
-- User Documentation aktualisieren
-- Screenshots und How-To Guides
-
-
----
-
-4. Master Checkliste (Execution Checklist)
-
-Task	PR-Bezeichnung	Umsetzung abgeschlossen	Doku-Link	QA-Check (manuell)
-
-0	Task0_ProjectSetup	✅	[docs/tasks/Task0_ProjectSetup.md](docs/tasks/Task0_ProjectSetup.md)	✅
-1	Task1_DI_Logging	✅	[docs/tasks/Task1_DI_Logging.md](docs/tasks/Task1_DI_Logging.md)	✅
-2	Task2_AudioService	✅	[docs/tasks/Task2_AudioService.md](docs/tasks/Task2_AudioService.md)	✅
-3	Task3_FFT_BeatDetector	✅	[docs/tasks/Task3_FFT_BeatDetector.md](docs/tasks/Task3_FFT_BeatDetector.md)	✅
-4	Task4_HueService	✅	[docs/tasks/Task4_HueService.md](docs/tasks/Task4_HueService.md)	✅
-5	Task5_EntertainmentV2	✅	[docs/tasks/Task5_EntertainmentV2.md](docs/tasks/Task5_EntertainmentV2.md)	✅
-6	Task6_EffectEngine	✅	[docs/tasks/Task6_EffectEngine.md](docs/tasks/Task6_EffectEngine.md)	✅
-7	Task7_UI_Visualizer	✅	[docs/tasks/Task7_UI_Visualizer.md](docs/tasks/Task7_UI_Visualizer.md)	✅
-8	Task8_PresetService	✅	[docs/tasks/Task8_PresetService.md](docs/tasks/Task8_PresetService.md)	✅
-9	Task9_Tests_Performance	✅	[docs/tasks/Task9_Tests_Performance.md](docs/tasks/Task9_Tests_Performance.md)	✅
-10	Task10_CICD_MSI	✅	[docs/tasks/Task10_CICD_MSI.md](docs/tasks/Task10_CICD_MSI.md)	✅
-11	Task11_AdditionalEffects	⬜	[link]	⬜
-12	Task12_EffectParameterAdjustment	✅	[docs/tasks/Task12_EffectParameterAdjustment.md](docs/tasks/Task12_EffectParameterAdjustment.md)	✅
-13	Task13_PresetCloudIntegration	⬜	[link]	⬜
-14	Task14_SecureKeys	⬜	[link]	⬜
-15	Task15_AdvancedLoggingMetrics	⬜	[link]	⬜
-16	Task16_ThemeEnhancements	⬜	[link]	⬜
-17	Task17_Hue-Bridge-MultiSupport	⬜	[link]	⬜
-20	Task20_CICD_StoreDeployment	⬜	[link]	⬜
-21	Task21_QA_Documentation	⬜	[link]	⬜
