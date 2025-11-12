@@ -26,8 +26,8 @@
 #### Neue Dokumentation:
 1. **`docs/COPILOT_AGENTIC_WORKFLOW.md`** - Vollständiger Leitfaden
 2. **`QUICK_START_AUTO_TASKS.md`** - Aktualisiert für Copilot Agent
-3. **`docs/AUTO_TASK_TROUBLESHOOTING.md`** - Erweitert
-4. **`TASK13_AND_AUTOMATION_SUMMARY.md`** - Deutsche Zusammenfassung
+3. **`AUTO_TASK_TROUBLESHOOTING.md`** - Erweitert
+4. **`tasks/Task13_Summary.md`** - Deutsche Zusammenfassung
 
 ## Wie Es Jetzt Funktioniert
 
@@ -210,11 +210,11 @@ Der GitHub Copilot Coding Agent kann **vollständig autonom**:
 - `.github/workflows/README.md` - AKTUALISIERT
 
 ### Dokumentation:
-- `docs/COPILOT_AGENTIC_WORKFLOW.md` - NEU: Kompletter Guide
+- `COPILOT_AGENTIC_WORKFLOW.md` - NEU: Kompletter Guide
 - `QUICK_START_AUTO_TASKS.md` - AKTUALISIERT
-- `docs/AUTO_TASK_TROUBLESHOOTING.md` - AKTUALISIERT
-- `docs/TASKS_13-21_OVERVIEW.md` - AKTUALISIERT
-- `TASK13_AND_AUTOMATION_SUMMARY.md` - NEU: Diese Datei
+- `AUTO_TASK_TROUBLESHOOTING.md` - AKTUALISIERT
+- `TASKS_13-21_OVERVIEW.md` - AKTUALISIERT
+- `tasks/Task13_Summary.md` - NEU: Diese Datei
 
 ## Messbarer Erfolg
 
