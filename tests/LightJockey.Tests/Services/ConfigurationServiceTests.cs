@@ -278,7 +278,7 @@ public class ConfigurationServiceTests : IDisposable
         const string value = "Value";
 
         // Act & Assert
-        await Assert.ThrowsAsync<ArgumentException>(
+        await Assert.ThrowsAsync<ArgumentNullException>(
             async () => await _service.SetSecureValueAsync(key!, value));
     }
 
@@ -301,7 +301,7 @@ public class ConfigurationServiceTests : IDisposable
         const string? key = null;
 
         // Act & Assert
-        await Assert.ThrowsAsync<ArgumentException>(
+        await Assert.ThrowsAsync<ArgumentNullException>(
             async () => await _service.GetSecureValueAsync(key!));
     }
 
@@ -312,7 +312,7 @@ public class ConfigurationServiceTests : IDisposable
         const string? key = null;
 
         // Act & Assert
-        await Assert.ThrowsAsync<ArgumentException>(
+        await Assert.ThrowsAsync<ArgumentNullException>(
             async () => await _service.RemoveValueAsync(key!));
     }
 }
