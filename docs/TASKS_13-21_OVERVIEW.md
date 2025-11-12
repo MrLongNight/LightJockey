@@ -158,6 +158,8 @@ To create issues/PRs for these tasks:
 
 3. **Workflow Dispatch:** Manually trigger the `.github/workflows/flow-autotask_01-start.yml` workflow to create the next task.
 
+⚠️ **Important**: After the automation creates an issue/PR, you must manually activate GitHub Copilot Workspace to implement the task. See [AUTO_TASK_TROUBLESHOOTING.md](../docs/AUTO_TASK_TROUBLESHOOTING.md) for details.
+
 ## Task Priority
 
 According to the user, **Task 13** is the current priority and should be worked on next.
