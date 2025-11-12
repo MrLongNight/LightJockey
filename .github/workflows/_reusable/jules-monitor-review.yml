@@ -1,13 +1,18 @@
-name: "Flow Jules 02: Monitor Session and Review PR"
+name: "Jules Monitor and Review (Reusable)"
 
 on:
-  schedule:
-    # Run every 15 minutes to check Jules session status
-    - cron: '*/15 * * * *'
-  workflow_dispatch:
+  workflow_call:
+    secrets:
+      jules_api_key:
+        description: 'Jules API key for authentication'
+        required: true
     inputs:
+      automation_enabled:
+        description: 'Whether Jules automation is enabled'
+        required: true
+        type: string
       session_id:
-        description: 'Jules Session ID to check'
+        description: 'Jules Session ID to check (optional)'
         required: false
         type: string
 
@@ -23,7 +28,7 @@ jobs:
       - name: Check if Jules automation is enabled
         id: check_enabled
         run: |
-          if [ "${{ vars.JULES_AUTOMATION_ENABLED }}" != "true" ]; then
+          if [ "${{ inputs.automation_enabled }}" != "true" ]; then
             echo "Jules automation is disabled."
             echo "enabled=false" >> $GITHUB_OUTPUT
             exit 0
@@ -85,7 +90,7 @@ jobs:
             
             # Get session details
             RESPONSE=$(curl -s "https://jules.googleapis.com/v1alpha/sessions/${SESSION_ID}" \
-              -H "X-Goog-Api-Key: ${{ secrets.JulesAPIKey }}")
+              -H "X-Goog-Api-Key: ${{ secrets.jules_api_key }}")
             
             echo "Session ${SESSION_ID} status:"
             echo "$RESPONSE" | jq '{title, outputs}'

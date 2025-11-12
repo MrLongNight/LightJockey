@@ -1,0 +1,21 @@
+name: "Flow Jules 02: Monitor Session and Review PR"
+
+on:
+  schedule:
+    # Run every 15 minutes to check Jules session status
+    - cron: '*/15 * * * *'
+  workflow_dispatch:
+    inputs:
+      session_id:
+        description: 'Jules Session ID to check'
+        required: false
+        type: string
+
+jobs:
+  monitor-and-review:
+    uses: ./.github/workflows/_reusable/jules-monitor-review.yml
+    secrets:
+      jules_api_key: ${{ secrets.JulesAPIKey }}
+    with:
+      automation_enabled: ${{ vars.JULES_AUTOMATION_ENABLED }}
+      session_id: ${{ inputs.session_id || '' }}
