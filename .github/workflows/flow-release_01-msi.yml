@@ -1,4 +1,4 @@
-name: Release MSI Package
+name: "Flow Release 01: Create MSI Installer"
 
 on:
   workflow_dispatch:
