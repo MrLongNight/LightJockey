@@ -206,9 +206,9 @@ To process multiple tasks in sequence:
 
 ## Getting Help
 
-- 📖 [Auto-Task Troubleshooting Guide](docs/AUTO_TASK_TROUBLESHOOTING.md)
+- 📖 [Auto-Task Troubleshooting Guide](AUTO_TASK_TROUBLESHOOTING.md)
 - 📖 [Development Plan](LIGHTJOCKEY_Entwicklungsplan.md)
-- 📖 [Workflow Documentation](.github/workflows/README.md)
+- 📖 [Workflow Documentation](../.github/workflows/README.md)
 
 ## Summary
 
