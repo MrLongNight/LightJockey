@@ -77,8 +77,7 @@ jobs:
           --configuration ${{ env.BUILD_CONFIGURATION }} `
           --runtime win-x64 `
           --self-contained false `
-          --output ${{ env.PUBLISH_DIR }} `
-          --no-build
+          --output ${{ env.PUBLISH_DIR }}
 
     - name: Install WiX Toolset
       run: |
