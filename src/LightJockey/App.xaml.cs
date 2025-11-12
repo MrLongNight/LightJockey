@@ -154,6 +154,9 @@ public partial class App : Application
         // Register PresetService
         services.AddSingleton<Services.IPresetService, Services.PresetService>();
 
+        // Register BackupService
+        services.AddSingleton<Services.IBackupService, Services.BackupService>();
+
         // Register views
         services.AddSingleton<MainWindow>();
     }
