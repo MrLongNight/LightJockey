@@ -347,7 +347,7 @@ Ergebnis:
 - FFTHighFrequencyEffect, RainbowFastEffect, PulseEffect, ChaseEffect, SparkleEffect implementiert
 - Alle Effekte in App.xaml.cs registriert
 - Umfassende Unit-Tests für alle Effekte erstellt
-- Vollständige Dokumentation in tasks/Task11_Summary.md und Task11_Additional_Effect_Plugins.md
+- Vollständige Dokumentation in docs/tasks/Task11_Summary.md und docs/Task11_Additional_Effect_Plugins.md
 
 Task 12 — Effektparameter feinjustierbar
 
@@ -948,9 +948,9 @@ Task	PR-Bezeichnung	Umsetzung abgeschlossen	Doku-Link	QA-Check (manuell)
 8	Task8_PresetService	✅	[docs/tasks/Task8_PresetService.md](docs/tasks/Task8_PresetService.md)	✅
 9	Task9_Tests_Performance	✅	[docs/tasks/Task9_Tests_Performance.md](docs/tasks/Task9_Tests_Performance.md)	✅
 10	Task10_CICD_MSI	✅	[docs/tasks/Task10_CICD_MSI.md](docs/tasks/Task10_CICD_MSI.md)	✅
-11	Task11_AdditionalEffects	✅	[tasks/Task11_Summary.md](tasks/Task11_Summary.md)	✅
+11	Task11_AdditionalEffects	✅	[docs/tasks/Task11_Summary.md](docs/tasks/Task11_Summary.md)	✅
 12	Task12_EffectParameterAdjustment	✅	[docs/tasks/Task12_EffectParameterAdjustment.md](docs/tasks/Task12_EffectParameterAdjustment.md)	✅
-13	Task13_PresetCloudIntegration	✅	[tasks/Task13_Summary.md](tasks/Task13_Summary.md)	✅
+13	Task13_PresetCloudIntegration	✅	[docs/tasks/Task13_Summary.md](docs/tasks/Task13_Summary.md)	✅
 14	Task14_SecureKeys	⬜	[link]	⬜
 15	Task15_AdvancedLoggingMetrics	⬜	[link]	⬜
 16	Task16_ThemeEnhancements	⬜	[link]	⬜

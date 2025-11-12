@@ -88,7 +88,7 @@ See [docs/adr/README.md](docs/adr/README.md) for important architectural decisio
 
 ### Contributing
 
-This project follows a task-based development approach. See [LIGHTJOCKEY_Entwicklungsplan.md](docs/LIGHTJOCKEY_Entwicklungsplan.md) for the complete development plan.
+This project follows a task-based development approach. See [LIGHTJOCKEY_Entwicklungsplan.md](LIGHTJOCKEY_Entwicklungsplan.md) for the complete development plan.
 
 ## Technology Stack
 

@@ -58,7 +58,7 @@ GITHUB_TOKEN=your_github_personal_access_token python3 scripts/create_task_issue
 ## Task Overview
 
 All tasks (13-21) are documented in detail in:
-- `docs/LIGHTJOCKEY_Entwicklungsplan.md` (main development plan)
+- `LIGHTJOCKEY_Entwicklungsplan.md` (main development plan)
 - `docs/TASKS_13-21_OVERVIEW.md` (quick reference)
 
 ## Alternative: Manual Workflow Trigger
