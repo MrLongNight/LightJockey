@@ -1,0 +1,330 @@
+name: "Flow Jules 01: Submit Task to Jules API"
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  submit-to-jules:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      issues: write
+      pull-requests: write
+    
+    steps:
+      - name: Check if Jules automation is enabled
+        id: check_enabled
+        run: |
+          # Check if JULES_AUTOMATION_ENABLED variable exists and is set to true
+          if [ "${{ vars.JULES_AUTOMATION_ENABLED }}" != "true" ]; then
+            echo "Jules automation is disabled. Set JULES_AUTOMATION_ENABLED repository variable to 'true' to enable."
+            echo "enabled=false" >> $GITHUB_OUTPUT
+            exit 0
+          fi
+          echo "enabled=true" >> $GITHUB_OUTPUT
+      
+      - name: Validate Jules API key
+        if: steps.check_enabled.outputs.enabled == 'true'
+        run: |
+          if [ -z "${{ secrets.JulesAPIKey }}" ]; then
+            echo "Error: JulesAPIKey secret is not set."
+            echo "Please add your Jules API key to repository secrets as JulesAPIKey."
+            exit 1
+          fi
+          echo "Jules API key is configured."
+      
+      - name: Checkout repository
+        if: steps.check_enabled.outputs.enabled == 'true'
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      
+      - name: Find next uncompleted task
+        if: steps.check_enabled.outputs.enabled == 'true'
+        id: find_task
+        run: |
+          # Read the development plan and find the first uncompleted task
+          PLAN_FILE="LIGHTJOCKEY_Entwicklungsplan.md"
+          
+          # Use Python for more reliable parsing
+          python3 << 'PYEOF' > task_info.txt
+          import re
+          import sys
+          
+          # Read the development plan
+          with open('LIGHTJOCKEY_Entwicklungsplan.md', 'r', encoding='utf-8') as f:
+              lines = f.readlines()
+          
+          # Parse the checklist table to find which tasks are completed
+          completed_tasks = set()
+          in_checklist = False
+          
+          for line in lines:
+              # Detect when we're in the checklist section
+              if 'Master Checkliste' in line or 'Execution Checklist' in line:
+                  in_checklist = True
+                  continue
+              
+              if in_checklist:
+                  # Parse table rows - split by tabs or multiple spaces
+                  parts = re.split(r'\t+|\s{2,}', line.strip())
+                  if len(parts) >= 3 and parts[0].isdigit():
+                      task_num = parts[0]
+                      status = parts[2].strip()
+                      if status == '✅':
+                          completed_tasks.add(int(task_num))
+          
+          # Find all tasks in the document
+          all_tasks = []
+          task_descriptions = {}
+          current_task = None
+          current_description = []
+          
+          for i, line in enumerate(lines):
+              match = re.match(r'^Task (\d+) —\s*(.+)', line)
+              if match:
+                  # Save previous task description
+                  if current_task:
+                      task_descriptions[current_task] = '\n'.join(current_description)
+                  
+                  task_num = int(match.group(1))
+                  task_title = match.group(2).strip()
+                  all_tasks.append((task_num, task_title))
+                  current_task = task_num
+                  current_description = []
+              elif current_task and line.strip() and not line.startswith('---'):
+                  # Collect description lines
+                  if not line.startswith('Task '):
+                      current_description.append(line.strip())
+          
+          # Save last task description
+          if current_task:
+              task_descriptions[current_task] = '\n'.join(current_description)
+          
+          # Find first uncompleted task
+          first_uncompleted = None
+          task_description = ""
+          for task_num, task_title in sorted(all_tasks):
+              if task_num not in completed_tasks:
+                  first_uncompleted = (task_num, task_title)
+                  task_description = task_descriptions.get(task_num, "")
+                  break
+          
+          if first_uncompleted:
+              print(f"{first_uncompleted[0]}")
+              print(f"{first_uncompleted[1]}")
+              print(f"DESCRIPTION_START")
+              print(task_description[:500])  # Limit description length
+              print(f"DESCRIPTION_END")
+          else:
+              print("NONE")
+              print("")
+              print("DESCRIPTION_START")
+              print("")
+              print("DESCRIPTION_END")
+          PYEOF
+          
+          # Read the output
+          TASK_NUM=$(sed -n '1p' task_info.txt)
+          TASK_TITLE=$(sed -n '2p' task_info.txt)
+          TASK_DESC=$(sed -n '/DESCRIPTION_START/,/DESCRIPTION_END/p' task_info.txt | sed '1d;$d')
+          rm -f task_info.txt
+          
+          if [ "$TASK_NUM" = "NONE" ]; then
+            echo "No uncompleted tasks found. Automation cycle complete!"
+            echo "has_task=false" >> $GITHUB_OUTPUT
+            exit 0
+          fi
+          
+          echo "has_task=true" >> $GITHUB_OUTPUT
+          echo "Found uncompleted task: Task $TASK_NUM — $TASK_TITLE"
+          
+          # Export task information
+          echo "task_num=$TASK_NUM" >> $GITHUB_OUTPUT
+          echo "task_title=$TASK_TITLE" >> $GITHUB_OUTPUT
+          
+          # Save description to file for multi-line handling
+          echo "$TASK_DESC" > task_description.txt
+          
+          # Create escaped description for JSON
+          TASK_DESC_ESCAPED=$(echo "$TASK_DESC" | jq -Rs .)
+          echo "task_description=$TASK_DESC_ESCAPED" >> $GITHUB_OUTPUT
+      
+      - name: Get Jules source
+        if: steps.check_enabled.outputs.enabled == 'true' && steps.find_task.outputs.has_task == 'true'
+        id: get_source
+        run: |
+          # List sources to get the repository source name
+          RESPONSE=$(curl -s 'https://jules.googleapis.com/v1alpha/sources' \
+            -H "X-Goog-Api-Key: ${{ secrets.JulesAPIKey }}")
+          
+          echo "Jules API Response:"
+          echo "$RESPONSE" | jq .
+          
+          # Extract source name for this repository
+          SOURCE_NAME=$(echo "$RESPONSE" | jq -r ".sources[] | select(.githubRepo.owner==\"${{ github.repository_owner }}\" and .githubRepo.repo==\"${{ github.event.repository.name }}\") | .name")
+          
+          if [ -z "$SOURCE_NAME" ] || [ "$SOURCE_NAME" = "null" ]; then
+            echo "Error: Repository not found in Jules sources."
+            echo "Please install the Jules GitHub app for this repository at https://jules.google.com"
+            exit 1
+          fi
+          
+          echo "source_name=$SOURCE_NAME" >> $GITHUB_OUTPUT
+          echo "Found Jules source: $SOURCE_NAME"
+      
+      - name: Create Jules session
+        if: steps.check_enabled.outputs.enabled == 'true' && steps.find_task.outputs.has_task == 'true'
+        id: create_session
+        run: |
+          TASK_NUM="${{ steps.find_task.outputs.task_num }}"
+          TASK_TITLE="${{ steps.find_task.outputs.task_title }}"
+          SOURCE_NAME="${{ steps.get_source.outputs.source_name }}"
+          
+          # Read full task description
+          TASK_DESC=$(cat task_description.txt)
+          
+          # Create comprehensive prompt for Jules
+          PROMPT="Implement Task ${TASK_NUM}: ${TASK_TITLE}
+
+          ${TASK_DESC}
+
+          Please follow these guidelines:
+          - Use the MVVM pattern (Models, ViewModels, Views, Services)
+          - Implement dependency injection for all services
+          - Add comprehensive unit tests with xUnit and Moq
+          - Follow C# and WPF best practices
+          - Add XML documentation for all public members
+          - Update relevant documentation files
+          - Ensure code coverage is above 80%
+          
+          See LIGHTJOCKEY_Entwicklungsplan.md for the complete development plan and architecture guidelines."
+          
+          # Create session via Jules API
+          SESSION_RESPONSE=$(curl -s 'https://jules.googleapis.com/v1alpha/sessions' \
+            -X POST \
+            -H "Content-Type: application/json" \
+            -H "X-Goog-Api-Key: ${{ secrets.JulesAPIKey }}" \
+            -d "$(jq -n \
+              --arg prompt "$PROMPT" \
+              --arg source "$SOURCE_NAME" \
+              --arg title "Task ${TASK_NUM}: ${TASK_TITLE}" \
+              '{
+                "prompt": $prompt,
+                "sourceContext": {
+                  "source": $source,
+                  "githubRepoContext": {
+                    "startingBranch": "main"
+                  }
+                },
+                "automationMode": "AUTO_CREATE_PR",
+                "title": $title
+              }')")
+          
+          echo "Jules Session Response:"
+          echo "$SESSION_RESPONSE" | jq .
+          
+          # Extract session ID
+          SESSION_ID=$(echo "$SESSION_RESPONSE" | jq -r '.id')
+          
+          if [ -z "$SESSION_ID" ] || [ "$SESSION_ID" = "null" ]; then
+            echo "Error: Failed to create Jules session."
+            echo "$SESSION_RESPONSE"
+            exit 1
+          fi
+          
+          echo "session_id=$SESSION_ID" >> $GITHUB_OUTPUT
+          echo "Created Jules session: $SESSION_ID"
+          
+          # Clean up temp file
+          rm -f task_description.txt
+      
+      - name: Create tracking issue
+        if: steps.check_enabled.outputs.enabled == 'true' && steps.find_task.outputs.has_task == 'true'
+        id: create_issue
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const taskTitle = `${{ steps.find_task.outputs.task_title }}`;
+            const taskNum = `${{ steps.find_task.outputs.task_num }}`;
+            const sessionId = `${{ steps.create_session.outputs.session_id }}`;
+            
+            // Check if issue already exists
+            const existingIssues = await github.rest.issues.listForRepo({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              state: 'open',
+              labels: 'jules-task'
+            });
+            
+            const issueExists = existingIssues.data.some(issue => 
+              issue.title.includes(`Task ${taskNum}`)
+            );
+            
+            if (issueExists) {
+              console.log('Issue already exists for this task');
+              return;
+            }
+            
+            // Create tracking issue
+            const issue = await github.rest.issues.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title: `Task ${taskNum}: ${taskTitle}`,
+              body: `## Jules API Task
+
+            **Task Number:** ${taskNum}
+            **Task Title:** ${taskTitle}
+            **Jules Session ID:** \`${sessionId}\`
+            **Session URL:** https://jules.google.com/sessions/${sessionId}
+
+            ---
+
+            This task is being processed by Jules AI agent via the Jules API.
+
+            ### Status
+            - ✅ Session created
+            - ⏳ Waiting for Jules to create PR
+            - ⏳ Copilot Agent will review PR when ready
+            - ⏳ Auto-merge after tests pass
+
+            ### Monitoring
+            Monitor the Jules session at: https://jules.google.com/sessions/${sessionId}
+
+            You can also check session status via API:
+            \`\`\`bash
+            curl 'https://jules.googleapis.com/v1alpha/sessions/${sessionId}' \\
+              -H 'X-Goog-Api-Key: YOUR_API_KEY'
+            \`\`\`
+
+            ### Next Steps
+            1. Jules will analyze the task and create an implementation plan
+            2. Jules will implement the changes and create a PR
+            3. Copilot Agent will review the PR automatically
+            4. CI tests will run
+            5. PR will be auto-merged if tests pass
+
+            ---
+
+            **Automation:** Jules API + Copilot Agent
+            **Source:** LIGHTJOCKEY_Entwicklungsplan.md`,
+              labels: ['jules-task', 'automated']
+            });
+            
+            console.log(`Created tracking issue #${issue.data.number}`);
+            return issue.data.number;
+      
+      - name: Add session info to repository
+        if: steps.check_enabled.outputs.enabled == 'true' && steps.find_task.outputs.has_task == 'true'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const sessionId = `${{ steps.create_session.outputs.session_id }}`;
+            const taskNum = `${{ steps.find_task.outputs.task_num }}`;
+            
+            // Store session info as a workflow artifact or comment on issue
+            console.log(`Jules session ${sessionId} created for Task ${taskNum}`);
+            console.log(`Monitor at: https://jules.google.com/sessions/${sessionId}`);
