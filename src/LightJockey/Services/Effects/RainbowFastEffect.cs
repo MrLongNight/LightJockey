@@ -66,7 +66,7 @@ public class RainbowFastEffect : IEffectPlugin
     /// </summary>
     /// <param name="config">Effect configuration</param>
     /// <returns>True if initialization was successful</returns>
-    public async Task<bool> InitializeAsync(EffectConfig config)
+    public Task<bool> InitializeAsync(EffectConfig config)
     {
         ArgumentNullException.ThrowIfNull(config);
 
@@ -75,13 +75,13 @@ public class RainbowFastEffect : IEffectPlugin
             _config = config;
             State = EffectState.Initialized;
             _logger.LogInformation("RainbowFastEffect initialized");
-            return true;
+            return Task.FromResult(true);
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Failed to initialize RainbowFastEffect");
             State = EffectState.Error;
-            return false;
+            return Task.FromResult(false);
         }
     }
 
