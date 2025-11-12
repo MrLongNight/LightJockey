@@ -1,15 +1,15 @@
-name: "Flow Jules 03: Auto-Merge After Review"
+name: "Jules Auto-Merge (Reusable)"
 
 on:
-  pull_request_review:
-    types: [submitted]
-  check_suite:
-    types: [completed]
-  workflow_dispatch:
+  workflow_call:
     inputs:
-      pr_number:
-        description: 'PR number to check for auto-merge'
+      automation_enabled:
+        description: 'Whether Jules automation is enabled'
         required: true
+        type: string
+      pr_number:
+        description: 'PR number to check for auto-merge (optional)'
+        required: false
         type: number
 
 jobs:
@@ -24,7 +24,7 @@ jobs:
       - name: Check if Jules automation is enabled
         id: check_enabled
         run: |
-          if [ "${{ vars.JULES_AUTOMATION_ENABLED }}" != "true" ]; then
+          if [ "${{ inputs.automation_enabled }}" != "true" ]; then
             echo "Jules automation is disabled."
             echo "enabled=false" >> $GITHUB_OUTPUT
             exit 0
@@ -43,8 +43,8 @@ jobs:
           script: |
             let prNumber;
             
-            // Check if manual trigger
-            if ('${{ inputs.pr_number }}') {
+            // Check if manual trigger with explicit PR number
+            if ('${{ inputs.pr_number }}' && '${{ inputs.pr_number }}' !== '') {
               prNumber = parseInt('${{ inputs.pr_number }}');
             } else if (context.payload.pull_request) {
               prNumber = context.payload.pull_request.number;

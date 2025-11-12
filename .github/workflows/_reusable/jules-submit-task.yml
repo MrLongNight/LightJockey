@@ -1,10 +1,16 @@
-name: "Flow Jules 01: Submit Task to Jules API"
+name: "Jules Submit Task (Reusable)"
 
 on:
-  push:
-    branches:
-      - main
-  workflow_dispatch:
+  workflow_call:
+    secrets:
+      jules_api_key:
+        description: 'Jules API key for authentication'
+        required: true
+    inputs:
+      automation_enabled:
+        description: 'Whether Jules automation is enabled'
+        required: true
+        type: string
 
 jobs:
   submit-to-jules:
@@ -19,7 +25,7 @@ jobs:
         id: check_enabled
         run: |
           # Check if JULES_AUTOMATION_ENABLED variable exists and is set to true
-          if [ "${{ vars.JULES_AUTOMATION_ENABLED }}" != "true" ]; then
+          if [ "${{ inputs.automation_enabled }}" != "true" ]; then
             echo "Jules automation is disabled. Set JULES_AUTOMATION_ENABLED repository variable to 'true' to enable."
             echo "enabled=false" >> $GITHUB_OUTPUT
             exit 0
@@ -29,7 +35,7 @@ jobs:
       - name: Validate Jules API key
         if: steps.check_enabled.outputs.enabled == 'true'
         run: |
-          if [ -z "${{ secrets.JulesAPIKey }}" ]; then
+          if [ -z "${{ secrets.jules_api_key }}" ]; then
             echo "Error: JulesAPIKey secret is not set."
             echo "Please add your Jules API key to repository secrets as JulesAPIKey."
             exit 1
@@ -159,7 +165,7 @@ jobs:
         run: |
           # List sources to get the repository source name
           RESPONSE=$(curl -s 'https://jules.googleapis.com/v1alpha/sources' \
-            -H "X-Goog-Api-Key: ${{ secrets.JulesAPIKey }}")
+            -H "X-Goog-Api-Key: ${{ secrets.jules_api_key }}")
           
           echo "Jules API Response:"
           echo "$RESPONSE" | jq .
@@ -207,7 +213,7 @@ jobs:
           SESSION_RESPONSE=$(curl -s 'https://jules.googleapis.com/v1alpha/sessions' \
             -X POST \
             -H "Content-Type: application/json" \
-            -H "X-Goog-Api-Key: ${{ secrets.JulesAPIKey }}" \
+            -H "X-Goog-Api-Key: ${{ secrets.jules_api_key }}" \
             -d "$(jq -n \
               --arg prompt "$PROMPT" \
               --arg source "$SOURCE_NAME" \

@@ -1,0 +1,20 @@
+name: "Flow Jules 03: Auto-Merge After Review"
+
+on:
+  pull_request_review:
+    types: [submitted]
+  check_suite:
+    types: [completed]
+  workflow_dispatch:
+    inputs:
+      pr_number:
+        description: 'PR number to check for auto-merge'
+        required: true
+        type: number
+
+jobs:
+  auto-merge:
+    uses: ./.github/workflows/_reusable/jules-auto-merge.yml
+    with:
+      automation_enabled: ${{ vars.JULES_AUTOMATION_ENABLED }}
+      pr_number: ${{ inputs.pr_number || 0 }}
