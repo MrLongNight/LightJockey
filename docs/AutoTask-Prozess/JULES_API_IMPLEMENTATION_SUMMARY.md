@@ -232,7 +232,7 @@ Time Elapsed 00:00:21.00
 
 ### Schritt 3: GitHub Secrets konfigurieren
 1. Repository Settings → Secrets and variables → Actions
-2. Neues Secret: `JULES_API_KEY` = Ihr API Key
+2. Neues Secret: `JulesAPIKey` = Ihr API Key
 
 ### Schritt 4: Automatisierung aktivieren
 1. Repository Variables

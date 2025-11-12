@@ -29,9 +29,9 @@ jobs:
       - name: Validate Jules API key
         if: steps.check_enabled.outputs.enabled == 'true'
         run: |
-          if [ -z "${{ secrets.JULES_API_KEY }}" ]; then
-            echo "Error: JULES_API_KEY secret is not set."
-            echo "Please add your Jules API key to repository secrets."
+          if [ -z "${{ secrets.JulesAPIKey }}" ]; then
+            echo "Error: JulesAPIKey secret is not set."
+            echo "Please add your Jules API key to repository secrets as JulesAPIKey."
             exit 1
           fi
           echo "Jules API key is configured."
@@ -159,7 +159,7 @@ jobs:
         run: |
           # List sources to get the repository source name
           RESPONSE=$(curl -s 'https://jules.googleapis.com/v1alpha/sources' \
-            -H "X-Goog-Api-Key: ${{ secrets.JULES_API_KEY }}")
+            -H "X-Goog-Api-Key: ${{ secrets.JulesAPIKey }}")
           
           echo "Jules API Response:"
           echo "$RESPONSE" | jq .
@@ -207,7 +207,7 @@ jobs:
           SESSION_RESPONSE=$(curl -s 'https://jules.googleapis.com/v1alpha/sessions' \
             -X POST \
             -H "Content-Type: application/json" \
-            -H "X-Goog-Api-Key: ${{ secrets.JULES_API_KEY }}" \
+            -H "X-Goog-Api-Key: ${{ secrets.JulesAPIKey }}" \
             -d "$(jq -n \
               --arg prompt "$PROMPT" \
               --arg source "$SOURCE_NAME" \

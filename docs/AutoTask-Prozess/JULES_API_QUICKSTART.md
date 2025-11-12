@@ -23,7 +23,7 @@ This guide will help you set up and use the Jules API automation workflows for t
 1. Go to your repository on GitHub
 2. Navigate to `Settings` → `Secrets and variables` → `Actions`
 3. Click "New repository secret"
-4. Name: `JULES_API_KEY`
+4. Name: `JulesAPIKey`
 5. Value: Paste your Jules API key
 6. Click "Add secret"
 
@@ -114,9 +114,9 @@ gh workflow run flow-jules_03-auto-merge.yml -f pr_number=123
 
 **Fix**: Install Jules GitHub App for your repository at [jules.google.com](https://jules.google.com)
 
-### "JULES_API_KEY secret is not set"
+### "JulesAPIKey secret is not set"
 
-**Fix**: Add your API key as a repository secret (see Step 3 above)
+**Fix**: Add your API key as a repository secret named `JulesAPIKey` (see Step 3 above)
 
 ### "Jules automation is disabled"
 

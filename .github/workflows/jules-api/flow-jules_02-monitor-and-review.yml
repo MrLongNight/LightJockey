@@ -85,7 +85,7 @@ jobs:
             
             # Get session details
             RESPONSE=$(curl -s "https://jules.googleapis.com/v1alpha/sessions/${SESSION_ID}" \
-              -H "X-Goog-Api-Key: ${{ secrets.JULES_API_KEY }}")
+              -H "X-Goog-Api-Key: ${{ secrets.JulesAPIKey }}")
             
             echo "Session ${SESSION_ID} status:"
             echo "$RESPONSE" | jq '{title, outputs}'

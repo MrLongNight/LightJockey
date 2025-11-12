@@ -19,7 +19,7 @@ All API keys are properly handled via GitHub Secrets, no credentials are hardcod
 ### ✅ API Key Management
 
 - [x] No hardcoded API keys in code
-- [x] All API keys referenced from `secrets.JULES_API_KEY`
+- [x] All API keys referenced from `secrets.JulesAPIKey`
 - [x] Environment variable usage in Python script
 - [x] Documentation warns against exposing keys
 - [x] Validation check for missing API keys
@@ -291,9 +291,9 @@ The implementation is ready for deployment with the following recommendations:
 
 ## Appendix: Files Reviewed
 
-1. `.github/workflows/flow-jules_01-submit-task.yml`
-2. `.github/workflows/flow-jules_02-monitor-and-review.yml`
-3. `.github/workflows/flow-jules_03-auto-merge.yml`
+1. `.github/workflows/jules-api/flow-jules_01-submit-task.yml`
+2. `.github/workflows/jules-api/flow-jules_02-monitor-and-review.yml`
+3. `.github/workflows/jules-api/flow-jules_03-auto-merge.yml`
 4. `scripts/jules_api_helper.py`
 5. `docs/JULES_API_INTEGRATION.md`
 6. `docs/JULES_API_QUICKSTART.md`

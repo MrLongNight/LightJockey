@@ -63,7 +63,7 @@ Fügen Sie den Jules API Key als Secret zu Ihrem GitHub Repository hinzu:
 1. Gehen Sie zu Ihren Repository-Einstellungen
 2. Navigieren Sie zu `Settings` → `Secrets and variables` → `Actions`
 3. Klicken Sie auf "New repository secret"
-4. Name: `JULES_API_KEY`
+4. Name: `JulesAPIKey`
 5. Value: Ihr Jules API-Schlüssel
 6. Klicken Sie auf "Add secret"
 
@@ -253,7 +253,7 @@ Der Copilot Agent überprüft:
 Sie können das Verhalten der Workflows anpassen:
 
 ```yaml
-# In .github/workflows/flow-jules_01-submit-task.yml
+# In .github/workflows/jules-api/flow-jules_01-submit-task.yml
 # Automation Mode ändern (AUTO_CREATE_PR, MANUAL, oder NONE)
 "automationMode": "AUTO_CREATE_PR"
 
@@ -264,7 +264,7 @@ Sie können das Verhalten der Workflows anpassen:
 ### Monitoring-Intervall
 
 ```yaml
-# In .github/workflows/flow-jules_02-monitor-and-review.yml
+# In .github/workflows/jules-api/flow-jules_02-monitor-and-review.yml
 schedule:
   # Alle 15 Minuten (anpassbar)
   - cron: '*/15 * * * *'
@@ -273,7 +273,7 @@ schedule:
 ### Merge-Strategie
 
 ```yaml
-# In .github/workflows/flow-jules_03-auto-merge.yml
+# In .github/workflows/jules-api/flow-jules_03-auto-merge.yml
 merge_method: 'squash'  # oder 'merge', 'rebase'
 ```
 
@@ -371,7 +371,7 @@ Jede Task hat ein Tracking-Issue mit:
 2. Installieren Sie die Jules GitHub App
 3. Autorisieren Sie den Zugriff auf Ihr Repository
 
-### "JULES_API_KEY secret is not set"
+### "JulesAPIKey secret is not set"
 
 **Problem**: API-Schlüssel nicht konfiguriert.
 
