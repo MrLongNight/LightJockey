@@ -29,12 +29,13 @@ public interface IHueService : IDisposable
         CancellationToken cancellationToken = default);
 
     /// <summary>
-    /// Connects to a Hue bridge using an existing app key
+    /// Connects to a Hue bridge using an existing app key.
+    /// If appKey is not provided, it will try to retrieve it from secure storage.
     /// </summary>
     /// <param name="bridge">The bridge to connect to</param>
-    /// <param name="appKey">The application key from previous registration</param>
+    /// <param name="appKey">Optional application key. If null, will try to use stored key.</param>
     /// <returns>True if connection was successful</returns>
-    Task<bool> ConnectAsync(HueBridge bridge, string appKey);
+    Task<bool> ConnectAsync(HueBridge bridge, string? appKey = null);
 
     /// <summary>
     /// Gets all lights available on the connected bridge

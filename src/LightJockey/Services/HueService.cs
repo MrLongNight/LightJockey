@@ -15,9 +15,12 @@ namespace LightJockey.Services;
 public class HueService : IHueService
 {
     private readonly ILogger<HueService> _logger;
+    private readonly IConfigurationService _configurationService;
     private LocalHueApi? _hueApi;
     private HueBridge? _connectedBridge;
     private bool _disposed;
+
+    private const string AppKeyConfigKey = "HueAppKey";
 
     /// <inheritdoc/>
     public bool IsConnected => _hueApi != null && _connectedBridge != null;
@@ -29,9 +32,11 @@ public class HueService : IHueService
     /// Initializes a new instance of the HueService class
     /// </summary>
     /// <param name="logger">Logger instance</param>
-    public HueService(ILogger<HueService> logger)
+    /// <param name="configurationService">Configuration service for secure storage</param>
+    public HueService(ILogger<HueService> logger, IConfigurationService configurationService)
     {
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+        _configurationService = configurationService ?? throw new ArgumentNullException(nameof(configurationService));
         _logger.LogDebug("HueService initialized");
     }
 
@@ -128,6 +133,10 @@ public class HueService : IHueService
             if (registerResult?.Username != null && !string.IsNullOrEmpty(registerResult.Username))
             {
                 _logger.LogInformation("Successfully registered with bridge {BridgeId}", bridge.BridgeId);
+
+                // Securely store the new AppKey
+                await _configurationService.SetSecureValueAsync(AppKeyConfigKey, registerResult.Username);
+
                 return new HueAuthResult
                 {
                     IsSuccess = true,
@@ -169,16 +178,33 @@ public class HueService : IHueService
     }
 
     /// <inheritdoc/>
-    public async Task<bool> ConnectAsync(HueBridge bridge, string appKey)
+    public async Task<bool> ConnectAsync(HueBridge bridge, string? appKey = null)
     {
         ArgumentNullException.ThrowIfNull(bridge);
-        ArgumentException.ThrowIfNullOrWhiteSpace(appKey);
 
         try
         {
+            string? keyToUse = appKey;
+
+            // If no appKey is provided, try to get it from secure storage
+            if (string.IsNullOrWhiteSpace(keyToUse))
+            {
+                keyToUse = await _configurationService.GetSecureValueAsync(AppKeyConfigKey);
+                if (!string.IsNullOrWhiteSpace(keyToUse))
+                {
+                    _logger.LogDebug("Retrieved AppKey from secure storage");
+                }
+            }
+
+            if (string.IsNullOrWhiteSpace(keyToUse))
+            {
+                _logger.LogWarning("No AppKey provided and none found in secure storage. Registration is required.");
+                return false;
+            }
+
             _logger.LogDebug("Connecting to bridge at {IpAddress}", bridge.IpAddress);
             
-            _hueApi = new LocalHueApi(bridge.IpAddress, appKey);
+            _hueApi = new LocalHueApi(bridge.IpAddress, keyToUse);
             
             // Verify connection by trying to get bridge config
             var config = await _hueApi.GetBridgeAsync();
@@ -191,7 +217,7 @@ public class HueService : IHueService
             }
             else
             {
-                _logger.LogWarning("Failed to verify bridge connection");
+                _logger.LogWarning("Failed to verify bridge connection. The AppKey may be invalid.");
                 _hueApi = null;
                 return false;
             }
