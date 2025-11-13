@@ -1,27 +1,15 @@
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 
-namespace LightJockey.ViewModels;
-
-/// <summary>
-/// Base class for all ViewModels implementing INotifyPropertyChanged
-/// </summary>
-public abstract class ViewModelBase : INotifyPropertyChanged
+namespace LightJockey.ViewModels
 {
-    public event PropertyChangedEventHandler? PropertyChanged;
-
-    protected virtual void OnPropertyChanged([CallerMemberName] string? propertyName = null)
+    public abstract class ViewModelBase : INotifyPropertyChanged
     {
-        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
-    }
+        public event PropertyChangedEventHandler? PropertyChanged;
 
-    protected bool SetProperty<T>(ref T field, T value, [CallerMemberName] string? propertyName = null)
-    {
-        if (EqualityComparer<T>.Default.Equals(field, value))
-            return false;
-
-        field = value;
-        OnPropertyChanged(propertyName);
-        return true;
+        protected virtual void OnPropertyChanged([CallerMemberName] string? propertyName = null)
+        {
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+        }
     }
 }

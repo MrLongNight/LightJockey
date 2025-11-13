@@ -52,214 +52,221 @@
         </GroupBox>
         
         <!-- Main Content Area -->
-        <Grid Grid.Row="2">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="*"/>
-                <ColumnDefinition Width="10"/>
-                <ColumnDefinition Width="*"/>
-            </Grid.ColumnDefinitions>
-            
-            <!-- Left Column - Devices and Effects -->
-            <ScrollViewer Grid.Column="0" VerticalScrollBarVisibility="Auto">
-                <StackPanel>
-                    <!-- Audio Device Selection -->
-                    <GroupBox Header="Audio Device" Padding="10" Margin="0,0,0,10">
+        <TabControl Grid.Row="2">
+            <TabItem Header="Controls">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="10"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+
+                    <!-- Left Column - Devices and Effects -->
+                    <ScrollViewer Grid.Column="0" VerticalScrollBarVisibility="Auto">
                         <StackPanel>
-                            <Label Content="Select Audio Device:"/>
-                            <ComboBox ItemsSource="{Binding AudioDevices}"
-                                     SelectedItem="{Binding SelectedAudioDevice}"
-                                     DisplayMemberPath="Name"
-                                     Margin="0,5,0,10"/>
-                            
-                            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
-                                <Button Content="Refresh Devices" 
-                                       Command="{Binding RefreshAudioDevicesCommand}"
-                                       Margin="0,0,5,0"/>
-                                <Button Content="Start Capture" 
-                                       Command="{Binding StartAudioCaptureCommand}"
-                                       Margin="5,0"/>
-                                <Button Content="Stop Capture" 
-                                       Command="{Binding StopAudioCaptureCommand}"
-                                       Margin="5,0,0,0"/>
-                            </StackPanel>
-                            
-                            <TextBlock Text="{Binding IsAudioCapturing, StringFormat='Status: {0}'}" 
-                                      HorizontalAlignment="Center"
-                                      Margin="0,10,0,0"
-                                      FontStyle="Italic">
-                                <TextBlock.Style>
-                                    <Style TargetType="TextBlock">
-                                        <Setter Property="Foreground" Value="{DynamicResource TextBrush}"/>
-                                        <Style.Triggers>
-                                            <DataTrigger Binding="{Binding IsAudioCapturing}" Value="True">
-                                                <Setter Property="Foreground" Value="{DynamicResource SuccessBrush}"/>
-                                            </DataTrigger>
-                                        </Style.Triggers>
-                                    </Style>
-                                </TextBlock.Style>
-                            </TextBlock>
+                            <!-- Audio Device Selection -->
+                            <GroupBox Header="Audio Device" Padding="10" Margin="0,0,0,10">
+                                <StackPanel>
+                                    <Label Content="Select Audio Device:"/>
+                                    <ComboBox ItemsSource="{Binding AudioDevices}"
+                                              SelectedItem="{Binding SelectedAudioDevice}"
+                                              DisplayMemberPath="Name"
+                                              Margin="0,5,0,10"/>
+
+                                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                                        <Button Content="Refresh Devices"
+                                                Command="{Binding RefreshAudioDevicesCommand}"
+                                                Margin="0,0,5,0"/>
+                                        <Button Content="Start Capture"
+                                                Command="{Binding StartAudioCaptureCommand}"
+                                                Margin="5,0"/>
+                                        <Button Content="Stop Capture"
+                                                Command="{Binding StopAudioCaptureCommand}"
+                                                Margin="5,0,0,0"/>
+                                    </StackPanel>
+
+                                    <TextBlock Text="{Binding IsAudioCapturing, StringFormat='Status: {0}'}"
+                                               HorizontalAlignment="Center"
+                                               Margin="0,10,0,0"
+                                               FontStyle="Italic">
+                                        <TextBlock.Style>
+                                            <Style TargetType="TextBlock">
+                                                <Setter Property="Foreground" Value="{DynamicResource TextBrush}"/>
+                                                <Style.Triggers>
+                                                    <DataTrigger Binding="{Binding IsAudioCapturing}" Value="True">
+                                                        <Setter Property="Foreground" Value="{DynamicResource SuccessBrush}"/>
+                                                    </DataTrigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </TextBlock.Style>
+                                    </TextBlock>
+                                </StackPanel>
+                            </GroupBox>
+
+                            <!-- Hue Device Selection -->
+                            <GroupBox Header="Philips Hue" Padding="10" Margin="0,0,0,10">
+                                <StackPanel>
+                                    <Label Content="Select Hue Bridge:"/>
+                                    <ComboBox ItemsSource="{Binding HueBridges}"
+                                              SelectedItem="{Binding SelectedHueBridge}"
+                                              DisplayMemberPath="IpAddress"
+                                              Margin="0,5,0,10"/>
+
+                                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                                        <Button Content="Discover Bridges"
+                                                Command="{Binding DiscoverHueBridgesCommand}"
+                                                Margin="0,0,5,0"/>
+                                        <Button Content="Connect"
+                                                Command="{Binding ConnectToHueBridgeCommand}"
+                                                Margin="5,0,0,0"/>
+                                    </StackPanel>
+
+                                    <TextBlock Text="{Binding IsHueConnected, StringFormat='Connected: {0}'}"
+                                               HorizontalAlignment="Center"
+                                               Margin="0,10,0,0"
+                                               FontStyle="Italic">
+                                        <TextBlock.Style>
+                                            <Style TargetType="TextBlock">
+                                                <Setter Property="Foreground" Value="{DynamicResource TextBrush}"/>
+                                                <Style.Triggers>
+                                                    <DataTrigger Binding="{Binding IsHueConnected}" Value="True">
+                                                        <Setter Property="Foreground" Value="{DynamicResource SuccessBrush}"/>
+                                                    </DataTrigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </TextBlock.Style>
+                                    </TextBlock>
+
+                                    <Label Content="Lights Found:" Margin="0,10,0,5"/>
+                                    <TextBlock Text="{Binding HueLights.Count, StringFormat='{}{0} lights'}"
+                                               HorizontalAlignment="Center"
+                                               FontWeight="Bold"/>
+                                </StackPanel>
+                            </GroupBox>
+
+                            <!-- Effect Selection -->
+                            <GroupBox Header="Effect Selection" Padding="10">
+                                <StackPanel>
+                                    <Label Content="Select Effect:"/>
+                                    <ComboBox ItemsSource="{Binding AvailableEffects}"
+                                              SelectedItem="{Binding SelectedEffect}"
+                                              Margin="0,5,0,10"/>
+
+                                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                                        <Button Content="Start Effect"
+                                                Command="{Binding StartEffectCommand}"
+                                                Margin="0,0,5,0"/>
+                                        <Button Content="Stop Effect"
+                                                Command="{Binding StopEffectCommand}"
+                                                Margin="5,0,0,0"/>
+                                    </StackPanel>
+
+                                    <TextBlock Text="{Binding IsEffectRunning, StringFormat='Running: {0}'}"
+                                               HorizontalAlignment="Center"
+                                               Margin="0,10,0,0"
+                                               FontStyle="Italic">
+                                        <TextBlock.Style>
+                                            <Style TargetType="TextBlock">
+                                                <Setter Property="Foreground" Value="{DynamicResource TextBrush}"/>
+                                                <Style.Triggers>
+                                                    <DataTrigger Binding="{Binding IsEffectRunning}" Value="True">
+                                                        <Setter Property="Foreground" Value="{DynamicResource SuccessBrush}"/>
+                                                    </DataTrigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </TextBlock.Style>
+                                    </TextBlock>
+                                </StackPanel>
+                            </GroupBox>
                         </StackPanel>
-                    </GroupBox>
-                    
-                    <!-- Hue Device Selection -->
-                    <GroupBox Header="Philips Hue" Padding="10" Margin="0,0,0,10">
+                    </ScrollViewer>
+
+                    <!-- Right Column - Effect Parameters -->
+                    <ScrollViewer Grid.Column="2" VerticalScrollBarVisibility="Auto">
                         <StackPanel>
-                            <Label Content="Select Hue Bridge:"/>
-                            <ComboBox ItemsSource="{Binding HueBridges}"
-                                     SelectedItem="{Binding SelectedHueBridge}"
-                                     DisplayMemberPath="IpAddress"
-                                     Margin="0,5,0,10"/>
-                            
-                            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
-                                <Button Content="Discover Bridges" 
-                                       Command="{Binding DiscoverHueBridgesCommand}"
-                                       Margin="0,0,5,0"/>
-                                <Button Content="Connect" 
-                                       Command="{Binding ConnectToHueBridgeCommand}"
-                                       Margin="5,0,0,0"/>
-                            </StackPanel>
-                            
-                            <TextBlock Text="{Binding IsHueConnected, StringFormat='Connected: {0}'}" 
-                                      HorizontalAlignment="Center"
-                                      Margin="0,10,0,0"
-                                      FontStyle="Italic">
-                                <TextBlock.Style>
-                                    <Style TargetType="TextBlock">
-                                        <Setter Property="Foreground" Value="{DynamicResource TextBrush}"/>
-                                        <Style.Triggers>
-                                            <DataTrigger Binding="{Binding IsHueConnected}" Value="True">
-                                                <Setter Property="Foreground" Value="{DynamicResource SuccessBrush}"/>
-                                            </DataTrigger>
-                                        </Style.Triggers>
-                                    </Style>
-                                </TextBlock.Style>
-                            </TextBlock>
-                            
-                            <Label Content="Lights Found:" Margin="0,10,0,5"/>
-                            <TextBlock Text="{Binding HueLights.Count, StringFormat='{}{0} lights'}" 
-                                      HorizontalAlignment="Center"
-                                      FontWeight="Bold"/>
+                            <GroupBox Header="Effect Parameters" Padding="10" Margin="0,0,0,10">
+                                <StackPanel>
+                                    <!-- Intensity Slider -->
+                                    <Label Content="{Binding Intensity, StringFormat='Intensity: {0:P0}'}"/>
+                                    <Slider Value="{Binding Intensity}"
+                                            Minimum="0" Maximum="1"
+                                            TickFrequency="0.1"
+                                            IsSnapToTickEnabled="True"
+                                            Margin="0,5,0,15"/>
+
+                                    <!-- Speed Slider -->
+                                    <Label Content="{Binding Speed, StringFormat='Speed: {0:F1}x'}"/>
+                                    <Slider Value="{Binding Speed}"
+                                            Minimum="0.1" Maximum="5"
+                                            TickFrequency="0.1"
+                                            IsSnapToTickEnabled="True"
+                                            Margin="0,5,0,15"/>
+
+                                    <!-- Brightness Slider -->
+                                    <Label Content="{Binding Brightness, StringFormat='Brightness: {0:P0}'}"/>
+                                    <Slider Value="{Binding Brightness}"
+                                            Minimum="0" Maximum="1"
+                                            TickFrequency="0.1"
+                                            IsSnapToTickEnabled="True"
+                                            Margin="0,5,0,15"/>
+
+                                    <!-- Audio Sensitivity Slider -->
+                                    <Label Content="{Binding AudioSensitivity, StringFormat='Audio Sensitivity: {0:P0}'}"/>
+                                    <Slider Value="{Binding AudioSensitivity}"
+                                            Minimum="0" Maximum="1"
+                                            TickFrequency="0.1"
+                                            IsSnapToTickEnabled="True"
+                                            Margin="0,5,0,15"/>
+
+                                    <!-- Separator for Color Variations -->
+                                    <Separator Margin="0,10,0,10"/>
+                                    <Label Content="Color Variations" FontWeight="Bold" Margin="0,0,0,10"/>
+
+                                    <!-- Hue Variation Slider -->
+                                    <Label Content="{Binding HueVariation, StringFormat='Hue Variation: {0:P0}'}"/>
+                                    <Slider Value="{Binding HueVariation}"
+                                            Minimum="0" Maximum="1"
+                                            TickFrequency="0.1"
+                                            IsSnapToTickEnabled="True"
+                                            Margin="0,5,0,15"
+                                            ToolTip="0% = single color, 100% = full spectrum"/>
+
+                                    <!-- Saturation Slider -->
+                                    <Label Content="{Binding Saturation, StringFormat='Saturation: {0:P0}'}"/>
+                                    <Slider Value="{Binding Saturation}"
+                                            Minimum="0" Maximum="1"
+                                            TickFrequency="0.1"
+                                            IsSnapToTickEnabled="True"
+                                            Margin="0,5,0,15"
+                                            ToolTip="0% = grayscale, 100% = fully saturated"/>
+
+                                    <!-- Color Temperature Slider -->
+                                    <Label Content="{Binding ColorTemperature, StringFormat='Color Temperature: {0:P0}'}"/>
+                                    <Slider Value="{Binding ColorTemperature}"
+                                            Minimum="0" Maximum="1"
+                                            TickFrequency="0.1"
+                                            IsSnapToTickEnabled="True"
+                                            Margin="0,5,0,15"
+                                            ToolTip="0% = warm (red/orange), 100% = cool (blue/cyan)"/>
+
+                                    <!-- Checkboxes -->
+                                    <CheckBox Content="Audio Reactive"
+                                              IsChecked="{Binding AudioReactive}"
+                                              Margin="0,5"/>
+                                    <CheckBox Content="Smooth Transitions"
+                                              IsChecked="{Binding SmoothTransitions}"
+                                              Margin="0,5"/>
+                                </StackPanel>
+                            </GroupBox>
                         </StackPanel>
-                    </GroupBox>
-                    
-                    <!-- Effect Selection -->
-                    <GroupBox Header="Effect Selection" Padding="10">
-                        <StackPanel>
-                            <Label Content="Select Effect:"/>
-                            <ComboBox ItemsSource="{Binding AvailableEffects}"
-                                     SelectedItem="{Binding SelectedEffect}"
-                                     Margin="0,5,0,10"/>
-                            
-                            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
-                                <Button Content="Start Effect" 
-                                       Command="{Binding StartEffectCommand}"
-                                       Margin="0,0,5,0"/>
-                                <Button Content="Stop Effect" 
-                                       Command="{Binding StopEffectCommand}"
-                                       Margin="5,0,0,0"/>
-                            </StackPanel>
-                            
-                            <TextBlock Text="{Binding IsEffectRunning, StringFormat='Running: {0}'}" 
-                                      HorizontalAlignment="Center"
-                                      Margin="0,10,0,0"
-                                      FontStyle="Italic">
-                                <TextBlock.Style>
-                                    <Style TargetType="TextBlock">
-                                        <Setter Property="Foreground" Value="{DynamicResource TextBrush}"/>
-                                        <Style.Triggers>
-                                            <DataTrigger Binding="{Binding IsEffectRunning}" Value="True">
-                                                <Setter Property="Foreground" Value="{DynamicResource SuccessBrush}"/>
-                                            </DataTrigger>
-                                        </Style.Triggers>
-                                    </Style>
-                                </TextBlock.Style>
-                            </TextBlock>
-                        </StackPanel>
-                    </GroupBox>
-                </StackPanel>
-            </ScrollViewer>
-            
-            <!-- Right Column - Effect Parameters -->
-            <ScrollViewer Grid.Column="2" VerticalScrollBarVisibility="Auto">
-                <StackPanel>
-                    <GroupBox Header="Effect Parameters" Padding="10" Margin="0,0,0,10">
-                        <StackPanel>
-                            <!-- Intensity Slider -->
-                            <Label Content="{Binding Intensity, StringFormat='Intensity: {0:P0}'}"/>
-                            <Slider Value="{Binding Intensity}" 
-                                   Minimum="0" Maximum="1" 
-                                   TickFrequency="0.1" 
-                                   IsSnapToTickEnabled="True"
-                                   Margin="0,5,0,15"/>
-                            
-                            <!-- Speed Slider -->
-                            <Label Content="{Binding Speed, StringFormat='Speed: {0:F1}x'}"/>
-                            <Slider Value="{Binding Speed}" 
-                                   Minimum="0.1" Maximum="5" 
-                                   TickFrequency="0.1" 
-                                   IsSnapToTickEnabled="True"
-                                   Margin="0,5,0,15"/>
-                            
-                            <!-- Brightness Slider -->
-                            <Label Content="{Binding Brightness, StringFormat='Brightness: {0:P0}'}"/>
-                            <Slider Value="{Binding Brightness}" 
-                                   Minimum="0" Maximum="1" 
-                                   TickFrequency="0.1" 
-                                   IsSnapToTickEnabled="True"
-                                   Margin="0,5,0,15"/>
-                            
-                            <!-- Audio Sensitivity Slider -->
-                            <Label Content="{Binding AudioSensitivity, StringFormat='Audio Sensitivity: {0:P0}'}"/>
-                            <Slider Value="{Binding AudioSensitivity}" 
-                                   Minimum="0" Maximum="1" 
-                                   TickFrequency="0.1" 
-                                   IsSnapToTickEnabled="True"
-                                   Margin="0,5,0,15"/>
-                            
-                            <!-- Separator for Color Variations -->
-                            <Separator Margin="0,10,0,10"/>
-                            <Label Content="Color Variations" FontWeight="Bold" Margin="0,0,0,10"/>
-                            
-                            <!-- Hue Variation Slider -->
-                            <Label Content="{Binding HueVariation, StringFormat='Hue Variation: {0:P0}'}"/>
-                            <Slider Value="{Binding HueVariation}" 
-                                   Minimum="0" Maximum="1" 
-                                   TickFrequency="0.1" 
-                                   IsSnapToTickEnabled="True"
-                                   Margin="0,5,0,15"
-                                   ToolTip="0% = single color, 100% = full spectrum"/>
-                            
-                            <!-- Saturation Slider -->
-                            <Label Content="{Binding Saturation, StringFormat='Saturation: {0:P0}'}"/>
-                            <Slider Value="{Binding Saturation}" 
-                                   Minimum="0" Maximum="1" 
-                                   TickFrequency="0.1" 
-                                   IsSnapToTickEnabled="True"
-                                   Margin="0,5,0,15"
-                                   ToolTip="0% = grayscale, 100% = fully saturated"/>
-                            
-                            <!-- Color Temperature Slider -->
-                            <Label Content="{Binding ColorTemperature, StringFormat='Color Temperature: {0:P0}'}"/>
-                            <Slider Value="{Binding ColorTemperature}" 
-                                   Minimum="0" Maximum="1" 
-                                   TickFrequency="0.1" 
-                                   IsSnapToTickEnabled="True"
-                                   Margin="0,5,0,15"
-                                   ToolTip="0% = warm (red/orange), 100% = cool (blue/cyan)"/>
-                            
-                            <!-- Checkboxes -->
-                            <CheckBox Content="Audio Reactive" 
-                                     IsChecked="{Binding AudioReactive}"
-                                     Margin="0,5"/>
-                            <CheckBox Content="Smooth Transitions" 
-                                     IsChecked="{Binding SmoothTransitions}"
-                                     Margin="0,5"/>
-                        </StackPanel>
-                    </GroupBox>
-                </StackPanel>
-            </ScrollViewer>
-        </Grid>
-        
+                    </ScrollViewer>
+                </Grid>
+            </TabItem>
+            <TabItem Header="Metrics">
+                <views:MetricsView DataContext="{Binding MetricsViewModel}"/>
+            </TabItem>
+        </TabControl>
+
         <!-- Status Bar -->
         <Border Grid.Row="3" 
                 Background="{DynamicResource SecondaryBackground}" 

@@ -57,6 +57,8 @@ public class MainWindowViewModel : ViewModelBase, IDisposable
     // Status messages
     private string _statusMessage = "Ready";
 
+    public MetricsViewModel MetricsViewModel { get; }
+
     public MainWindowViewModel(
         ILogger<MainWindowViewModel> logger,
         IAudioService audioService,
@@ -64,13 +66,15 @@ public class MainWindowViewModel : ViewModelBase, IDisposable
         IEffectEngine effectEngine,
         IFFTProcessor fftProcessor,
         ISpectralAnalyzer spectralAnalyzer,
-        IBeatDetector beatDetector)
+        IBeatDetector beatDetector,
+        MetricsViewModel metricsViewModel)
     {
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         _audioService = audioService ?? throw new ArgumentNullException(nameof(audioService));
         _hueService = hueService ?? throw new ArgumentNullException(nameof(hueService));
         _effectEngine = effectEngine ?? throw new ArgumentNullException(nameof(effectEngine));
         _fftProcessor = fftProcessor ?? throw new ArgumentNullException(nameof(fftProcessor));
+        MetricsViewModel = metricsViewModel;
 
         // Subscribe to events
         _audioService.AudioDataAvailable += OnAudioDataAvailable;
