@@ -224,11 +224,40 @@ public class HueServiceTests : IDisposable
     public void Dispose_CanBeCalledMultipleTimes()
     {
         // Arrange
-        var service = new HueService(_mockLogger.Object);
+        var service = new HueService(_mockLogger.Object, _mockConfigurationService.Object);
 
         // Act & Assert - should not throw
         service.Dispose();
         service.Dispose();
+    }
+
+    [Fact]
+    public async Task ConnectAsync_WithStoredAppKey_UsesStoredKey()
+    {
+        // Arrange
+        var bridge = new HueBridge { IpAddress = "192.168.1.1", BridgeId = "test" };
+        const string storedKey = "my-stored-app-key";
+        _mockConfigurationService
+            .Setup(s => s.GetSecureValueAsync("HueAppKey"))
+            .ReturnsAsync(storedKey);
+
+        // This test will fail to connect because we are not mocking the Hue API,
+        // but we can verify that it attempted to connect by checking the log.
+        // A more advanced test would mock the LocalHueApi.
+
+        // Act
+        await _service.ConnectAsync(bridge);
+
+        // Assert
+        _mockConfigurationService.Verify(s => s.GetSecureValueAsync("HueAppKey"), Times.Once);
+        _mockLogger.Verify(
+            x => x.Log(
+                LogLevel.Debug,
+                It.IsAny<EventId>(),
+                It.Is<It.IsAnyType>((v, t) => v.ToString().Contains("Retrieved AppKey from secure storage")),
+                It.IsAny<Exception>(),
+                It.IsAny<Func<It.IsAnyType, Exception, string>>()),
+            Times.Once);
     }
 
     public void Dispose()
@@ -509,35 +538,6 @@ public class HueAuthResultTests
         Assert.Null(result.AppKey);
     }
 }
-
-    [Fact]
-    public async Task ConnectAsync_WithStoredAppKey_UsesStoredKey()
-    {
-        // Arrange
-        var bridge = new HueBridge { IpAddress = "192.168.1.1", BridgeId = "test" };
-        const string storedKey = "my-stored-app-key";
-        _mockConfigurationService
-            .Setup(s => s.GetSecureValueAsync("HueAppKey"))
-            .ReturnsAsync(storedKey);
-
-        // This test will fail to connect because we are not mocking the Hue API,
-        // but we can verify that it attempted to connect by checking the log.
-        // A more advanced test would mock the LocalHueApi.
-
-        // Act
-        await _service.ConnectAsync(bridge);
-
-        // Assert
-        _mockConfigurationService.Verify(s => s.GetSecureValueAsync("HueAppKey"), Times.Once);
-        _mockLogger.Verify(
-            x => x.Log(
-                LogLevel.Debug,
-                It.IsAny<EventId>(),
-                It.Is<It.IsAnyType>((v, t) => v.ToString().Contains("Retrieved AppKey from secure storage")),
-                It.IsAny<Exception>(),
-                It.IsAny<Func<It.IsAnyType, Exception, string>>()),
-            Times.Once);
-    }
 
     // Note: RegisterAsync cannot be fully unit tested without significant mocking
     // of static methods in HueApi (e.g., LocalHueApi.RegisterAsync), which is
