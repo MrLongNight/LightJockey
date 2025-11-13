@@ -100,7 +100,10 @@ public partial class App : Application
         services.AddSingleton<Services.IPerformanceMetricsService, Services.PerformanceMetricsService>();
 
         // Register Hue services
-        services.AddSingleton<Services.IHueService, Services.HueService>();
+        services.AddSingleton<Services.IHueService>(sp =>
+            new Services.HueService(
+                sp.GetRequiredService<ILogger<Services.HueService>>(),
+                sp.GetRequiredService<Services.IConfigurationService>()));
         services.AddSingleton<Services.IEntertainmentService, Services.EntertainmentService>();
 
         // Register effect plugins

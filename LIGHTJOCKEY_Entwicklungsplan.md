@@ -382,12 +382,20 @@ Beschreibung: JSON Preset Export/Import:
 
 Task 14 — Security / Verschlüsselung
 
+**✅ ABGESCHLOSSEN** - 2025-11-12
+
 PR-Bezeichnung: Task14_SecureKeys
 Beschreibung: DPAPI oder AES für AppKey und sensible Daten
 KI-Prompt:
-- ConfigurationService verschlüsseln
-- Unit-Test: Keys korrekt entschlüsselt
-- Dokumentation: Sicherheitskonzept
+- ✅ ConfigurationService verschlüsseln
+- ✅ Unit-Test: Keys korrekt entschlüsselt
+- ✅ Dokumentation: Sicherheitskonzept
+
+Ergebnis:
+- `ConfigurationService` wurde implementiert und verwendet DPAPI zur Verschlüsselung sensibler Daten.
+- `HueService` wurde refaktorisiert, um `IConfigurationService` zur sicheren Speicherung des Hue `AppKey` zu verwenden.
+- Unit-Tests für `ConfigurationService` und `HueService` wurden implementiert bzw. aktualisiert, um die korrekte Funktionalität sicherzustellen.
+- Ein Sicherheitskonzept wurde in [docs/tasks/Task14_SecurityConcept.md](docs/tasks/Task14_SecurityConcept.md) dokumentiert.
 
 Task 15 — Advanced Logging & Metrics
 
@@ -951,7 +959,7 @@ Task	PR-Bezeichnung	Umsetzung abgeschlossen	Doku-Link	QA-Check (manuell)
 11	Task11_AdditionalEffects	✅	[docs/tasks/Task11_Summary.md](docs/tasks/Task11_Summary.md)	✅
 12	Task12_EffectParameterAdjustment	✅	[docs/tasks/Task12_EffectParameterAdjustment.md](docs/tasks/Task12_EffectParameterAdjustment.md)	✅
 13	Task13_PresetCloudIntegration	✅	[docs/tasks/Task13_Summary.md](docs/tasks/Task13_Summary.md)	✅
-14	Task14_SecureKeys	⬜	[link]	⬜
+14	Task14_SecureKeys	✅	[docs/tasks/Task14_SecurityConcept.md](docs/tasks/Task14_SecurityConcept.md)	✅
 15	Task15_AdvancedLoggingMetrics	⬜	[link]	⬜
 16	Task16_ThemeEnhancements	⬜	[link]	⬜
 17	Task17_Hue-Bridge-MultiSupport	⬜	[link]	⬜
