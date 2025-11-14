@@ -1,6 +1,7 @@
 using LightJockey.Models;
 using Microsoft.Extensions.Logging;
 using System.Diagnostics;
+using System.Threading;
 
 namespace LightJockey.Services;
 
@@ -107,6 +108,11 @@ public class PerformanceMetricsService : IPerformanceMetricsService
         }
     }
 
+    /// <summary>
+    /// Gets the number of streaming frames that have ended (thread-safe atomic read).
+    /// </summary>
+    public long StreamingFrameCount => Interlocked.Read(ref _frameCount);
+
     /// <inheritdoc/>
     public PerformanceMetrics GetMetrics()
     {
@@ -144,7 +150,7 @@ public class PerformanceMetricsService : IPerformanceMetricsService
     {
         lock (_lock)
         {
-            _frameCount++;
+            Interlocked.Increment(ref _frameCount);
 
             // Calculate FPS every 10 frames
             if (_frameCount % 10 == 0 && _fpsStopwatch.IsRunning)
@@ -156,7 +162,9 @@ public class PerformanceMetricsService : IPerformanceMetricsService
                     _fpsStopwatch.Restart();
                 }
             }
-            _metricsService.RecordMetrics(GetMetrics());
+            
+            // Defensive: only record metrics if service is available
+            _metricsService?.RecordMetrics(GetMetrics());
         }
     }
 

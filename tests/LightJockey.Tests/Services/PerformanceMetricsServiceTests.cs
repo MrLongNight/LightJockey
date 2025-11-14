@@ -340,4 +340,39 @@ public class PerformanceMetricsServiceTests
         var expectedAverage = Enumerable.Range(6, 30).Average();
         Assert.Equal(expectedAverage, _service.AudioLatencyMs);
     }
+
+    [Fact]
+    public void EndStreamingFrame_ConcurrentCalls_DoNotThrowAndIncrementCount()
+    {
+        // Arrange
+        var logger = new Mock<ILogger<PerformanceMetricsService>>();
+        var service = new PerformanceMetricsService(logger.Object, null!);
+
+        // Act - Call EndStreamingFrame concurrently from multiple threads
+        Parallel.For(0, 100, i =>
+        {
+            service.EndStreamingFrame();
+        });
+
+        // Assert - Should have incremented frame count without throwing
+        Assert.Equal(100, service.StreamingFrameCount);
+        Assert.Equal(100, service.FrameCount);
+    }
+
+    [Fact]
+    public void StreamingFrameCount_ThreadSafeRead()
+    {
+        // Arrange
+        var logger = new Mock<ILogger<PerformanceMetricsService>>();
+        var service = new PerformanceMetricsService(logger.Object, null!);
+
+        // Act
+        for (int i = 0; i < 10; i++)
+        {
+            service.EndStreamingFrame();
+        }
+
+        // Assert
+        Assert.Equal(10, service.StreamingFrameCount);
+    }
 }
