@@ -156,20 +156,20 @@ public class BackupServiceTests : IDisposable
         var config = new BackupConfig { MaxBackups = 3, MaxBackupAgeDays = 365 };
         await _backupService.UpdateConfigAsync(config);
 
-        // Create 5 backups
+        // Create 5 backups (cleanup happens automatically during each create)
         for (int i = 0; i < 5; i++)
         {
             await _backupService.CreateBackupAsync($"Backup {i}");
-            await Task.Delay(100); // Ensure different timestamps
+            await Task.Delay(10); // Ensure different timestamps
         }
 
-        // Act
+        // Act - cleanup already happened during creation, so this should return 0
         var deletedCount = await _backupService.CleanupOldBackupsAsync();
 
-        // Assert
-        Assert.Equal(2, deletedCount); // Should delete 2 oldest backups
+        // Assert - automatic cleanup during creation should have kept only the newest 3
+        Assert.Equal(0, deletedCount); // No additional backups to delete
         var remainingBackups = await _backupService.GetAllBackupsAsync();
-        Assert.Equal(3, remainingBackups.Count);
+        Assert.Equal(3, remainingBackups.Count); // Should have 3 backups remaining (newest ones)
     }
 
     [Fact]
@@ -183,15 +183,15 @@ public class BackupServiceTests : IDisposable
         await Task.Delay(100);
         await _backupService.CreateBackupAsync("Backup 2");
 
-        int? cleanedCount = null;
-        _backupService.BackupCleanupCompleted += (sender, count) => cleanedCount = count;
+        int? remainingCount = null;
+        _backupService.BackupCleanupCompleted += (sender, args) => remainingCount = args.RemainingBackups;
 
         // Act
         await _backupService.CleanupOldBackupsAsync();
 
         // Assert
-        Assert.NotNull(cleanedCount);
-        Assert.Equal(1, cleanedCount.Value);
+        Assert.NotNull(remainingCount);
+        Assert.Equal(1, remainingCount.Value);
     }
 
     [Fact]
@@ -230,7 +230,7 @@ public class BackupServiceTests : IDisposable
 
         // Assert
         Assert.NotNull(config);
-        Assert.True(config.AutoBackupEnabled);
+        Assert.False(config.AutoBackupEnabled);
         Assert.Equal(10, config.MaxBackups);
         Assert.Equal(30, config.MaxBackupAgeDays);
         Assert.Equal(60, config.AutoBackupIntervalMinutes);
@@ -260,11 +260,11 @@ public class BackupServiceTests : IDisposable
     }
 
     [Fact]
-    public void StartAutoBackup_StartsTimer()
+    public async Task StartAutoBackup_StartsTimer()
     {
         // Arrange
         var config = new BackupConfig { AutoBackupEnabled = true };
-        _backupService.UpdateConfigAsync(config).Wait();
+        await _backupService.UpdateConfigAsync(config);
 
         // Act
         _backupService.StartAutoBackup();

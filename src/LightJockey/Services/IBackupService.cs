@@ -20,7 +20,7 @@ public interface IBackupService : IDisposable
     /// <summary>
     /// Event raised when backup cleanup occurs
     /// </summary>
-    event EventHandler<int>? BackupCleanupCompleted;
+    event EventHandler<CleanupCompletedEventArgs>? BackupCleanupCompleted;
 
     /// <summary>
     /// Creates a manual backup of the current configuration

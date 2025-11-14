@@ -40,7 +40,7 @@ public class BackupService : IBackupService
     /// <summary>
     /// Event raised when backup cleanup occurs
     /// </summary>
-    public event EventHandler<int>? BackupCleanupCompleted;
+    public event EventHandler<CleanupCompletedEventArgs>? BackupCleanupCompleted;
 
     /// <summary>
     /// Gets whether automatic backup is currently running
@@ -95,7 +95,7 @@ public class BackupService : IBackupService
         try
         {
             var timestamp = DateTime.UtcNow;
-            var fileName = $"backup_{timestamp:yyyyMMdd_HHmmss}.json";
+            var fileName = $"backup_{timestamp:yyyyMMdd_HHmmssfff}.json";
             var filePath = Path.Combine(_backupDirectory, fileName);
 
             // Export all presets to the backup file
@@ -104,6 +104,7 @@ public class BackupService : IBackupService
             var fileInfo = new FileInfo(filePath);
             var backupInfo = new BackupInfo
             {
+                Id = Path.GetFileNameWithoutExtension(fileName),
                 FileName = fileName,
                 FilePath = filePath,
                 CreatedAt = timestamp,
@@ -280,10 +281,13 @@ public class BackupService : IBackupService
                 }
             }
 
+            // Get remaining backup count and raise event
+            var remainingBackups = await GetAllBackupsAsync();
+            BackupCleanupCompleted?.Invoke(this, new CleanupCompletedEventArgs(remainingBackups.Count));
+            
             if (deletedCount > 0)
             {
-                BackupCleanupCompleted?.Invoke(this, deletedCount);
-                _logger.LogInformation("Cleaned up {Count} old backups", deletedCount);
+                _logger.LogInformation("Cleaned up {Count} old backups, {Remaining} remaining", deletedCount, remainingBackups.Count);
             }
 
             return deletedCount;

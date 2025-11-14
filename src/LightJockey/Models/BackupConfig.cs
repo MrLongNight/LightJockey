@@ -18,7 +18,7 @@ public record BackupConfig
     /// <summary>
     /// Enable automatic backups
     /// </summary>
-    public bool AutoBackupEnabled { get; init; } = true;
+    public bool AutoBackupEnabled { get; init; } = false;
 
     /// <summary>
     /// Interval between automatic backups in minutes
