@@ -118,7 +118,7 @@ public class MainWindowViewModel : ViewModelBase, IDisposable
         {
             if (SetProperty(ref _selectedAudioDevice, value) && value != null)
             {
-                _audioService.SelectDevice(value);
+                _audioService.SelectDevice(value!);
                 _logger.LogInformation("Selected audio device: {DeviceName}", value.Name);
             }
         }
