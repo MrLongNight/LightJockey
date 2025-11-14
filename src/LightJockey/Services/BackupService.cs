@@ -52,14 +52,23 @@ public class BackupService : IBackupService
     /// </summary>
     /// <param name="logger">Logger instance</param>
     /// <param name="presetService">Preset service for accessing configurations</param>
-    public BackupService(ILogger<BackupService> logger, IPresetService presetService)
+    /// <param name="backupDirectory">Optional backup directory path (defaults to AppData)</param>
+    public BackupService(ILogger<BackupService> logger, IPresetService presetService, string? backupDirectory = null)
     {
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         _presetService = presetService ?? throw new ArgumentNullException(nameof(presetService));
 
         // Set up backup directory
-        var appDataPath = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
-        _backupDirectory = Path.Combine(appDataPath, "LightJockey", "Backups");
+        if (string.IsNullOrWhiteSpace(backupDirectory))
+        {
+            var appDataPath = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
+            _backupDirectory = Path.Combine(appDataPath, "LightJockey", "Backups");
+        }
+        else
+        {
+            _backupDirectory = backupDirectory;
+        }
+        
         Directory.CreateDirectory(_backupDirectory);
 
         _logger.LogDebug("Backup directory: {BackupDirectory}", _backupDirectory);

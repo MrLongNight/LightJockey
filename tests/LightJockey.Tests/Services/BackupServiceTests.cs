@@ -24,13 +24,13 @@ public class BackupServiceTests : IDisposable
         _mockPresetService = new Mock<IPresetService>();
 
         // Create temporary test directory
-        _testBackupDirectory = Path.Combine(Path.GetTempPath(), $"LightJockey_BackupTests_{Guid.NewGuid()}");
+        _testBackupDirectory = Path.Combine(Path.GetTempPath(), "LightJockeyTests", Guid.NewGuid().ToString());
         Directory.CreateDirectory(_testBackupDirectory);
 
         // Setup default mock behavior to create dummy files
         SetupMockPresetServiceToCreateFiles();
 
-        _backupService = new BackupService(_mockLogger.Object, _mockPresetService.Object);
+        _backupService = new BackupService(_mockLogger.Object, _mockPresetService.Object, _testBackupDirectory);
     }
 
     private void SetupMockPresetServiceToCreateFiles()
@@ -49,12 +49,26 @@ public class BackupServiceTests : IDisposable
     [Fact]
     public void Constructor_InitializesCorrectly()
     {
-        // Arrange & Act
-        var service = new BackupService(_mockLogger.Object, _mockPresetService.Object);
+        // Arrange
+        var tempDir = Path.Combine(Path.GetTempPath(), "LightJockeyTests", Guid.NewGuid().ToString());
+        Directory.CreateDirectory(tempDir);
+        
+        try
+        {
+            // Act
+            var service = new BackupService(_mockLogger.Object, _mockPresetService.Object, tempDir);
 
-        // Assert
-        Assert.NotNull(service);
-        Assert.False(service.IsAutoBackupRunning);
+            // Assert
+            Assert.NotNull(service);
+            Assert.False(service.IsAutoBackupRunning);
+            
+            service.Dispose();
+        }
+        finally
+        {
+            if (Directory.Exists(tempDir))
+                Directory.Delete(tempDir, true);
+        }
     }
 
     [Fact]
