@@ -156,7 +156,7 @@ To create issues/PRs for these tasks:
 
 2. **Manual:** Create issues and PRs manually using the information above.
 
-3. **Workflow Dispatch:** Manually trigger the `.github/workflows/flow-autotask_01-start.yml` workflow to create the next task.
+3. **Workflow Dispatch:** Manually trigger the `.github/workflows/TASK-B.01_Start-Task_on-Manual_MAN.yml` workflow to create the next task.
 
 ⚠️ **Important**: After the automation creates an issue/PR, you must manually activate GitHub Copilot Workspace to implement the task. See [AUTO_TASK_TROUBLESHOOTING.md](../docs/AUTO_TASK_TROUBLESHOOTING.md) for details.
 

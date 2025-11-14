@@ -21,11 +21,11 @@ This structure provides:
 
 The new **Jules API integration** provides near-complete automation (~98%) by leveraging Google Jules API to process tasks programmatically. See [JULES_API_INTEGRATION.md](../../docs/JULES_API_INTEGRATION.md) for complete documentation.
 
-**Structure**: Each Jules workflow consists of a caller workflow (e.g., `flow-jules_01-submit-task.yml`) that calls a reusable workflow in `_reusable/` (e.g., `jules-submit-task.yml`).
+**Structure**: Each Jules workflow consists of a caller workflow (e.g., `TASK-A.01_Start-Task_on-Issue-Label_AUTO.yml`) that calls a reusable workflow (e.g., `TASK-A.00_Reusable-Start-Task_on-Workflow-Call_AUTO.yml`).
 
-### Flow Jules 01: Submit Task to Jules API
-**Caller File**: `flow-jules_01-submit-task.yml`  
-**Reusable Workflow**: `_reusable/jules-submit-task.yml`
+### TASK-A.01: Start Task on Issue Label
+**Caller File**: `TASK-A.01_Start-Task_on-Issue-Label_AUTO.yml`  
+**Reusable Workflow**: `TASK-A.00_Reusable-Start-Task_on-Workflow-Call_AUTO.yml`
 
 **Purpose**: Automatically submits tasks to Jules AI agent via API.
 
@@ -41,9 +41,9 @@ The new **Jules API integration** provides near-complete automation (~98%) by le
 
 **Configuration**: Requires `JULES_AUTOMATION_ENABLED` variable and `JULES_API_KEY` secret.
 
-### Flow Jules 02: Monitor Session and Review PR
-**Caller File**: `flow-jules_02-monitor-and-review.yml`  
-**Reusable Workflow**: `_reusable/jules-monitor-review.yml`
+### TASK-A.02: Monitor PR on PR Open
+**Caller File**: `TASK-A.02_Monitor-PR_on-PR-Open_AUTO.yml`  
+**Reusable Workflow**: `TASK-A.00_Reusable-Monitor-PR_on-Workflow-Call_AUTO.yml`
 
 **Purpose**: Monitors Jules sessions and triggers Copilot review when PR is created.
 
@@ -58,9 +58,9 @@ The new **Jules API integration** provides near-complete automation (~98%) by le
 - Triggers Copilot Agent for code review
 - Adds appropriate labels
 
-### Flow Jules 03: Auto-Merge After Review
-**Caller File**: `flow-jules_03-auto-merge.yml`  
-**Reusable Workflow**: `_reusable/jules-auto-merge.yml`
+### TASK-A.03: Merge PR on PR Review
+**Caller File**: `TASK-A.03_Merge-PR_on-PR-Review_AUTO.yml`  
+**Reusable Workflow**: `TASK-A.00_Reusable-Merge-PR_on-Workflow-Call_AUTO.yml`
 
 **Purpose**: Automatically merges PRs after Copilot review and successful CI tests.
 
@@ -81,8 +81,8 @@ The new **Jules API integration** provides near-complete automation (~98%) by le
 
 ### Auto-Task Workflows
 
-#### Flow Auto-Task 01: Start Next Task
-**File**: `flow-autotask_01-start.yml`
+#### TASK-B.01: Start Task on Manual
+**File**: `TASK-B.01_Start-Task_on-Manual_MAN.yml`
 
 **Purpose**: Automatically creates issues and PRs for uncompleted tasks.
 
@@ -99,8 +99,8 @@ The new **Jules API integration** provides near-complete automation (~98%) by le
 
 **Configuration**: Requires `AUTOMATION_ENABLED` repository variable set to `true`.
 
-#### Flow Auto-Task 01b: Notify for Copilot Action
-**File**: `flow-autotask_01b-notify-copilot.yml`
+#### TASK-B.02: Notify Agent on PR Open
+**File**: `TASK-B.02_Notify-Agent_on-PR-Open_AUTO.yml`
 
 **Purpose**: Adds instructions to auto-generated PRs for Copilot activation.
 
@@ -112,8 +112,8 @@ The new **Jules API integration** provides near-complete automation (~98%) by le
 - Updates PR description
 - Assigns PR to repository owner
 
-#### Flow Auto-Task 02: Test & Merge
-**File**: `flow-autotask_02-merge.yml`
+#### TASK-B.03: Merge PR on PR Label
+**File**: `TASK-B.03_Merge-PR_on-PR-Label_AUTO.yml`
 
 **Purpose**: Automatically merges PRs after successful CI.
 
@@ -128,9 +128,9 @@ The new **Jules API integration** provides near-complete automation (~98%) by le
 
 ### Continuous Integration
 
-### 1. Unit Tests (Automatic)
-**File**: `Unit-Tests.yml`  
-**Status**: [![Unit Tests](https://github.com/MrLongNight/LightJockey/actions/workflows/Unit-Tests.yml/badge.svg)](https://github.com/MrLongNight/LightJockey/actions/workflows/Unit-Tests.yml)
+### 1. Build & Test (Automatic)
+**File**: `CI.01_Build-Test_on-Push-PR_AUTO.yml`  
+**Status**: [![Build & Test](https://github.com/MrLongNight/LightJockey/actions/workflows/CI.01_Build-Test_on-Push-PR_AUTO.yml/badge.svg)](https://github.com/MrLongNight/LightJockey/actions/workflows/CI.01_Build-Test_on-Push-PR_AUTO.yml)
 
 **Purpose**: Run unit tests automatically and upload coverage to Codecov.
 
@@ -144,24 +144,9 @@ The new **Jules API integration** provides near-complete automation (~98%) by le
 - Collects code coverage
 - Uploads coverage to Codecov
 
-### 2. Build (Automatic)
-**File**: `build.yml`  
-**Status**: [![Build](https://github.com/MrLongNight/LightJockey/actions/workflows/build.yml/badge.svg)](https://github.com/MrLongNight/LightJockey/actions/workflows/build.yml)
-
-**Purpose**: Verify that the solution builds successfully.
-
-**Triggers**:
-- ✅ Automatic on push to `main` or `develop`
-- ✅ Automatic on pull requests to `main` or `develop`
-
-**What it does**:
-- Restores NuGet packages
-- Builds the solution in Release configuration
-- Uploads build artifacts (1-day retention)
-
-### 3. Release MSI Package (Manual)
-**File**: `flow-release_01-msi.yml` (Primary MSI Release Workflow)  
-**Status**: [![Release MSI](https://github.com/MrLongNight/LightJockey/actions/workflows/flow-release_01-msi.yml/badge.svg)](https://github.com/MrLongNight/LightJockey/actions/workflows/flow-release_01-msi.yml)
+### 2. Release MSI Package (Manual)
+**File**: `RELEASE.01_Create-MSI_on-Push_AUTO.yml`  
+**Status**: [![Release MSI](https://github.com/MrLongNight/LightJockey/actions/workflows/RELEASE.01_Create-MSI_on-Push_AUTO.yml/badge.svg)](https://github.com/MrLongNight/LightJockey/actions/workflows/RELEASE.01_Create-MSI_on-Push_AUTO.yml)
 
 **Purpose**: Create MSI installer package for distribution.
 
@@ -190,7 +175,7 @@ Builds run automatically on every push and PR. No action needed.
 ### Creating a Release Package (Manual)
 
 **Option 1: Manual trigger with custom version**
-1. Go to **Actions** → **Flow Release 01: Create MSI Installer**
+1. Go to **Actions** → **RELEASE.01: Create MSI on Push**
 2. Click **Run workflow**
 3. Enter version number (e.g., `1.0.0`) or leave default
 4. Click **Run workflow**
@@ -264,9 +249,8 @@ For detailed information:
 
 | Workflow | Trigger | Purpose |
 |----------|---------|---------|
-| Unit Tests | Automatic (push/PR) | Run tests & coverage |
-| Build | Automatic (push/PR) | Verify build success |
-| Release MSI | Manual / Tags | Create installer package |
+| CI.01_Build-Test_on-Push-PR_AUTO | Automatic (push/PR) | Run tests & coverage |
+| RELEASE.01_Create-MSI_on-Push_AUTO | Manual / Tags | Create installer package |
 
 This structure provides:
 - ✅ Automatic quality checks on every change

@@ -1,4 +1,4 @@
-name: "Flow Auto-Task 01b: Notify for Copilot Action"
+name: "TASK-B.02_Notify-Agent_on-PR-Open_AUTO.yml"
 
 on:
   pull_request:

@@ -35,13 +35,14 @@ Es gibt:
 
 ```
 ┌─────────────────────────────────────────┐
-│ 1. flow-autotask_01-start.yml          │
+│ 1. TASK-B.01_Start-Task_on-Manual_MAN  │
 │    ✅ AUTO: Issue + PR erstellen       │
 └─────────────────┬───────────────────────┘
                   │
                   ▼
 ┌─────────────────────────────────────────┐
-│ 2. copilot-assign-agent.yml             │
+│ 2. AGENT.01_Assign-Issue_on-Issue-     │
+│    Event_AUTO                           │
 │    ✅ AUTO: Anweisungen hinzufügen     │
 └─────────────────┬───────────────────────┘
                   │
@@ -65,13 +66,13 @@ Es gibt:
                   │
                   ▼
 ┌─────────────────────────────────────────┐
-│ 5. flow-ci_01-build-and-test.yml       │
+│ 5. CI.01_Build-Test_on-Push-PR_AUTO    │
 │    ✅ AUTO: Build & Tests              │
 └─────────────────┬───────────────────────┘
                   │
                   ▼
 ┌─────────────────────────────────────────┐
-│ 6. flow-autotask_02-merge.yml          │
+│ 6. TASK-B.03_Merge-PR_on-PR-Label_AUTO │
 │    ✅ AUTO: PR mergen (wenn Tests OK)  │
 └─────────────────┬───────────────────────┘
                   │
@@ -99,7 +100,7 @@ Es gibt:
 
 ## Was Die Workflows Tatsächlich Tun
 
-### `flow-autotask_01-start.yml`
+### `TASK-B.01_Start-Task_on-Manual_MAN.yml`
 **Zweck**: Findet nächsten Task und erstellt Issue/PR
 
 **Tut**:
@@ -114,7 +115,7 @@ Es gibt:
 - ❌ Code schreiben
 - ❌ Tests ausführen
 
-### `copilot-assign-agent.yml`
+### `AGENT.01_Assign-Issue_on-Issue-Event_AUTO.yml`
 **Zweck**: Fügt Copilot-Anweisungen hinzu
 
 **Tut**:
@@ -128,7 +129,7 @@ Es gibt:
 - ❌ Issue an Copilot zuweisen
 - ❌ Copilot starten
 
-### `flow-autotask_01b-notify-copilot.yml`
+### `TASK-B.02_Notify-Agent_on-PR-Open_AUTO.yml`
 **Zweck**: Kommentiert auf PRs
 
 **Tut**:
@@ -139,7 +140,7 @@ Es gibt:
 **Tut NICHT**:
 - ❌ Copilot starten
 
-### `flow-ci_01-build-and-test.yml`
+### `CI.01_Build-Test_on-Push-PR_AUTO.yml`
 **Zweck**: Build und Tests
 
 **Tut**:
@@ -147,7 +148,7 @@ Es gibt:
 - ✅ Führt Unit-Tests aus
 - ✅ Reportet zu Codecov
 
-### `flow-autotask_02-merge.yml`
+### `TASK-B.03_Merge-PR_on-PR-Label_AUTO.yml`
 **Zweck**: Auto-Merge bei Erfolg
 
 **Tut**:

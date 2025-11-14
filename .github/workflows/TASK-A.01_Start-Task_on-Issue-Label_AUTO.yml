@@ -1,4 +1,4 @@
-name: "Flow Jules 01: Submit Task to Jules API"
+name: "TASK-A.01_Start-Task_on-Issue-Label_AUTO.yml"
 
 on:
   push:
@@ -8,7 +8,7 @@ on:
 
 jobs:
   submit-task:
-    uses: ./.github/workflows/reusable-jules-submit-task.yml
+    uses: ./.github/workflows/TASK-A.00_Reusable-Start-Task_on-Workflow-Call_AUTO.yml
     secrets:
       jules_api_key: ${{ secrets.JulesAPIKey }}
     with:

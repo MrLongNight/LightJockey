@@ -121,7 +121,7 @@ All tasks (13-21) are documented in detail in:
 You can also use the existing automation workflow:
 
 1. Enable automation: Set repository variable `AUTOMATION_ENABLED` to `true`
-2. The workflow `.github/workflows/flow-autotask_01-start.yml` will automatically create issues/PRs for the next uncompleted task
+2. The workflow `.github/workflows/TASK-B.01_Start-Task_on-Manual_MAN.yml` will automatically create issues/PRs for the next uncompleted task
 3. Or manually trigger the workflow from GitHub Actions tab
 
 ## Notes

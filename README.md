@@ -1,7 +1,6 @@
 # LightJockey
 
-[![Build](https://github.com/MrLongNight/LightJockey/actions/workflows/build.yml/badge.svg)](https://github.com/MrLongNight/LightJockey/actions/workflows/build.yml)
-[![CI: Build & Test](https://github.com/MrLongNight/LightJockey/actions/workflows/flow-ci_01-build-and-test.yml/badge.svg)](https://github.com/MrLongNight/LightJockey/actions/workflows/flow-ci_01-build-and-test.yml)
+[![CI: Build & Test](https://github.com/MrLongNight/LightJockey/actions/workflows/CI.01_Build-Test_on-Push-PR_AUTO.yml/badge.svg)](https://github.com/MrLongNight/LightJockey/actions/workflows/CI.01_Build-Test_on-Push-PR_AUTO.yml)
 [![codecov](https://codecov.io/gh/MrLongNight/LightJockey/branch/main/graph/badge.svg)](https://codecov.io/gh/MrLongNight/LightJockey)
 
 Audio-reactive lighting control application for Philips Hue Entertainment using C# and WPF.

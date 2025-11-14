@@ -1,4 +1,4 @@
-name: "Flow Jules 02: Monitor Session and Review PR"
+name: "TASK-A.02_Monitor-PR_on-PR-Open_AUTO.yml"
 
 on:
   schedule:
@@ -13,7 +13,7 @@ on:
 
 jobs:
   monitor-and-review:
-    uses: ./.github/workflows/reusable-jules-monitor-review.yml
+    uses: ./.github/workflows/TASK-A.00_Reusable-Monitor-PR_on-Workflow-Call_AUTO.yml
     secrets:
       jules_api_key: ${{ secrets.JulesAPIKey }}
     with:

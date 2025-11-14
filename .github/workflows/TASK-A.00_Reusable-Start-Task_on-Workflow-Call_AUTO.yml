@@ -1,4 +1,4 @@
-name: "Jules Submit Task (Reusable)"
+name: "TASK-A.00_Reusable-Start-Task_on-Workflow-Call_AUTO.yml"
 
 on:
   workflow_call:

@@ -1,4 +1,4 @@
-name: "Flow Jules 03: Auto-Merge After Review"
+name: "TASK-A.03_Merge-PR_on-PR-Review_AUTO.yml"
 
 on:
   pull_request_review:
@@ -14,7 +14,7 @@ on:
 
 jobs:
   auto-merge:
-    uses: ./.github/workflows/reusable-jules-auto-merge.yml
+    uses: ./.github/workflows/TASK-A.00_Reusable-Merge-PR_on-Workflow-Call_AUTO.yml
     with:
       automation_enabled: ${{ vars.JULES_AUTOMATION_ENABLED }}
       pr_number: ${{ inputs.pr_number || 0 }}
