@@ -1,4 +1,4 @@
-name: "Flow Auto-Task 01: Start Next Task"
+name: "TASK-B.01_Start-Task_on-Manual_MAN"
 
 on:
   push:

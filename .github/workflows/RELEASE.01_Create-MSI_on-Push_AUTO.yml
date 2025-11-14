@@ -1,4 +1,4 @@
-name: "Flow Release 01: Create MSI Installer"
+name: "RELEASE.01_Create-MSI_on-Push_AUTO"
 
 on:
   workflow_dispatch:

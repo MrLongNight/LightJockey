@@ -1,8 +1,8 @@
-name: "Flow Auto-Task 02: Test & Merge"
+name: "TASK-B.03_Merge-PR_on-PR-Label_AUTO"
 
 on:
   workflow_run:
-    workflows: ["Flow CI 01: Build & Test"]
+    workflows: ["CI.01_Build-Test_on-Push-PR_AUTO"]
     types:
       - completed
 

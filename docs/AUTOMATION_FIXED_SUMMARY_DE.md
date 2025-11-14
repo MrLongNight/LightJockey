@@ -19,9 +19,9 @@
 ### 2. Workflow-Automatisierung Komplett Überarbeitet ✅
 
 #### Neue Workflows:
-1. **`copilot-assign-agent.yml`** - Automatische Copilot-Anweisungen
-2. **Enhanced `flow-autotask_01-start.yml`** - Copilot-optimierte Issues
-3. **Enhanced `flow-autotask_01b-notify-copilot.yml`** - Bessere Benachrichtigungen
+1. **`AGENT.01_Assign-Issue_on-Issue-Event_AUTO.yml`** - Automatische Copilot-Anweisungen
+2. **Enhanced `TASK-B.01_Start-Task_on-Manual_MAN.yml`** - Copilot-optimierte Issues
+3. **Enhanced `TASK-B.02_Notify-Agent_on-PR-Open_AUTO.yml`** - Bessere Benachrichtigungen
 
 #### Neue Dokumentation:
 1. **`docs/COPILOT_AGENTIC_WORKFLOW.md`** - Vollständiger Leitfaden
@@ -157,7 +157,7 @@ Der GitHub Copilot Coding Agent kann **vollständig autonom**:
 1. **Sofort Nutzbar**:
    ```bash
    # Workflow manuell starten
-   gh workflow run flow-autotask_01-start.yml
+   gh workflow run TASK-B.01_Start-Task_on-Manual_MAN.yml
    
    # Warten auf Issue-Benachrichtigung
    # Issue öffnen und "Assign to Copilot" klicken
@@ -204,9 +204,9 @@ Der GitHub Copilot Coding Agent kann **vollständig autonom**:
 - `src/LightJockey/App.xaml.cs` - DI-Registrierung
 
 ### Workflows:
-- `.github/workflows/copilot-assign-agent.yml` - NEU
-- `.github/workflows/flow-autotask_01-start.yml` - VERBESSERT
-- `.github/workflows/flow-autotask_01b-notify-copilot.yml` - VERBESSERT
+- `.github/workflows/AGENT.01_Assign-Issue_on-Issue-Event_AUTO.yml` - NEU
+- `.github/workflows/TASK-B.01_Start-Task_on-Manual_MAN.yml` - VERBESSERT
+- `.github/workflows/TASK-B.02_Notify-Agent_on-PR-Open_AUTO.yml` - VERBESSERT
 - `.github/workflows/README.md` - AKTUALISIERT
 
 ### Dokumentation:

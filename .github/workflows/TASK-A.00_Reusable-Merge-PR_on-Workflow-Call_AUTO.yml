@@ -1,4 +1,4 @@
-name: "Jules Auto-Merge (Reusable)"
+name: "TASK-A.00_Reusable-Merge-PR_on-Workflow-Call_AUTO"
 
 on:
   workflow_call:
