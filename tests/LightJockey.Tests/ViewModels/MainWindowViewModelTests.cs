@@ -15,6 +15,7 @@ public class MainWindowViewModelTests
     private readonly Mock<IFFTProcessor> _mockFFTProcessor;
     private readonly Mock<ISpectralAnalyzer> _mockSpectralAnalyzer;
     private readonly Mock<IBeatDetector> _mockBeatDetector;
+    private readonly MetricsViewModel _metricsViewModel;
 
     public MainWindowViewModelTests()
     {
@@ -25,6 +26,10 @@ public class MainWindowViewModelTests
         _mockFFTProcessor = new Mock<IFFTProcessor>();
         _mockSpectralAnalyzer = new Mock<ISpectralAnalyzer>();
         _mockBeatDetector = new Mock<IBeatDetector>();
+        
+        // Create MetricsViewModel for tests
+        var mockMetricsService = new Mock<IMetricsService>();
+        _metricsViewModel = new MetricsViewModel(mockMetricsService.Object);
         
         // Setup default return values to prevent null reference exceptions in constructor
         _mockAudioService.Setup(s => s.GetOutputDevices()).Returns(new List<AudioDevice>());
@@ -40,7 +45,8 @@ public class MainWindowViewModelTests
             _mockEffectEngine.Object,
             _mockFFTProcessor.Object,
             _mockSpectralAnalyzer.Object,
-            _mockBeatDetector.Object);
+            _mockBeatDetector.Object,
+            _metricsViewModel);
     }
 
     [Fact]

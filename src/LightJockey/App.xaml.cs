@@ -69,12 +69,14 @@ public partial class App : Application
 
         Log.Logger = new LoggerConfiguration()
             .MinimumLevel.Debug()
-            .WriteTo.Console()
+            .Enrich.WithProcessId()
+            .Enrich.WithThreadId()
+            .WriteTo.Console(outputTemplate: "{Timestamp:yyyy-MM-dd HH:mm:ss.fff zzz} [{Level:u3}] [{ProcessId}] [{ThreadId}] {Message:lj}{NewLine}{Exception}")
             .WriteTo.File(
                 Path.Combine(logsPath, "lightjockey-.log"),
                 rollingInterval: RollingInterval.Day,
                 retainedFileCountLimit: 7,
-                outputTemplate: "{Timestamp:yyyy-MM-dd HH:mm:ss.fff zzz} [{Level:u3}] {Message:lj}{NewLine}{Exception}")
+                outputTemplate: "{Timestamp:yyyy-MM-dd HH:mm:ss.fff zzz} [{Level:u3}] [{ProcessId}] [{ThreadId}] {Message:lj}{NewLine}{Exception}")
             .CreateLogger();
     }
 
@@ -97,6 +99,7 @@ public partial class App : Application
         services.AddSingleton<Services.IBeatDetector, Services.BeatDetector>();
 
         // Register performance metrics service
+        services.AddSingleton<Services.IMetricsService, Services.MetricsService>();
         services.AddSingleton<Services.IPerformanceMetricsService, Services.PerformanceMetricsService>();
 
         // Register Hue services
@@ -153,6 +156,7 @@ public partial class App : Application
 
         // Register ViewModels
         services.AddSingleton<MainWindowViewModel>();
+        services.AddSingleton<MetricsViewModel>();
 
         // Register PresetService
         services.AddSingleton<Services.IPresetService, Services.PresetService>();
