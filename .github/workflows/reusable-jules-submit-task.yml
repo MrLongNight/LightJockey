@@ -182,8 +182,44 @@ jobs:
           echo "source_name=$SOURCE_NAME" >> $GITHUB_OUTPUT
           echo "Found Jules source: $SOURCE_NAME"
       
-      - name: Create Jules session
+      - name: Check for existing tracking issue
         if: steps.check_enabled.outputs.enabled == 'true' && steps.find_task.outputs.has_task == 'true'
+        id: check_issue
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const taskNum = `${{ steps.find_task.outputs.task_num }}`;
+            
+            // Check if issue already exists
+            const existingIssues = await github.rest.issues.listForRepo({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              state: 'open',
+              labels: 'jules-task'
+            });
+            
+            const existingIssue = existingIssues.data.find(issue => 
+              issue.title.includes(`Task ${taskNum}`)
+            );
+            
+            if (existingIssue) {
+              console.log(`Issue #${existingIssue.number} already exists for Task ${taskNum}`);
+              core.setOutput('issue_exists', 'true');
+              core.setOutput('issue_number', existingIssue.number.toString());
+              
+              // Try to extract existing session ID from the issue body
+              const sessionMatch = existingIssue.body.match(/Jules Session ID.*`([^`]+)`/);
+              if (sessionMatch) {
+                console.log(`Found existing session ID: ${sessionMatch[1]}`);
+                core.setOutput('existing_session_id', sessionMatch[1]);
+              }
+            } else {
+              console.log('No existing issue found, will create new session and issue');
+              core.setOutput('issue_exists', 'false');
+            }
+      
+      - name: Create Jules session
+        if: steps.check_enabled.outputs.enabled == 'true' && steps.find_task.outputs.has_task == 'true' && steps.check_issue.outputs.issue_exists == 'false'
         id: create_session
         run: |
           TASK_NUM="${{ steps.find_task.outputs.task_num }}"
@@ -249,7 +285,7 @@ jobs:
           rm -f task_description.txt
       
       - name: Create tracking issue
-        if: steps.check_enabled.outputs.enabled == 'true' && steps.find_task.outputs.has_task == 'true'
+        if: steps.check_enabled.outputs.enabled == 'true' && steps.find_task.outputs.has_task == 'true' && steps.check_issue.outputs.issue_exists == 'false'
         id: create_issue
         uses: actions/github-script@v7
         with:
@@ -257,23 +293,6 @@ jobs:
             const taskTitle = `${{ steps.find_task.outputs.task_title }}`;
             const taskNum = `${{ steps.find_task.outputs.task_num }}`;
             const sessionId = `${{ steps.create_session.outputs.session_id }}`;
-            
-            // Check if issue already exists
-            const existingIssues = await github.rest.issues.listForRepo({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              state: 'open',
-              labels: 'jules-task'
-            });
-            
-            const issueExists = existingIssues.data.some(issue => 
-              issue.title.includes(`Task ${taskNum}`)
-            );
-            
-            if (issueExists) {
-              console.log('Issue already exists for this task');
-              return;
-            }
             
             // Create tracking issue
             const issue = await github.rest.issues.create({
@@ -328,9 +347,15 @@ jobs:
         uses: actions/github-script@v7
         with:
           script: |
-            const sessionId = `${{ steps.create_session.outputs.session_id }}`;
+            const sessionId = `${{ steps.create_session.outputs.session_id }}` || `${{ steps.check_issue.outputs.existing_session_id }}`;
             const taskNum = `${{ steps.find_task.outputs.task_num }}`;
+            const issueExists = `${{ steps.check_issue.outputs.issue_exists }}` === 'true';
             
-            // Store session info as a workflow artifact or comment on issue
-            console.log(`Jules session ${sessionId} created for Task ${taskNum}`);
-            console.log(`Monitor at: https://jules.google.com/sessions/${sessionId}`);
+            if (issueExists) {
+              console.log(`Task ${taskNum} already has an active session: ${sessionId}`);
+              console.log(`Issue #${{ steps.check_issue.outputs.issue_number }} is tracking this task`);
+              console.log(`Monitor at: https://jules.google.com/sessions/${sessionId}`);
+            } else {
+              console.log(`Jules session ${sessionId} created for Task ${taskNum}`);
+              console.log(`Monitor at: https://jules.google.com/sessions/${sessionId}`);
+            }

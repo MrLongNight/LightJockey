@@ -27,7 +27,23 @@ public class BackupServiceTests : IDisposable
         _testBackupDirectory = Path.Combine(Path.GetTempPath(), $"LightJockey_BackupTests_{Guid.NewGuid()}");
         Directory.CreateDirectory(_testBackupDirectory);
 
+        // Setup default mock behavior to create dummy files
+        SetupMockPresetServiceToCreateFiles();
+
         _backupService = new BackupService(_mockLogger.Object, _mockPresetService.Object);
+    }
+
+    private void SetupMockPresetServiceToCreateFiles()
+    {
+        _mockPresetService
+            .Setup(x => x.ExportAllPresetsAsync(It.IsAny<string>()))
+            .Callback<string>(filePath =>
+            {
+                // Create a dummy file when the mock is called
+                Directory.CreateDirectory(Path.GetDirectoryName(filePath)!);
+                File.WriteAllText(filePath, "{}");
+            })
+            .Returns(Task.CompletedTask);
     }
 
     [Fact]
@@ -44,13 +60,7 @@ public class BackupServiceTests : IDisposable
     [Fact]
     public async Task CreateBackupAsync_CreatesBackupFile()
     {
-        // Arrange
-        var testPresetCollection = new PresetCollection();
-        _mockPresetService
-            .Setup(x => x.ExportAllPresetsAsync(It.IsAny<string>()))
-            .Returns(Task.CompletedTask);
-
-        // Act
+        // Arrange & Act
         var backupInfo = await _backupService.CreateBackupAsync("Test backup");
 
         // Assert
@@ -68,10 +78,6 @@ public class BackupServiceTests : IDisposable
         // Arrange
         BackupInfo? raisedBackupInfo = null;
         _backupService.BackupCreated += (sender, info) => raisedBackupInfo = info;
-
-        _mockPresetService
-            .Setup(x => x.ExportAllPresetsAsync(It.IsAny<string>()))
-            .Returns(Task.CompletedTask);
 
         // Act
         var backupInfo = await _backupService.CreateBackupAsync("Test");
@@ -116,10 +122,6 @@ public class BackupServiceTests : IDisposable
     public async Task DeleteBackupAsync_RaisesBackupDeletedEvent()
     {
         // Arrange
-        _mockPresetService
-            .Setup(x => x.ExportAllPresetsAsync(It.IsAny<string>()))
-            .Returns(Task.CompletedTask);
-
         var backupInfo = await _backupService.CreateBackupAsync();
         
         string? deletedBackupId = null;
@@ -139,10 +141,6 @@ public class BackupServiceTests : IDisposable
         // Arrange
         var config = new BackupConfig { MaxBackups = 3, MaxBackupAgeDays = 365 };
         await _backupService.UpdateConfigAsync(config);
-
-        _mockPresetService
-            .Setup(x => x.ExportAllPresetsAsync(It.IsAny<string>()))
-            .Returns(Task.CompletedTask);
 
         // Create 5 backups
         for (int i = 0; i < 5; i++)
@@ -166,10 +164,6 @@ public class BackupServiceTests : IDisposable
         // Arrange
         var config = new BackupConfig { MaxBackups = 1, MaxBackupAgeDays = 365 };
         await _backupService.UpdateConfigAsync(config);
-
-        _mockPresetService
-            .Setup(x => x.ExportAllPresetsAsync(It.IsAny<string>()))
-            .Returns(Task.CompletedTask);
 
         await _backupService.CreateBackupAsync("Backup 1");
         await Task.Delay(100);
@@ -200,10 +194,6 @@ public class BackupServiceTests : IDisposable
     public async Task RestoreBackupAsync_CallsImportPresetsAsync()
     {
         // Arrange
-        _mockPresetService
-            .Setup(x => x.ExportAllPresetsAsync(It.IsAny<string>()))
-            .Returns(Task.CompletedTask);
-
         _mockPresetService
             .Setup(x => x.ImportPresetsAsync(It.IsAny<string>()))
             .ReturnsAsync(new List<Preset> { new Preset { Name = "Test" } });
@@ -315,10 +305,6 @@ public class BackupServiceTests : IDisposable
         // Arrange
         var config = new BackupConfig { MaxBackups = 2 };
         await _backupService.UpdateConfigAsync(config);
-
-        _mockPresetService
-            .Setup(x => x.ExportAllPresetsAsync(It.IsAny<string>()))
-            .Returns(Task.CompletedTask);
 
         // Create 3 backups
         await _backupService.CreateBackupAsync("Backup 1");

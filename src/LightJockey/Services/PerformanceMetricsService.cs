@@ -11,6 +11,7 @@ namespace LightJockey.Services;
 public class PerformanceMetricsService : IPerformanceMetricsService
 {
     private readonly ILogger<PerformanceMetricsService> _logger;
+    private readonly IMetricsService _metricsService;
     private readonly object _lock = new();
     private readonly Stopwatch _fpsStopwatch = new();
     private readonly Stopwatch _frameStopwatch = new();
@@ -27,9 +28,10 @@ public class PerformanceMetricsService : IPerformanceMetricsService
     private readonly Queue<double> _fftLatencyWindow = new();
     private readonly Queue<double> _effectLatencyWindow = new();
 
-    public PerformanceMetricsService(ILogger<PerformanceMetricsService> logger)
+    public PerformanceMetricsService(ILogger<PerformanceMetricsService> logger, IMetricsService metricsService)
     {
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+        _metricsService = metricsService;
         _logger.LogDebug("PerformanceMetricsService initialized");
     }
 
@@ -154,6 +156,7 @@ public class PerformanceMetricsService : IPerformanceMetricsService
                     _fpsStopwatch.Restart();
                 }
             }
+            _metricsService.RecordMetrics(GetMetrics());
         }
     }
 

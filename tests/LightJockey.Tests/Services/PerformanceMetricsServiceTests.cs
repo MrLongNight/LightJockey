@@ -10,19 +10,21 @@ namespace LightJockey.Tests.Services;
 public class PerformanceMetricsServiceTests
 {
     private readonly Mock<ILogger<PerformanceMetricsService>> _mockLogger;
+    private readonly Mock<IMetricsService> _mockMetricsService;
     private readonly PerformanceMetricsService _service;
 
     public PerformanceMetricsServiceTests()
     {
         _mockLogger = new Mock<ILogger<PerformanceMetricsService>>();
-        _service = new PerformanceMetricsService(_mockLogger.Object);
+        _mockMetricsService = new Mock<IMetricsService>();
+        _service = new PerformanceMetricsService(_mockLogger.Object, _mockMetricsService.Object);
     }
 
     [Fact]
     public void Constructor_WithNullLogger_ThrowsArgumentNullException()
     {
         // Act & Assert
-        var exception = Assert.Throws<ArgumentNullException>(() => new PerformanceMetricsService(null!));
+        var exception = Assert.Throws<ArgumentNullException>(() => new PerformanceMetricsService(null!, _mockMetricsService.Object));
         Assert.Equal("logger", exception.ParamName);
     }
 
@@ -31,7 +33,8 @@ public class PerformanceMetricsServiceTests
     {
         // Arrange & Act
         var logger = new Mock<ILogger<PerformanceMetricsService>>();
-        var service = new PerformanceMetricsService(logger.Object);
+        var metricsService = new Mock<IMetricsService>();
+        var service = new PerformanceMetricsService(logger.Object, metricsService.Object);
 
         // Assert
         logger.Verify(

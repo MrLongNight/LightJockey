@@ -382,7 +382,7 @@ Beschreibung: JSON Preset Export/Import:
 
 Task 14 — Security / Verschlüsselung
 
-**✅ ABGESCHLOSSEN** - 2025-11-13
+**✅ ABGESCHLOSSEN** - 2025-11-12
 
 PR-Bezeichnung: Task14_SecureKeys
 Beschreibung: DPAPI oder AES für AppKey und sensible Daten

@@ -160,8 +160,8 @@ The new **Jules API integration** provides near-complete automation (~98%) by le
 - Uploads build artifacts (1-day retention)
 
 ### 3. Release MSI Package (Manual)
-**File**: `release-msi.yml`  
-**Status**: [![Release MSI](https://github.com/MrLongNight/LightJockey/actions/workflows/release-msi.yml/badge.svg)](https://github.com/MrLongNight/LightJockey/actions/workflows/release-msi.yml)
+**File**: `flow-release_01-msi.yml` (Primary MSI Release Workflow)  
+**Status**: [![Release MSI](https://github.com/MrLongNight/LightJockey/actions/workflows/flow-release_01-msi.yml/badge.svg)](https://github.com/MrLongNight/LightJockey/actions/workflows/flow-release_01-msi.yml)
 
 **Purpose**: Create MSI installer package for distribution.
 
@@ -177,6 +177,8 @@ The new **Jules API integration** provides near-complete automation (~98%) by le
 - Uploads MSI artifact (90-day retention)
 - Creates GitHub Release (when triggered by tag)
 
+**Note**: This is the main workflow for creating MSI releases. Use this workflow when you need to build and publish installer packages.
+
 ## Usage
 
 ### Running Tests (Automatic)
@@ -188,7 +190,7 @@ Builds run automatically on every push and PR. No action needed.
 ### Creating a Release Package (Manual)
 
 **Option 1: Manual trigger with custom version**
-1. Go to **Actions** → **Release MSI Package**
+1. Go to **Actions** → **Flow Release 01: Create MSI Installer**
 2. Click **Run workflow**
 3. Enter version number (e.g., `1.0.0`) or leave default
 4. Click **Run workflow**
