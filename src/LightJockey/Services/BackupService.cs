@@ -95,7 +95,7 @@ public class BackupService : IBackupService
         try
         {
             var timestamp = DateTime.UtcNow;
-            var fileName = $"backup_{timestamp:yyyyMMdd_HHmmss}.json";
+            var fileName = $"backup_{timestamp:yyyyMMdd_HHmmssfff}.json";
             var filePath = Path.Combine(_backupDirectory, fileName);
 
             // Export all presets to the backup file
@@ -104,6 +104,7 @@ public class BackupService : IBackupService
             var fileInfo = new FileInfo(filePath);
             var backupInfo = new BackupInfo
             {
+                Id = Path.GetFileNameWithoutExtension(fileName),
                 FileName = fileName,
                 FilePath = filePath,
                 CreatedAt = timestamp,
