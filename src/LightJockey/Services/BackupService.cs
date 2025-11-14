@@ -40,7 +40,7 @@ public class BackupService : IBackupService
     /// <summary>
     /// Event raised when backup cleanup occurs
     /// </summary>
-    public event EventHandler<int>? BackupCleanupCompleted;
+    public event EventHandler<CleanupCompletedEventArgs>? BackupCleanupCompleted;
 
     /// <summary>
     /// Gets whether automatic backup is currently running
@@ -280,10 +280,13 @@ public class BackupService : IBackupService
                 }
             }
 
+            // Get remaining backup count and raise event
+            var remainingBackups = await GetAllBackupsAsync();
+            BackupCleanupCompleted?.Invoke(this, new CleanupCompletedEventArgs(remainingBackups.Count));
+            
             if (deletedCount > 0)
             {
-                BackupCleanupCompleted?.Invoke(this, deletedCount);
-                _logger.LogInformation("Cleaned up {Count} old backups", deletedCount);
+                _logger.LogInformation("Cleaned up {Count} old backups, {Remaining} remaining", deletedCount, remainingBackups.Count);
             }
 
             return deletedCount;

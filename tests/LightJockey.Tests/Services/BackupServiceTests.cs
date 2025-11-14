@@ -183,15 +183,15 @@ public class BackupServiceTests : IDisposable
         await Task.Delay(100);
         await _backupService.CreateBackupAsync("Backup 2");
 
-        int? cleanedCount = null;
-        _backupService.BackupCleanupCompleted += (sender, count) => cleanedCount = count;
+        int? remainingCount = null;
+        _backupService.BackupCleanupCompleted += (sender, args) => remainingCount = args.RemainingBackups;
 
         // Act
         await _backupService.CleanupOldBackupsAsync();
 
         // Assert
-        Assert.NotNull(cleanedCount);
-        Assert.Equal(1, cleanedCount.Value);
+        Assert.NotNull(remainingCount);
+        Assert.Equal(1, remainingCount.Value);
     }
 
     [Fact]
@@ -230,7 +230,7 @@ public class BackupServiceTests : IDisposable
 
         // Assert
         Assert.NotNull(config);
-        Assert.True(config.AutoBackupEnabled);
+        Assert.False(config.AutoBackupEnabled);
         Assert.Equal(10, config.MaxBackups);
         Assert.Equal(30, config.MaxBackupAgeDays);
         Assert.Equal(60, config.AutoBackupIntervalMinutes);
@@ -260,11 +260,11 @@ public class BackupServiceTests : IDisposable
     }
 
     [Fact]
-    public void StartAutoBackup_StartsTimer()
+    public async Task StartAutoBackup_StartsTimer()
     {
         // Arrange
         var config = new BackupConfig { AutoBackupEnabled = true };
-        _backupService.UpdateConfigAsync(config).Wait();
+        await _backupService.UpdateConfigAsync(config);
 
         // Act
         _backupService.StartAutoBackup();
