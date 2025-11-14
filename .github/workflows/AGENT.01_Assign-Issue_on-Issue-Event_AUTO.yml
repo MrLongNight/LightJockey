@@ -1,4 +1,4 @@
-name: "AGENT.01_Assign-Issue_on-Issue-Event_AUTO"
+name: "AGENT.01_Assign-Issue_on-Issue-Event_AUTO.yml"
 
 # This workflow automatically assigns GitHub Copilot Coding Agent to auto-generated issues
 # Based on GitHub Copilot's agentic workflows: https://github.blog/ai-and-ml/github-copilot/from-idea-to-pr-a-guide-to-github-copilots-agentic-workflows/

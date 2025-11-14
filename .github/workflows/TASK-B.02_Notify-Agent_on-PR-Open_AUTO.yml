@@ -1,4 +1,4 @@
-name: "TASK-B.02_Notify-Agent_on-PR-Open_AUTO"
+name: "TASK-B.02_Notify-Agent_on-PR-Open_AUTO.yml"
 
 on:
   pull_request:

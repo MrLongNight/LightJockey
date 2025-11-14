@@ -1,4 +1,4 @@
-name: "CI.01_Build-Test_on-Push-PR_AUTO"
+name: "CI.01_Build-Test_on-Push-PR_AUTO.yml"
 
 on:
   pull_request:

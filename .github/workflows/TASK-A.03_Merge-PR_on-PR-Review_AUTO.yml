@@ -1,4 +1,4 @@
-name: "TASK-A.03_Merge-PR_on-PR-Review_AUTO"
+name: "TASK-A.03_Merge-PR_on-PR-Review_AUTO.yml"
 
 on:
   pull_request_review:

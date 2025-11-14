@@ -1,4 +1,4 @@
-name: "TASK-B.03_Merge-PR_on-PR-Label_AUTO"
+name: "TASK-B.03_Merge-PR_on-PR-Label_AUTO.yml"
 
 on:
   workflow_run:

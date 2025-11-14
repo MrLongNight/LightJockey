@@ -1,4 +1,4 @@
-name: "TASK-B.01_Start-Task_on-Manual_MAN"
+name: "TASK-B.01_Start-Task_on-Manual_MAN.yml"
 
 on:
   push:

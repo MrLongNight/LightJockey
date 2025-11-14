@@ -1,4 +1,4 @@
-name: "RELEASE.01_Create-MSI_on-Push_AUTO"
+name: "RELEASE.01_Create-MSI_on-Push_AUTO.yml"
 
 on:
   workflow_dispatch:

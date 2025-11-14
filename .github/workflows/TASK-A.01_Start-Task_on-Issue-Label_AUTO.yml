@@ -1,4 +1,4 @@
-name: "TASK-A.01_Start-Task_on-Issue-Label_AUTO"
+name: "TASK-A.01_Start-Task_on-Issue-Label_AUTO.yml"
 
 on:
   push:

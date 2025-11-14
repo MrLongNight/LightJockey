@@ -1,4 +1,4 @@
-name: "TASK-A.02_Monitor-PR_on-PR-Open_AUTO"
+name: "TASK-A.02_Monitor-PR_on-PR-Open_AUTO.yml"
 
 on:
   schedule:
