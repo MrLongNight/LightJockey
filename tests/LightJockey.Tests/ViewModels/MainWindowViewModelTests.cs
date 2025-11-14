@@ -6,6 +6,13 @@ using Moq;
 
 namespace LightJockey.Tests.ViewModels;
 
+/// <summary>
+/// Unit tests for MainWindowViewModel.
+/// Note: The production constructor gained a new 'metricsViewModel' parameter.
+/// For now we pass null! because the existing tests do not exercise that dependency.
+/// TODO: replace null! with a proper Mock&lt;MetricsViewModel&gt; or an IMetricsViewModel interface implementation
+/// when tests need to cover metrics-related behavior.
+/// </summary>
 public class MainWindowViewModelTests
 {
     private readonly Mock<ILogger<MainWindowViewModel>> _mockLogger;
@@ -40,7 +47,8 @@ public class MainWindowViewModelTests
             _mockEffectEngine.Object,
             _mockFFTProcessor.Object,
             _mockSpectralAnalyzer.Object,
-            _mockBeatDetector.Object);
+            _mockBeatDetector.Object,
+            null!); // metricsViewModel - temporary placeholder, update to a proper mock if needed
     }
 
     [Fact]

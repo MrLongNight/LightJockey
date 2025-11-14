@@ -5,7 +5,10 @@ using Moq;
 namespace LightJockey.Tests.Services;
 
 /// <summary>
-/// Unit tests for PerformanceMetricsService
+/// Unit tests for PerformanceMetricsService.
+/// The constructor gained a new 'metricsService' parameter in production code.
+/// For now pass null! because the existing tests do not rely on the new dependency.
+/// TODO: replace null! with Mock&lt;IMetricsService&gt; when tests need to verify metrics interactions.
 /// </summary>
 public class PerformanceMetricsServiceTests
 {
@@ -15,14 +18,14 @@ public class PerformanceMetricsServiceTests
     public PerformanceMetricsServiceTests()
     {
         _mockLogger = new Mock<ILogger<PerformanceMetricsService>>();
-        _service = new PerformanceMetricsService(_mockLogger.Object);
+        _service = new PerformanceMetricsService(_mockLogger.Object, null!); // metricsService - placeholder until tests are updated to mock/verify it
     }
 
     [Fact]
     public void Constructor_WithNullLogger_ThrowsArgumentNullException()
     {
         // Act & Assert
-        var exception = Assert.Throws<ArgumentNullException>(() => new PerformanceMetricsService(null!));
+        var exception = Assert.Throws<ArgumentNullException>(() => new PerformanceMetricsService(null!, null!));
         Assert.Equal("logger", exception.ParamName);
     }
 
@@ -31,7 +34,7 @@ public class PerformanceMetricsServiceTests
     {
         // Arrange & Act
         var logger = new Mock<ILogger<PerformanceMetricsService>>();
-        var service = new PerformanceMetricsService(logger.Object);
+        var service = new PerformanceMetricsService(logger.Object, null!); // metricsService - placeholder
 
         // Assert
         logger.Verify(
