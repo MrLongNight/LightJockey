@@ -1,0 +1,17 @@
+{
+  "name": "lightjockey-automation",
+  "version": "1.0.0",
+  "description": "Automation scripts for the LightJockey project.",
+  "main": "dist/run-self-healing-flow.js",
+  "scripts": {
+    "build": "tsc"
+  },
+  "dependencies": {
+    "@clduab11/gemini-flow": "^1.3.3",
+    "@octokit/rest": "^20.0.0"
+  },
+  "devDependencies": {
+    "typescript": "^5.0.0",
+    "@types/node": "^20.0.0"
+  }
+}
