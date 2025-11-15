@@ -39,4 +39,14 @@ public class PerformanceMetrics
     /// Gets or sets the timestamp when metrics were captured
     /// </summary>
     public DateTime Timestamp { get; set; }
+
+    /// <summary>
+    /// Gets or sets the current CPU usage
+    /// </summary>
+    public double CpuUsage { get; set; }
+
+    /// <summary>
+    /// Gets or sets the current memory usage in megabytes
+    /// </summary>
+    public long MemoryUsage { get; set; }
 }
