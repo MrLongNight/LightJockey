@@ -5,7 +5,8 @@ using System.Collections.ObjectModel;
 using System.Linq;
 using System.Windows.Input;
 using System.Threading.Tasks;
-using LightJockey.Utilities;
+using CommunityToolkit.Mvvm.Input;
+using RelayCommand = CommunityToolkit.Mvvm.Input.RelayCommand;
 using System;
 using System.Windows.Threading;
 
@@ -40,14 +41,14 @@ namespace LightJockey.ViewModels
             _effectEngine = effectEngine;
             _hueControlViewModel = hueControlViewModel;
 
-            StartEffectCommand = new RelayCommand(async _ => await StartEffectAsync(), _ => CanStartEffect());
-            StopEffectCommand = new RelayCommand(async _ => await StopEffectAsync(), _ => CanStopEffect());
+            StartEffectCommand = new RelayCommand<object?>(async _ => await StartEffectAsync(), _ => CanStartEffect());
+            StopEffectCommand = new RelayCommand<object?>(async _ => await StopEffectAsync(), _ => CanStopEffect());
 
             _hueControlViewModel.PropertyChanged += (s, e) =>
             {
                 if (e.PropertyName == nameof(HueControlViewModel.IsHueConnected))
                 {
-                    ((RelayCommand)StartEffectCommand).NotifyCanExecuteChanged();
+                    StartEffectCommand.NotifyCanExecuteChanged();
                 }
             };
 
@@ -78,7 +79,7 @@ namespace LightJockey.ViewModels
             {
                 if (SetProperty(ref _selectedEffect, value))
                 {
-                    ((RelayCommand)StartEffectCommand).NotifyCanExecuteChanged();
+                    StartEffectCommand.NotifyCanExecuteChanged();
                 }
             }
         }
@@ -90,8 +91,8 @@ namespace LightJockey.ViewModels
             {
                 if (SetProperty(ref _isEffectRunning, value))
                 {
-                    ((RelayCommand)StartEffectCommand).NotifyCanExecuteChanged();
-                    ((RelayCommand)StopEffectCommand).NotifyCanExecuteChanged();
+                    StartEffectCommand.NotifyCanExecuteChanged();
+                    StopEffectCommand.NotifyCanExecuteChanged();
                 }
             }
         }
@@ -114,8 +115,8 @@ namespace LightJockey.ViewModels
         public double ColorTemperature { get => _colorTemperature; set => SetProperty(ref _colorTemperature, value, DebounceUpdate); }
         #endregion
 
-        public ICommand StartEffectCommand { get; }
-        public ICommand StopEffectCommand { get; }
+        public IRelayCommand StartEffectCommand { get; }
+        public IRelayCommand StopEffectCommand { get; }
 
         private void LoadAvailableEffects()
         {

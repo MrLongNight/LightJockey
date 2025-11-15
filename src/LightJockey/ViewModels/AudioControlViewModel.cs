@@ -4,7 +4,8 @@ using Microsoft.Extensions.Logging;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Windows.Input;
-using LightJockey.Utilities;
+using CommunityToolkit.Mvvm.Input;
+using RelayCommand = CommunityToolkit.Mvvm.Input.RelayCommand;
 
 namespace LightJockey.ViewModels
 {
@@ -23,9 +24,9 @@ namespace LightJockey.ViewModels
             _logger = logger;
             _audioService = audioService;
 
-            RefreshAudioDevicesCommand = new RelayCommand(_ => RefreshAudioDevices());
-            StartAudioCaptureCommand = new RelayCommand(_ => StartAudioCapture(), _ => CanStartAudioCapture());
-            StopAudioCaptureCommand = new RelayCommand(_ => StopAudioCapture(), _ => CanStopAudioCapture());
+            RefreshAudioDevicesCommand = new RelayCommand<object?>(_ => RefreshAudioDevices());
+            StartAudioCaptureCommand = new RelayCommand<object?>(_ => StartAudioCapture(), _ => CanStartAudioCapture());
+            StopAudioCaptureCommand = new RelayCommand<object?>(_ => StopAudioCapture(), _ => CanStopAudioCapture());
 
             RefreshAudioDevices();
         }
@@ -46,7 +47,7 @@ namespace LightJockey.ViewModels
                     _audioService.SelectDevice(value!);
                     _logger.LogInformation("Selected audio device: {DeviceName}", value.Name);
                     // Re-evaluate command states when selection changes
-                    ((RelayCommand)StartAudioCaptureCommand).NotifyCanExecuteChanged();
+                    StartAudioCaptureCommand.NotifyCanExecuteChanged();
                 }
             }
         }
@@ -59,8 +60,8 @@ namespace LightJockey.ViewModels
                 if (SetProperty(ref _isAudioCapturing, value))
                 {
                     // Update command states when capture status changes
-                    ((RelayCommand)StartAudioCaptureCommand).NotifyCanExecuteChanged();
-                    ((RelayCommand)StopAudioCaptureCommand).NotifyCanExecuteChanged();
+                    StartAudioCaptureCommand.NotifyCanExecuteChanged();
+                    StopAudioCaptureCommand.NotifyCanExecuteChanged();
                 }
             }
         }
@@ -71,9 +72,9 @@ namespace LightJockey.ViewModels
             set => SetProperty(ref _statusMessage, value);
         }
 
-        public ICommand RefreshAudioDevicesCommand { get; }
-        public ICommand StartAudioCaptureCommand { get; }
-        public ICommand StopAudioCaptureCommand { get; }
+        public IRelayCommand RefreshAudioDevicesCommand { get; }
+        public IRelayCommand StartAudioCaptureCommand { get; }
+        public IRelayCommand StopAudioCaptureCommand { get; }
 
         private void RefreshAudioDevices()
         {
