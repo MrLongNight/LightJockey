@@ -1,9 +1,10 @@
-using CommunityToolkit.Mvvm.Input;
 using LightJockey.Models;
 using LightJockey.Services;
+using LightJockey.Utilities;
 using Microsoft.Extensions.Logging;
 using System.Collections.ObjectModel;
 using System.Threading.Tasks;
+using System.Windows.Input;
 using System.Windows.Threading;
 
 namespace LightJockey.ViewModels
@@ -13,11 +14,11 @@ namespace LightJockey.ViewModels
         private readonly IMetricsService _metricsService;
         private readonly ILogger<MetricsViewModel> _logger;
         private readonly DispatcherTimer _timer;
-        private string _exportStatusMessage;
+        private string _exportStatusMessage = string.Empty;
 
         public ObservableCollection<PerformanceMetrics> MetricsHistory { get; } = new();
 
-        public IAsyncRelayCommand ExportMetricsCommand { get; }
+        public ICommand ExportMetricsCommand { get; }
 
         public string ExportStatusMessage
         {
@@ -30,7 +31,7 @@ namespace LightJockey.ViewModels
             _metricsService = metricsService;
             _logger = logger;
 
-            ExportMetricsCommand = new AsyncRelayCommand(ExportMetricsAsync);
+            ExportMetricsCommand = new RelayCommand(async _ => await ExportMetricsAsync());
 
             _timer = new DispatcherTimer
             {

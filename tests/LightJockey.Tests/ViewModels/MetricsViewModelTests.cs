@@ -28,7 +28,8 @@ namespace LightJockey.Tests.ViewModels
             _metricsServiceMock.Setup(s => s.ExportMetricsToCsvAsync()).ReturnsAsync(expectedFilePath);
 
             // Act
-            await _viewModel.ExportMetricsCommand.ExecuteAsync(null);
+            _viewModel.ExportMetricsCommand.Execute(null);
+            await Task.Delay(100); // Allow async operation to complete
 
             // Assert
             _metricsServiceMock.Verify(s => s.ExportMetricsToCsvAsync(), Times.Once);
@@ -42,7 +43,8 @@ namespace LightJockey.Tests.ViewModels
             _metricsServiceMock.Setup(s => s.ExportMetricsToCsvAsync()).ThrowsAsync(new System.Exception("Test exception"));
 
             // Act
-            await _viewModel.ExportMetricsCommand.ExecuteAsync(null);
+            _viewModel.ExportMetricsCommand.Execute(null);
+            await Task.Delay(100); // Allow async operation to complete
 
             // Assert
             Assert.Equal("Export failed. Check logs for details.", _viewModel.ExportStatusMessage);
