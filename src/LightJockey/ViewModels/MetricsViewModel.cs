@@ -1,68 +1,58 @@
-using CommunityToolkit.Mvvm.Input;
-using LightJockey.Models;
-using LightJockey.Services;
-using Microsoft.Extensions.Logging;
 using System.Collections.ObjectModel;
-using System.Threading.Tasks;
+using System.Linq;
 using System.Windows.Threading;
+using CommunityToolkit.Mvvm.ComponentModel;
+using LightJockey.Services;
+using LiveChartsCore;
+using LiveChartsCore.Defaults;
+using LiveChartsCore.SkiaSharp;
+using Microsoft.Extensions.Logging;
 
 namespace LightJockey.ViewModels
 {
-    public class MetricsViewModel : ViewModelBase
+    public class MetricsViewModel : ObservableObject
     {
         private readonly IMetricsService _metricsService;
         private readonly ILogger<MetricsViewModel> _logger;
         private readonly DispatcherTimer _timer;
-        private string _exportStatusMessage;
 
-        public ObservableCollection<PerformanceMetrics> MetricsHistory { get; } = new();
-
-        public IAsyncRelayCommand ExportMetricsCommand { get; }
-
-        public string ExportStatusMessage
-        {
-            get => _exportStatusMessage;
-            set => SetProperty(ref _exportStatusMessage, value);
-        }
+        public ObservableCollection<ISeries> Series { get; set; }
+        public ObservableCollection<string> Labels { get; set; }
 
         public MetricsViewModel(IMetricsService metricsService, ILogger<MetricsViewModel> logger)
         {
             _metricsService = metricsService;
             _logger = logger;
 
-            ExportMetricsCommand = new AsyncRelayCommand(ExportMetricsAsync);
-
-            _timer = new DispatcherTimer
+            Series = new ObservableCollection<ISeries>
             {
-                Interval = TimeSpan.FromSeconds(1)
+                new LineSeries<double> { Values = new ObservableCollection<double>(), Name = "FPS" },
+                new LineSeries<double> { Values = new ObservableCollection<double>(), Name = "Latency (ms)" }
             };
-            _timer.Tick += (s, e) => UpdateMetrics();
+            Labels = new ObservableCollection<string>();
+
+            _timer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(1) };
+            _timer.Tick += (s, e) => UpdateChart();
             _timer.Start();
         }
 
-        private void UpdateMetrics()
+        private void UpdateChart()
         {
-            MetricsHistory.Clear();
-            foreach (var metric in _metricsService.GetMetricsHistory())
-            {
-                MetricsHistory.Add(metric);
-            }
-        }
+            var history = _metricsService.MetricsHistory;
+            if (history.Count == 0) return;
 
-        private async Task ExportMetricsAsync()
-        {
-            _logger.LogInformation("Exporting metrics...");
-            ExportStatusMessage = "Exporting...";
-            try
+            var fpsValues = (ObservableCollection<double>)Series[0].Values;
+            var latencyValues = (ObservableCollection<double>)Series[1].Values;
+
+            fpsValues.Clear();
+            latencyValues.Clear();
+            Labels.Clear();
+
+            foreach (var metrics in history)
             {
-                var filePath = await _metricsService.ExportMetricsToCsvAsync();
-                ExportStatusMessage = $"Metrics exported to {filePath}";
-                _logger.LogInformation("Metrics exported successfully to {FilePath}", filePath);
-            }
-            catch (Exception ex)
-            {
-                ExportStatusMessage = "Export failed. Check logs for details.";
-                _logger.LogError(ex, "Failed to export metrics");
+                fpsValues.Add(metrics.StreamingFPS);
+                latencyValues.Add(metrics.TotalLatencyMs);
+                Labels.Add(metrics.Timestamp.ToString("HH:mm:ss"));
             }
         }
     }

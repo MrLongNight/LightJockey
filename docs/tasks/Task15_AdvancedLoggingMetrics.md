@@ -2,18 +2,12 @@
 
 ## Description
 
-This task focused on enhancing the logging and metrics capabilities of LightJockey. The following features were implemented:
+This task enhances the application's logging and metrics capabilities, providing more detailed insights into its performance and behavior. The key features implemented are:
 
-- **Enhanced Serilog Configuration:** The Serilog configuration was updated to include the `SourceContext` in the log output, which provides more detailed and useful information for debugging.
-- **Metrics Export:** The `MetricsService` was updated to include the ability to export the metrics history to a CSV file.
-- **UI for Metrics:** A new UI was created to display the metrics history and provide a button to export the data.
+- **Advanced Serilog Configuration:** The Serilog configuration has been updated to include method name enrichment and a 14-day log retention policy. This provides more detailed and longer-term logging for better debugging and analysis.
+- **Metrics Service:** A new `MetricsService` has been introduced to capture and manage a history of performance metrics, including latency and FPS. This service maintains a history of the last 300 data points, allowing for real-time and historical performance analysis.
+- **UI Metrics Display:** The application now includes a new "Metrics" tab in the main window, which displays the performance metrics in a series of charts. This provides a visual representation of the application's performance, making it easier to identify and diagnose issues.
 
 ## Screenshots
 
-### Metrics View
-
-*TODO: Add a screenshot of the new metrics view, showing the data grid and the export button.*
-
-### Exported CSV File
-
-*TODO: Add a screenshot of the exported CSV file, showing the metrics data in a spreadsheet application.*
+*Screenshots of the new metrics UI will be added here.*
