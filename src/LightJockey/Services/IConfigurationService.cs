@@ -1,42 +1,17 @@
-namespace LightJockey.Services;
+using System.Threading.Tasks;
+using LightJockey.Models;
 
-/// <summary>
-/// Service for managing encrypted configuration data
-/// </summary>
-public interface IConfigurationService
+namespace LightJockey.Services
 {
-    /// <summary>
-    /// Stores a secure string value (encrypted)
-    /// </summary>
-    /// <param name="key">Configuration key</param>
-    /// <param name="value">Value to encrypt and store</param>
-    /// <returns>True if stored successfully</returns>
-    Task<bool> SetSecureValueAsync(string key, string value);
+    public interface IConfigurationService
+    {
+        Task<LightJockeyEntertainmentConfig> LoadConfigAsync(string? encryptionKey = null);
+        Task SaveConfigAsync(LightJockeyEntertainmentConfig config, string? encryptionKey = null);
 
-    /// <summary>
-    /// Retrieves and decrypts a secure string value
-    /// </summary>
-    /// <param name="key">Configuration key</param>
-    /// <returns>Decrypted value or null if not found</returns>
-    Task<string?> GetSecureValueAsync(string key);
+        Task<string?> GetSecureValueAsync(string key);
+        Task SetSecureValueAsync(string key, string value);
 
-    /// <summary>
-    /// Removes a configuration value
-    /// </summary>
-    /// <param name="key">Configuration key</param>
-    /// <returns>True if removed successfully</returns>
-    Task<bool> RemoveValueAsync(string key);
-
-    /// <summary>
-    /// Checks if a configuration value exists
-    /// </summary>
-    /// <param name="key">Configuration key</param>
-    /// <returns>True if the key exists</returns>
-    Task<bool> ContainsKeyAsync(string key);
-
-    /// <summary>
-    /// Clears all configuration data
-    /// </summary>
-    /// <returns>True if cleared successfully</returns>
-    Task<bool> ClearAllAsync();
+        AppSettings LoadAppSettings();
+        void SaveAppSettings(AppSettings appSettings);
+    }
 }
