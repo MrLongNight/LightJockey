@@ -5,7 +5,7 @@ using System.Collections.ObjectModel;
 using System.Linq;
 using System.Windows.Input;
 using System.Threading.Tasks;
-using LightJockey.Utilities;
+using CommunityToolkit.Mvvm.Input;
 
 namespace LightJockey.ViewModels
 {
@@ -42,7 +42,7 @@ namespace LightJockey.ViewModels
             {
                 if (SetProperty(ref _selectedHueBridge, value))
                 {
-                    ((RelayCommand)ConnectToHueBridgeCommand).NotifyCanExecuteChanged();
+                    ((RelayCommand)ConnectToHueBridgeCommand).RaiseCanExecuteChanged();
                 }
             }
         }
@@ -60,7 +60,7 @@ namespace LightJockey.ViewModels
             {
                 if (SetProperty(ref _isHueConnected, value))
                 {
-                    ((RelayCommand)ConnectToHueBridgeCommand).NotifyCanExecuteChanged();
+                    ((RelayCommand)ConnectToHueBridgeCommand).RaiseCanExecuteChanged();
                 }
             }
         }
