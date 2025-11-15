@@ -4,6 +4,7 @@ using Microsoft.Extensions.Logging;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Windows.Input;
+using LightJockey.Utilities; // Changed from CommunityToolkit.Mvvm.Input
 using CommunityToolkit.Mvvm.Input;
 
 namespace LightJockey.ViewModels

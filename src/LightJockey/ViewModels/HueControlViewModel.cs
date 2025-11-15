@@ -26,7 +26,10 @@ namespace LightJockey.ViewModels
             _hueService = hueService;
 
             DiscoverHueBridgesCommand = new RelayCommand(async _ => await DiscoverHueBridgesAsync());
-            ConnectToHueBridgeCommand = new RelayCommand(async _ => await ConnectToHueBridgeAsync(), _ => CanConnectToHueBridge());
+            ConnectToHueBridgeCommand = new RelayCommand(
+                async obj => await ConnectToHueBridgeAsync(),
+                obj => CanConnectToHueBridge()
+            );
         }
 
         public ObservableCollection<HueBridge> HueBridges

@@ -5,6 +5,7 @@ using System.Collections.ObjectModel;
 using System.Linq;
 using System.Windows.Input;
 using System.Threading.Tasks;
+using LightJockey.Utilities; // Changed from CommunityToolkit.Mvvm.Input
 using CommunityToolkit.Mvvm.Input;
 using System;
 using System.Windows.Threading;
