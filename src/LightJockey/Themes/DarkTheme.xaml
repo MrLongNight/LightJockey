@@ -27,6 +27,13 @@
     <SolidColorBrush x:Key="WarningBrush" Color="{StaticResource WarningColor}"/>
     <SolidColorBrush x:Key="ErrorBrush" Color="{StaticResource ErrorColor}"/>
     
+    <!-- Layout Constants -->
+    <Thickness x:Key="PaddingSmall">5</Thickness>
+    <Thickness x:Key="PaddingMedium">10</Thickness>
+    <Thickness x:Key="PaddingLarge">15</Thickness>
+    <Thickness x:Key="MarginSmall">5</Thickness>
+    <Thickness x:Key="MarginMedium">10</Thickness>
+
     <!-- Visualizer Brushes -->
     <SolidColorBrush x:Key="VisualizerBackground" Color="{StaticResource SecondaryBackgroundColor}"/>
     <SolidColorBrush x:Key="LowFreqBrush" Color="#4EC9B0"/>
@@ -38,7 +45,7 @@
     <Style TargetType="Window">
         <Setter Property="Background" Value="{StaticResource PrimaryBackground}"/>
         <Setter Property="Foreground" Value="{StaticResource TextBrush}"/>
-    </Style>
+    </style>
     
     <Style TargetType="TextBlock">
         <Setter Property="Foreground" Value="{StaticResource TextBrush}"/>
@@ -52,15 +59,16 @@
         <Setter Property="Background" Value="{StaticResource SecondaryBackground}"/>
         <Setter Property="Foreground" Value="{StaticResource TextBrush}"/>
         <Setter Property="BorderBrush" Value="{StaticResource BorderBrush}"/>
-        <Setter Property="Padding" Value="8,4"/>
-    </Style>
+        <Setter Property="Padding" Value="{StaticResource PaddingSmall}"/>
+        <Setter Property="Margin" Value="0,5,0,10"/>
+    </style>
     
     <Style TargetType="Button">
         <Setter Property="Background" Value="{StaticResource AccentBrush}"/>
         <Setter Property="Foreground" Value="{StaticResource TextBrush}"/>
         <Setter Property="BorderBrush" Value="{StaticResource BorderBrush}"/>
         <Setter Property="BorderThickness" Value="1"/>
-        <Setter Property="Padding" Value="12,6"/>
+        <Setter Property="Padding" Value="{StaticResource PaddingMedium}"/>
         <Setter Property="Cursor" Value="Hand"/>
         <Style.Triggers>
             <Trigger Property="IsMouseOver" Value="True">
@@ -74,16 +82,19 @@
     
     <Style TargetType="Slider">
         <Setter Property="Foreground" Value="{StaticResource AccentBrush}"/>
-    </Style>
+        <Setter Property="Margin" Value="0,0,0,10"/>
+    </style>
     
     <Style TargetType="CheckBox">
         <Setter Property="Foreground" Value="{StaticResource TextBrush}"/>
-    </Style>
+        <Setter Property="Margin" Value="{StaticResource MarginSmall}"/>
+    </style>
     
     <Style TargetType="GroupBox">
         <Setter Property="Foreground" Value="{StaticResource TextBrush}"/>
         <Setter Property="BorderBrush" Value="{StaticResource BorderBrush}"/>
         <Setter Property="Background" Value="{StaticResource SecondaryBackground}"/>
-    </Style>
+        <Setter Property="Padding" Value="{StaticResource PaddingMedium}"/>
+    </style>
     
 </ResourceDictionary>

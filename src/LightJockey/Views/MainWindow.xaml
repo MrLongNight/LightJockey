@@ -9,6 +9,20 @@
         Height="750" Width="1000"
         MinHeight="600" MinWidth="800">
     
+    <Window.Resources>
+        <Style x:Key="StatusIndicatorStyle" TargetType="TextBlock">
+            <Setter Property="Foreground" Value="{DynamicResource TextBrush}"/>
+            <Setter Property="HorizontalAlignment" Value="Center"/>
+            <Setter Property="Margin" Value="0,10,0,0"/>
+            <Setter Property="FontStyle" Value="Italic"/>
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding IsChecked, RelativeSource={RelativeSource Self}}" Value="True">
+                    <Setter Property="Foreground" Value="{DynamicResource SuccessBrush}"/>
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>
+    </Window.Resources>
+
     <Grid Margin="10">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
@@ -25,17 +39,15 @@
                        VerticalAlignment="Center"/>
             <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
                 <Button Content="Settings"
-                        Command="{Binding OpenSettingsCommand}"
-                        Padding="10,5"
-                        Margin="0,0,5,0"/>
+                        Command="{Binding OpenSettingsCommand}"/>
                 <Button Content="🌓 Toggle Theme"
                         Command="{Binding ToggleThemeCommand}"
-                        Padding="10,5"/>
+                        Margin="5,0,0,0"/>
             </StackPanel>
         </Grid>
         
         <!-- Audio Visualizer -->
-        <GroupBox Grid.Row="1" Header="Audio Visualizer" Padding="10" Margin="0,0,0,10">
+        <GroupBox Grid.Row="1" Header="Audio Visualizer" Margin="0,0,0,10">
             <Grid>
                 <Grid.RowDefinitions>
                     <RowDefinition Height="200"/>
@@ -70,77 +82,47 @@
                     <ScrollViewer Grid.Column="0" VerticalScrollBarVisibility="Auto">
                         <StackPanel>
                             <!-- Audio Device Selection -->
-                            <GroupBox Header="Audio Device" Padding="10" Margin="0,0,0,10">
+                            <GroupBox Header="Audio Device" DataContext="{Binding AudioControlViewModel}">
                                 <StackPanel>
                                     <Label Content="Select Audio Device:"/>
                                     <ComboBox ItemsSource="{Binding AudioDevices}"
                                               SelectedItem="{Binding SelectedAudioDevice}"
-                                              DisplayMemberPath="Name"
-                                              Margin="0,5,0,10"/>
+                                              DisplayMemberPath="Name"/>
 
-                                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,10,0,0">
                                         <Button Content="Refresh Devices"
-                                                Command="{Binding RefreshAudioDevicesCommand}"
-                                                Margin="0,0,5,0"/>
+                                                Command="{Binding RefreshAudioDevicesCommand}"/>
                                         <Button Content="Start Capture"
                                                 Command="{Binding StartAudioCaptureCommand}"
                                                 Margin="5,0"/>
                                         <Button Content="Stop Capture"
                                                 Command="{Binding StopAudioCaptureCommand}"
-                                                Margin="5,0,0,0"/>
+                                                Margin="5,0"/>
                                     </StackPanel>
 
                                     <TextBlock Text="{Binding IsAudioCapturing, StringFormat='Status: {0}'}"
-                                               HorizontalAlignment="Center"
-                                               Margin="0,10,0,0"
-                                               FontStyle="Italic">
-                                        <TextBlock.Style>
-                                            <Style TargetType="TextBlock">
-                                                <Setter Property="Foreground" Value="{DynamicResource TextBrush}"/>
-                                                <Style.Triggers>
-                                                    <DataTrigger Binding="{Binding IsAudioCapturing}" Value="True">
-                                                        <Setter Property="Foreground" Value="{DynamicResource SuccessBrush}"/>
-                                                    </DataTrigger>
-                                                </Style.Triggers>
-                                            </Style>
-                                        </TextBlock.Style>
-                                    </TextBlock>
+                                               Style="{StaticResource StatusIndicatorStyle}"/>
                                 </StackPanel>
                             </GroupBox>
 
                             <!-- Hue Device Selection -->
-                            <GroupBox Header="Philips Hue" Padding="10" Margin="0,0,0,10">
+                            <GroupBox Header="Philips Hue" Margin="0,10,0,0" DataContext="{Binding HueControlViewModel}">
                                 <StackPanel>
                                     <Label Content="Select Hue Bridge:"/>
                                     <ComboBox ItemsSource="{Binding HueBridges}"
                                               SelectedItem="{Binding SelectedHueBridge}"
-                                              DisplayMemberPath="IpAddress"
-                                              Margin="0,5,0,10"/>
+                                              DisplayMemberPath="IpAddress"/>
 
-                                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,10,0,0">
                                         <Button Content="Discover Bridges"
-                                                Command="{Binding DiscoverHueBridgesCommand}"
-                                                Margin="0,0,5,0"/>
+                                                Command="{Binding DiscoverHueBridgesCommand}"/>
                                         <Button Content="Connect"
                                                 Command="{Binding ConnectToHueBridgeCommand}"
                                                 Margin="5,0,0,0"/>
                                     </StackPanel>
 
                                     <TextBlock Text="{Binding IsHueConnected, StringFormat='Connected: {0}'}"
-                                               HorizontalAlignment="Center"
-                                               Margin="0,10,0,0"
-                                               FontStyle="Italic">
-                                        <TextBlock.Style>
-                                            <Style TargetType="TextBlock">
-                                                <Setter Property="Foreground" Value="{DynamicResource TextBrush}"/>
-                                                <Style.Triggers>
-                                                    <DataTrigger Binding="{Binding IsHueConnected}" Value="True">
-                                                        <Setter Property="Foreground" Value="{DynamicResource SuccessBrush}"/>
-                                                    </DataTrigger>
-                                                </Style.Triggers>
-                                            </Style>
-                                        </TextBlock.Style>
-                                    </TextBlock>
+                                               Style="{StaticResource StatusIndicatorStyle}"/>
 
                                     <Label Content="Lights Found:" Margin="0,10,0,5"/>
                                     <TextBlock Text="{Binding HueLights.Count, StringFormat='{}{0} lights'}"
@@ -150,37 +132,22 @@
                             </GroupBox>
 
                             <!-- Effect Selection -->
-                            <GroupBox Header="Effect Selection" Padding="10">
+                            <GroupBox Header="Effect Selection" Margin="0,10,0,0" DataContext="{Binding EffectControlViewModel}">
                                 <StackPanel>
                                     <Label Content="Select Effect:"/>
                                     <ComboBox ItemsSource="{Binding AvailableEffects}"
-                                              SelectedItem="{Binding SelectedEffect}"
-                                              Margin="0,5,0,10"/>
+                                              SelectedItem="{Binding SelectedEffect}"/>
 
-                                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,10,0,0">
                                         <Button Content="Start Effect"
-                                                Command="{Binding StartEffectCommand}"
-                                                Margin="0,0,5,0"/>
+                                                Command="{Binding StartEffectCommand}"/>
                                         <Button Content="Stop Effect"
                                                 Command="{Binding StopEffectCommand}"
                                                 Margin="5,0,0,0"/>
                                     </StackPanel>
 
                                     <TextBlock Text="{Binding IsEffectRunning, StringFormat='Running: {0}'}"
-                                               HorizontalAlignment="Center"
-                                               Margin="0,10,0,0"
-                                               FontStyle="Italic">
-                                        <TextBlock.Style>
-                                            <Style TargetType="TextBlock">
-                                                <Setter Property="Foreground" Value="{DynamicResource TextBrush}"/>
-                                                <Style.Triggers>
-                                                    <DataTrigger Binding="{Binding IsEffectRunning}" Value="True">
-                                                        <Setter Property="Foreground" Value="{DynamicResource SuccessBrush}"/>
-                                                    </DataTrigger>
-                                                </Style.Triggers>
-                                            </Style>
-                                        </TextBlock.Style>
-                                    </TextBlock>
+                                               Style="{StaticResource StatusIndicatorStyle}"/>
                                 </StackPanel>
                             </GroupBox>
                         </StackPanel>
@@ -188,79 +155,23 @@
 
                     <!-- Right Column - Effect Parameters -->
                     <ScrollViewer Grid.Column="2" VerticalScrollBarVisibility="Auto">
-                        <StackPanel>
-                            <GroupBox Header="Effect Parameters" Padding="10" Margin="0,0,0,10">
+                        <StackPanel DataContext="{Binding EffectControlViewModel}">
+                            <GroupBox Header="Effect Parameters">
                                 <StackPanel>
-                                    <!-- Intensity Slider -->
-                                    <Label Content="{Binding Intensity, StringFormat='Intensity: {0:P0}'}"/>
-                                    <Slider Value="{Binding Intensity}"
-                                            Minimum="0" Maximum="1"
-                                            TickFrequency="0.1"
-                                            IsSnapToTickEnabled="True"
-                                            Margin="0,5,0,15"/>
+                                    <views:ParameterSlider Label="{Binding Intensity, StringFormat='Intensity: {0:P0}'}" Value="{Binding Intensity}" />
+                                    <views:ParameterSlider Label="{Binding Speed, StringFormat='Speed: {0:F1}x'}" Value="{Binding Speed}" Minimum="0.1" Maximum="5" TickFrequency="0.1" />
+                                    <views:ParameterSlider Label="{Binding Brightness, StringFormat='Brightness: {0:P0}'}" Value="{Binding Brightness}" />
+                                    <views:ParameterSlider Label="{Binding AudioSensitivity, StringFormat='Audio Sensitivity: {0:P0}'}" Value="{Binding AudioSensitivity}" />
 
-                                    <!-- Speed Slider -->
-                                    <Label Content="{Binding Speed, StringFormat='Speed: {0:F1}x'}"/>
-                                    <Slider Value="{Binding Speed}"
-                                            Minimum="0.1" Maximum="5"
-                                            TickFrequency="0.1"
-                                            IsSnapToTickEnabled="True"
-                                            Margin="0,5,0,15"/>
-
-                                    <!-- Brightness Slider -->
-                                    <Label Content="{Binding Brightness, StringFormat='Brightness: {0:P0}'}"/>
-                                    <Slider Value="{Binding Brightness}"
-                                            Minimum="0" Maximum="1"
-                                            TickFrequency="0.1"
-                                            IsSnapToTickEnabled="True"
-                                            Margin="0,5,0,15"/>
-
-                                    <!-- Audio Sensitivity Slider -->
-                                    <Label Content="{Binding AudioSensitivity, StringFormat='Audio Sensitivity: {0:P0}'}"/>
-                                    <Slider Value="{Binding AudioSensitivity}"
-                                            Minimum="0" Maximum="1"
-                                            TickFrequency="0.1"
-                                            IsSnapToTickEnabled="True"
-                                            Margin="0,5,0,15"/>
-
-                                    <!-- Separator for Color Variations -->
-                                    <Separator Margin="0,10,0,10"/>
+                                    <Separator Margin="0,10"/>
                                     <Label Content="Color Variations" FontWeight="Bold" Margin="0,0,0,10"/>
 
-                                    <!-- Hue Variation Slider -->
-                                    <Label Content="{Binding HueVariation, StringFormat='Hue Variation: {0:P0}'}"/>
-                                    <Slider Value="{Binding HueVariation}"
-                                            Minimum="0" Maximum="1"
-                                            TickFrequency="0.1"
-                                            IsSnapToTickEnabled="True"
-                                            Margin="0,5,0,15"
-                                            ToolTip="0% = single color, 100% = full spectrum"/>
+                                    <views:ParameterSlider Label="{Binding HueVariation, StringFormat='Hue Variation: {0:P0}'}" Value="{Binding HueVariation}" ToolTipText="0% = single color, 100% = full spectrum" />
+                                    <views:ParameterSlider Label="{Binding Saturation, StringFormat='Saturation: {0:P0}'}" Value="{Binding Saturation}" ToolTipText="0% = grayscale, 100% = fully saturated" />
+                                    <views:ParameterSlider Label="{Binding ColorTemperature, StringFormat='Color Temperature: {0:P0}'}" Value="{Binding ColorTemperature}" ToolTipText="0% = warm (red/orange), 100% = cool (blue/cyan)" />
 
-                                    <!-- Saturation Slider -->
-                                    <Label Content="{Binding Saturation, StringFormat='Saturation: {0:P0}'}"/>
-                                    <Slider Value="{Binding Saturation}"
-                                            Minimum="0" Maximum="1"
-                                            TickFrequency="0.1"
-                                            IsSnapToTickEnabled="True"
-                                            Margin="0,5,0,15"
-                                            ToolTip="0% = grayscale, 100% = fully saturated"/>
-
-                                    <!-- Color Temperature Slider -->
-                                    <Label Content="{Binding ColorTemperature, StringFormat='Color Temperature: {0:P0}'}"/>
-                                    <Slider Value="{Binding ColorTemperature}"
-                                            Minimum="0" Maximum="1"
-                                            TickFrequency="0.1"
-                                            IsSnapToTickEnabled="True"
-                                            Margin="0,5,0,15"
-                                            ToolTip="0% = warm (red/orange), 100% = cool (blue/cyan)"/>
-
-                                    <!-- Checkboxes -->
-                                    <CheckBox Content="Audio Reactive"
-                                              IsChecked="{Binding AudioReactive}"
-                                              Margin="0,5"/>
-                                    <CheckBox Content="Smooth Transitions"
-                                              IsChecked="{Binding SmoothTransitions}"
-                                              Margin="0,5"/>
+                                    <CheckBox Content="Audio Reactive" IsChecked="{Binding AudioReactive}" Margin="0,5"/>
+                                    <CheckBox Content="Smooth Transitions" IsChecked="{Binding SmoothTransitions}" Margin="0,5"/>
                                 </StackPanel>
                             </GroupBox>
                         </StackPanel>

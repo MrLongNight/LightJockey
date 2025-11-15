@@ -11,6 +11,8 @@ using LightJockey.Views;
 using LightJockey.ViewModels;
 using LightJockey.Services;
 using LightJockey.Models;
+using System.Reflection;
+using System.Threading.Tasks;
 
 namespace LightJockey;
 
@@ -23,14 +25,26 @@ public partial class App : Application
     private IConfigurationService? _configurationService;
     private AppSettings? _appSettings;
 
-    protected override void OnStartup(StartupEventArgs e)
+    protected override async void OnStartup(StartupEventArgs e)
     {
         base.OnStartup(e);
 
-        _configurationService = new ConfigurationService();
-        _appSettings = _configurationService.LoadAppSettings();
+        // Temporary logger for startup
+        Log.Logger = new LoggerConfiguration()
+            .MinimumLevel.Debug()
+            .WriteTo.Console()
+            .CreateBootstrapLogger();
 
-        // Configure Serilog first to catch all startup errors
+        // Build a temporary service provider to get the logger for ConfigurationService
+        var tempServices = new ServiceCollection();
+        tempServices.AddLogging(loggingBuilder => loggingBuilder.AddSerilog());
+        var tempProvider = tempServices.BuildServiceProvider();
+        var configLogger = tempProvider.GetRequiredService<ILogger<ConfigurationService>>();
+
+        _configurationService = new ConfigurationService(configLogger);
+        _appSettings = await _configurationService.LoadAppSettingsAsync();
+
+        // Now configure the final logger
         ConfigureLogging();
 
         // Set up global exception handling
@@ -103,29 +117,32 @@ public partial class App : Application
             var logsPath = Path.Combine(baseDirectory, "logs");
             Directory.CreateDirectory(logsPath);
 
-            // Custom log file cleanup
-            var logFiles = new DirectoryInfo(logsPath)
-                .GetFiles("lightjockey-*.log")
-                .OrderByDescending(f => f.CreationTime)
-                .Skip(_appSettings.RetainedLogFileCount - 1) // Keep the newest files
-                .ToList();
-
-            foreach (var logFile in logFiles)
+            if (_appSettings != null)
             {
-                try
+                // Custom log file cleanup
+                var logFiles = new DirectoryInfo(logsPath)
+                    .GetFiles("lightjockey-*.log")
+                    .OrderByDescending(f => f.CreationTime)
+                    .Skip(_appSettings.RetainedLogFileCount > 0 ? _appSettings.RetainedLogFileCount - 1 : 0) // Ensure count is positive
+                    .ToList();
+
+                foreach (var logFile in logFiles)
                 {
-                    logFile.Delete();
-                }
-                catch (IOException ex)
-                {
-                    System.Diagnostics.Debug.WriteLine($"Error deleting log file: {ex.Message}");
+                    try
+                    {
+                        logFile.Delete();
+                    }
+                    catch (IOException ex)
+                    {
+                        System.Diagnostics.Debug.WriteLine($"Error deleting log file: {ex.Message}");
+                    }
                 }
             }
 
             var timestamp = DateTime.Now.ToString("yyyyMMdd_HHmmss");
             var logFilePath = Path.Combine(logsPath, $"lightjockey-{timestamp}.log");
 
-            var logLevel = Enum.TryParse<LogEventLevel>(_appSettings.LogLevel, true, out var level)
+            var logLevel = _appSettings != null && Enum.TryParse<LogEventLevel>(_appSettings.LogLevel, true, out var level)
                 ? level
                 : LogEventLevel.Information;
 
@@ -143,6 +160,7 @@ public partial class App : Application
         catch (Exception ex)
         {
             MessageBox.Show($"Failed to configure logging: {ex.Message}", "Logging Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            // Use a fallback logger
             File.AppendAllText("logging_error.txt", $"{DateTime.Now}: {ex}\n");
         }
     }
@@ -175,25 +193,19 @@ public partial class App : Application
                 sp.GetRequiredService<ILogger<HueService>>(),
                 sp.GetRequiredService<IConfigurationService>()));
         services.AddSingleton<IEntertainmentService, EntertainmentService>();
-
-        // Register effect plugins
-        // Slow HTTPS effects
-        services.AddTransient<Effects.SlowHttpsEffect>();
-        services.AddTransient<Effects.RainbowCycleEffect>();
-        services.AddTransient<Effects.SmoothFadeEffect>();
-        services.AddTransient<Effects.FFTLowFrequencyEffect>();
-        services.AddTransient<Effects.FFTMidFrequencyEffect>();
-        services.AddTransient<Effects.StrobeManualEffect>();
         
-        // Fast DTLS effects
-        services.AddTransient<Effects.FastEntertainmentEffect>();
-        services.AddTransient<Effects.FFTHighFrequencyEffect>();
-        services.AddTransient<Effects.RainbowFastEffect>();
-        services.AddTransient<Effects.PulseEffect>();
-        services.AddTransient<Effects.ChaseEffect>();
-        services.AddTransient<Effects.SparkleEffect>();
+        // Dynamically register all effect plugins
+        var effectPluginType = typeof(IEffectPlugin);
+        var effectPlugins = Assembly.GetExecutingAssembly().GetTypes()
+            .Where(p => effectPluginType.IsAssignableFrom(p) && !p.IsInterface && !p.IsAbstract)
+            .ToList();
 
-        // Register EffectEngine with plugin registration
+        foreach (var plugin in effectPlugins)
+        {
+            services.AddTransient(plugin);
+        }
+
+        // Register EffectEngine with dynamic plugin registration
         services.AddSingleton<IEffectEngine>(sp =>
         {
             var engine = new EffectEngine(
@@ -201,27 +213,23 @@ public partial class App : Application
                 sp.GetRequiredService<IAudioService>(),
                 sp.GetRequiredService<ISpectralAnalyzer>(),
                 sp.GetRequiredService<IBeatDetector>());
-            
-            // Register slow HTTPS effect plugins
-            engine.RegisterPlugin(sp.GetRequiredService<Effects.SlowHttpsEffect>());
-            engine.RegisterPlugin(sp.GetRequiredService<Effects.RainbowCycleEffect>());
-            engine.RegisterPlugin(sp.GetRequiredService<Effects.SmoothFadeEffect>());
-            engine.RegisterPlugin(sp.GetRequiredService<Effects.FFTLowFrequencyEffect>());
-            engine.RegisterPlugin(sp.GetRequiredService<Effects.FFTMidFrequencyEffect>());
-            engine.RegisterPlugin(sp.GetRequiredService<Effects.StrobeManualEffect>());
-            
-            // Register fast DTLS effect plugins
-            engine.RegisterPlugin(sp.GetRequiredService<Effects.FastEntertainmentEffect>());
-            engine.RegisterPlugin(sp.GetRequiredService<Effects.FFTHighFrequencyEffect>());
-            engine.RegisterPlugin(sp.GetRequiredService<Effects.RainbowFastEffect>());
-            engine.RegisterPlugin(sp.GetRequiredService<Effects.PulseEffect>());
-            engine.RegisterPlugin(sp.GetRequiredService<Effects.ChaseEffect>());
-            engine.RegisterPlugin(sp.GetRequiredService<Effects.SparkleEffect>());
+
+            foreach (var pluginType in effectPlugins)
+            {
+                var pluginInstance = (IEffectPlugin)sp.GetRequiredService(pluginType);
+                engine.RegisterPlugin(pluginInstance);
+            }
             
             return engine;
         });
 
+        // Register services
+        services.AddSingleton<IDialogService, DialogService>();
+
         // Register ViewModels
+        services.AddSingleton<AudioControlViewModel>();
+        services.AddSingleton<HueControlViewModel>();
+        services.AddSingleton<EffectControlViewModel>();
         services.AddSingleton<MainWindowViewModel>();
         services.AddTransient<SettingsViewModel>();
         services.AddSingleton(sp => new MetricsViewModel(

@@ -5,8 +5,8 @@ namespace LightJockey.Services
 {
     public interface IConfigurationService
     {
-        Task<LightJockeyEntertainmentConfig> LoadConfigAsync(string? encryptionKey = null);
-        Task SaveConfigAsync(LightJockeyEntertainmentConfig config, string? encryptionKey = null);
+        Task<LightJockeyEntertainmentConfig> LoadConfigAsync();
+        Task SaveConfigAsync(LightJockeyEntertainmentConfig config);
 
         Task<string?> GetSecureValueAsync(string key);
         Task SetSecureValueAsync(string key, string value);
