@@ -5,7 +5,7 @@ using System.Collections.ObjectModel;
 using System.Linq;
 using System.Windows.Input;
 using System.Threading.Tasks;
-using LightJockey.Utilities;
+using CommunityToolkit.Mvvm.Input;
 using System;
 using System.Windows.Threading;
 
@@ -47,7 +47,7 @@ namespace LightJockey.ViewModels
             {
                 if (e.PropertyName == nameof(HueControlViewModel.IsHueConnected))
                 {
-                    ((RelayCommand)StartEffectCommand).NotifyCanExecuteChanged();
+                    ((RelayCommand)StartEffectCommand).RaiseCanExecuteChanged();
                 }
             };
 
@@ -78,7 +78,7 @@ namespace LightJockey.ViewModels
             {
                 if (SetProperty(ref _selectedEffect, value))
                 {
-                    ((RelayCommand)StartEffectCommand).NotifyCanExecuteChanged();
+                    ((RelayCommand)StartEffectCommand).RaiseCanExecuteChanged();
                 }
             }
         }
@@ -90,8 +90,8 @@ namespace LightJockey.ViewModels
             {
                 if (SetProperty(ref _isEffectRunning, value))
                 {
-                    ((RelayCommand)StartEffectCommand).NotifyCanExecuteChanged();
-                    ((RelayCommand)StopEffectCommand).NotifyCanExecuteChanged();
+                    ((RelayCommand)StartEffectCommand).RaiseCanExecuteChanged();
+                    ((RelayCommand)StopEffectCommand).RaiseCanExecuteChanged();
                 }
             }
         }

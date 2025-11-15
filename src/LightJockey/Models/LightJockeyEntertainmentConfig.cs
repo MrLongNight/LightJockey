@@ -39,4 +39,10 @@ public class LightJockeyEntertainmentConfig
     /// Maximum brightness level (0.0 - 1.0)
     /// </summary>
     public double MaxBrightness { get; init; } = 1.0;
+
+    /// <summary>
+    /// A dictionary for storing sensitive or secure configuration values,
+    /// such as API keys or authentication tokens.
+    /// </summary>
+    public Dictionary<string, string> SecureValues { get; set; } = new();
 }

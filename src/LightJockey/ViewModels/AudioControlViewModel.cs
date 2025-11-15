@@ -4,7 +4,7 @@ using Microsoft.Extensions.Logging;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Windows.Input;
-using LightJockey.Utilities;
+using CommunityToolkit.Mvvm.Input;
 
 namespace LightJockey.ViewModels
 {
@@ -46,7 +46,7 @@ namespace LightJockey.ViewModels
                     _audioService.SelectDevice(value!);
                     _logger.LogInformation("Selected audio device: {DeviceName}", value.Name);
                     // Re-evaluate command states when selection changes
-                    ((RelayCommand)StartAudioCaptureCommand).NotifyCanExecuteChanged();
+                    ((RelayCommand)StartAudioCaptureCommand).RaiseCanExecuteChanged();
                 }
             }
         }
@@ -59,8 +59,8 @@ namespace LightJockey.ViewModels
                 if (SetProperty(ref _isAudioCapturing, value))
                 {
                     // Update command states when capture status changes
-                    ((RelayCommand)StartAudioCaptureCommand).NotifyCanExecuteChanged();
-                    ((RelayCommand)StopAudioCaptureCommand).NotifyCanExecuteChanged();
+                    ((RelayCommand)StartAudioCaptureCommand).RaiseCanExecuteChanged();
+                    ((RelayCommand)StopAudioCaptureCommand).RaiseCanExecuteChanged();
                 }
             }
         }
