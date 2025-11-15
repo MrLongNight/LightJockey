@@ -26,7 +26,10 @@ namespace LightJockey.ViewModels
             _hueService = hueService;
 
             DiscoverHueBridgesCommand = new RelayCommand(async _ => await DiscoverHueBridgesAsync());
-            ConnectToHueBridgeCommand = new RelayCommand(async _ => await ConnectToHueBridgeAsync(), _ => CanConnectToHueBridge());
+            ConnectToHueBridgeCommand = new RelayCommand(
+                async obj => await ConnectToHueBridgeAsync(),
+                obj => CanConnectToHueBridge()
+            );
         }
 
         public ObservableCollection<HueBridge> HueBridges
@@ -42,7 +45,7 @@ namespace LightJockey.ViewModels
             {
                 if (SetProperty(ref _selectedHueBridge, value))
                 {
-                    ((RelayCommand)ConnectToHueBridgeCommand).NotifyCanExecuteChanged();
+                    ((RelayCommand)ConnectToHueBridgeCommand).RaiseCanExecuteChanged();
                 }
             }
         }
@@ -60,7 +63,7 @@ namespace LightJockey.ViewModels
             {
                 if (SetProperty(ref _isHueConnected, value))
                 {
-                    ((RelayCommand)ConnectToHueBridgeCommand).NotifyCanExecuteChanged();
+                    ((RelayCommand)ConnectToHueBridgeCommand).RaiseCanExecuteChanged();
                 }
             }
         }
