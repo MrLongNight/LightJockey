@@ -1,0 +1,47 @@
+name: "GEMINI-A.00_Reusable-Setup-Gemini-CLI_on-Workflow-Call_AUTO.yml"
+
+on:
+  workflow_call:
+    inputs:
+      node_version:
+        description: 'The Node.js version to use'
+        required: false
+        type: string
+        default: '20'
+    secrets:
+      GEMINI_API_KEY:
+        description: 'The API key for Gemini'
+        required: true
+
+jobs:
+  setup-gemini-cli:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ inputs.node_version }}
+
+      - name: Install Gemini CLI
+        run: npm install -g @google/gemini-cli
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+
+      - name: Install Gemini CLI Extensions
+        run: |
+          gemini extensions install https://github.com/clduab11/gemini-flow --alias gemini-flow
+          gemini extensions install https://github.com/github/github-mcp-server --alias github-mcp
+          gemini extensions install https://github.com/gemini-cli-extensions/jules --alias jules-mcp
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+
+      - name: Verify Installation
+        run: |
+          gemini --version
+          gemini extensions list
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
