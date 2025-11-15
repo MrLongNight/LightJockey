@@ -3,35 +3,16 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        xmlns:viewModels="clr-namespace:LightJockey.ViewModels"
+        xmlns:local="clr-namespace:LightJockey.Views"
         mc:Ignorable="d"
-        Title="Settings" Height="300" Width="400"
-        WindowStartupLocation="CenterOwner"
-        d:DataContext="{d:DesignInstance viewModels:SettingsViewModel}">
-    <Grid Margin="15">
-        <Grid.RowDefinitions>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="*"/>
-            <RowDefinition Height="Auto"/>
-        </Grid.RowDefinitions>
-
-        <TextBlock Grid.Row="0" Text="Application Settings" FontSize="18" FontWeight="Bold" Margin="0,0,0,15"/>
-
-        <StackPanel Grid.Row="1">
-            <Label Content="Log Level:"/>
-            <ComboBox SelectedItem="{Binding AppSettings.LogLevel}" Margin="0,5,0,15">
-                <ComboBoxItem>Debug</ComboBoxItem>
-                <ComboBoxItem>Information</ComboBoxItem>
-                <ComboBoxItem>Warning</ComboBoxItem>
-                <ComboBoxItem>Error</ComboBoxItem>
-            </ComboBox>
-
-            <Label Content="Retained Log Files:"/>
-            <Slider Value="{Binding AppSettings.RetainedLogFileCount}" Minimum="1" Maximum="30" IsSnapToTickEnabled="True" TickFrequency="1" Margin="0,5,0,15"/>
-            <TextBlock Text="{Binding AppSettings.RetainedLogFileCount, StringFormat={}{0} files}" HorizontalAlignment="Center"/>
+        Title="Settings" Height="200" Width="400">
+    <Grid>
+        <StackPanel Margin="10">
+            <Label Content="Log Level"/>
+            <ComboBox ItemsSource="{Binding LogLevels}" SelectedItem="{Binding SelectedLogLevel}"/>
+            <Label Content="Retained Log Files"/>
+            <TextBox Text="{Binding RetainedLogFileCount}"/>
+            <Button Content="Save" Command="{Binding SaveCommand}" Margin="0,10,0,0"/>
         </StackPanel>
-
-        <Button Grid.Row="3" Content="Save" Command="{Binding SaveSettingsCommand}" HorizontalAlignment="Right" Padding="15,5"/>
     </Grid>
 </Window>

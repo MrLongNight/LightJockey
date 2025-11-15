@@ -45,7 +45,7 @@
     <Style TargetType="Window">
         <Setter Property="Background" Value="{StaticResource PrimaryBackground}"/>
         <Setter Property="Foreground" Value="{StaticResource TextBrush}"/>
-    </style>
+    </Style>
     
     <Style TargetType="TextBlock">
         <Setter Property="Foreground" Value="{StaticResource TextBrush}"/>
@@ -61,7 +61,6 @@
         <Setter Property="BorderBrush" Value="{StaticResource BorderBrush}"/>
         <Setter Property="Padding" Value="{StaticResource PaddingSmall}"/>
         <Setter Property="Margin" Value="0,5,0,10"/>
-    </style>
     </Style>
     
     <Style TargetType="Button">
@@ -84,18 +83,18 @@
     <Style TargetType="Slider">
         <Setter Property="Foreground" Value="{StaticResource AccentBrush}"/>
         <Setter Property="Margin" Value="0,0,0,10"/>
-    </style>
+    </Style>
     
     <Style TargetType="CheckBox">
         <Setter Property="Foreground" Value="{StaticResource TextBrush}"/>
         <Setter Property="Margin" Value="{StaticResource MarginSmall}"/>
-    </style>
+    </Style>
     
     <Style TargetType="GroupBox">
         <Setter Property="Foreground" Value="{StaticResource TextBrush}"/>
         <Setter Property="BorderBrush" Value="{StaticResource BorderBrush}"/>
         <Setter Property="Background" Value="{StaticResource SecondaryBackground}"/>
         <Setter Property="Padding" Value="{StaticResource PaddingMedium}"/>
-    </style>
+    </Style>
     
 </ResourceDictionary>

@@ -13,7 +13,7 @@ namespace LightJockey.ViewModels
         private readonly IMetricsService _metricsService;
         private readonly ILogger<MetricsViewModel> _logger;
         private readonly DispatcherTimer _timer;
-        private string _exportStatusMessage;
+        private string _exportStatusMessage = string.Empty;
 
         public ObservableCollection<PerformanceMetrics> MetricsHistory { get; } = new();
 

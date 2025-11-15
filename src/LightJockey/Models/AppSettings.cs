@@ -1,12 +1,8 @@
-using CommunityToolkit.Mvvm.ComponentModel;
-
-namespace LightJockey.Models;
-
-public partial class AppSettings : ObservableObject
+namespace LightJockey.Models
 {
-    [ObservableProperty]
-    private string _logLevel = "Information";
-
-    [ObservableProperty]
-    private int _retainedLogFileCount = 10;
+    public class AppSettings
+    {
+        public string LogLevel { get; set; } = "Information";
+        public int RetainedLogFileCount { get; set; } = 10;
+    }
 }
