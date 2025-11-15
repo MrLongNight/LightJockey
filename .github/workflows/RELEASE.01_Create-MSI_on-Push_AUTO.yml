@@ -95,6 +95,9 @@ jobs:
         $version = "${{ steps.get_version.outputs.VERSION }}"
         
         # --- MSI Generation ---
+        $startMenuShortcutGuid = [System.Guid]::NewGuid().ToString()
+        $desktopShortcutGuid = [System.Guid]::NewGuid().ToString()
+
         $directories = @"
             <StandardDirectory Id="ProgramFiles64Folder">
               <Directory Id="INSTALLFOLDER" Name="LightJockey">
@@ -106,9 +109,30 @@ jobs:
               </Directory>
             </StandardDirectory>
             <StandardDirectory Id="ProgramMenuFolder">
-                <Directory Id="ApplicationProgramsFolder" Name="LightJockey"/>
+                <Directory Id="ApplicationProgramsFolder" Name="LightJockey">
+                    <Component Id="ApplicationShortcutComponent" Guid="$startMenuShortcutGuid">
+                        <Shortcut Id="ApplicationStartMenuShortcut"
+                                  Name="LightJockey"
+                                  Description="LightJockey"
+                                  Target="[INSTALLFOLDER]LightJockey.exe"
+                                  WorkingDirectory="INSTALLFOLDER"
+                                  Icon="icon.ico"/>
+                        <RemoveFolder Id="ApplicationProgramsFolder" On="uninstall"/>
+                        <RegistryValue Root="HKCU" Key="Software\LightJockey" Name="installed" Type="integer" Value="1" KeyPath="yes"/>
+                    </Component>
+                </Directory>
             </StandardDirectory>
-            <StandardDirectory Id="DesktopFolder" Name="Desktop" />
+            <StandardDirectory Id="DesktopFolder">
+                 <Component Id="DesktopShortcutComponent" Guid="$desktopShortcutGuid">
+                    <Shortcut Id="ApplicationDesktopShortcut"
+                              Name="LightJockey"
+                              Description="LightJockey"
+                              Target="[INSTALLFOLDER]LightJockey.exe"
+                              WorkingDirectory="INSTALLFOLDER"
+                              Icon="icon.ico"/>
+                    <RegistryValue Root="HKCU" Key="Software\LightJockey" Name="desktop_shortcut" Type="integer" Value="1" KeyPath="yes"/>
+                </Component>
+            </StandardDirectory>
         "@
 
         $files = Get-ChildItem -Path "${{ env.PUBLISH_DIR }}" -Recurse -File
@@ -153,38 +177,21 @@ jobs:
             <Icon Id="icon.ico" SourceFile="src/LightJockey/ressources/icon.ico"/>
             <Property Id="ARPPRODUCTICON" Value="icon.ico" />
 
-            <ui:WixUI Id="WixUI_Advanced"/>
+            <ui:WixUI Id="WixUI_FeatureTree" />
 
             $directories
 
-            <Feature Id="ProductFeature" Title="LightJockey" Level="1">
+            <Feature Id="MainApplication" Title="LightJockey Application" Level="1" Display="expand">
               $componentRefs
-              <ComponentRef Id="ApplicationShortcut" />
-              <ComponentRef Id="DesktopShortcut" />
             </Feature>
-
-            <Component Id="ApplicationShortcut" Directory="ApplicationProgramsFolder" Guid="*">
-                <Condition>CREATE_STARTMENU_SHORTCUT</Condition>
-                <Shortcut Id="ApplicationStartMenuShortcut"
-                          Name="LightJockey"
-                          Description="LightJockey"
-                          Target="[INSTALLFOLDER]LightJockey.exe"
-                          WorkingDirectory="INSTALLFOLDER"
-                          Icon="icon.ico"/>
-                <RemoveFolder Id="ApplicationProgramsFolder" On="uninstall"/>
-                <RegistryValue Root="HKCU" Key="Software\LightJockey" Name="installed" Type="integer" Value="1" KeyPath="yes"/>
-            </Component>
-
-            <Component Id="DesktopShortcut" Directory="DesktopFolder" Guid="*">
-                <Condition>CREATE_DESKTOP_SHORTCUT</Condition>
-                <Shortcut Id="ApplicationDesktopShortcut"
-                          Name="LightJockey"
-                          Description="LightJockey"
-                          Target="[INSTALLFOLDER]LightJockey.exe"
-                          WorkingDirectory="INSTALLFOLDER"
-                          Icon="icon.ico"/>
-                <RegistryValue Root="HKCU" Key="Software\LightJockey" Name="desktop_shortcut" Type="integer" Value="1" KeyPath="yes"/>
-            </Component>
+            <Feature Id="Shortcuts" Title="Shortcuts" Level="1">
+                <Feature Id="StartMenuShortcutFeature" Title="Start Menu Shortcut" Level="1">
+                    <ComponentRef Id="ApplicationShortcutComponent"/>
+                </Feature>
+                <Feature Id="DesktopShortcutFeature" Title="Desktop Shortcut" Level="1">
+                    <ComponentRef Id="DesktopShortcutComponent"/>
+                </Feature>
+            </Feature>
 
           </Package>
         </Wix>
@@ -210,7 +217,7 @@ jobs:
                 <Chain>
                     <PackageGroupRef Id="NetCoreDesktopRuntime_9_0_x64"/>
 
-                    <MsiPackage SourceFile="installer\LightJockey.msi"/>
+                    <MsiPackage SourceFile="installer\LightJockey.msi" />
                 </Chain>
             </Bundle>
         </Wix>

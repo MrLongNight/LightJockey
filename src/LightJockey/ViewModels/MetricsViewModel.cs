@@ -1,23 +1,21 @@
-using CommunityToolkit.Mvvm.Input;
+using System.Collections.ObjectModel;
+using System.Windows.Input;
+using CommunityToolkit.Mvvm.ComponentModel;
 using LightJockey.Models;
 using LightJockey.Services;
+using LightJockey.Utilities;
 using Microsoft.Extensions.Logging;
-using System.Collections.ObjectModel;
-using System.Threading.Tasks;
-using System.Windows.Threading;
 
 namespace LightJockey.ViewModels
 {
-    public class MetricsViewModel : ViewModelBase
+    public partial class MetricsViewModel : ViewModelBase
     {
         private readonly IMetricsService _metricsService;
         private readonly ILogger<MetricsViewModel> _logger;
-        private readonly DispatcherTimer _timer;
         private string _exportStatusMessage;
 
-        public ObservableCollection<PerformanceMetrics> MetricsHistory { get; } = new();
-
-        public IAsyncRelayCommand ExportMetricsCommand { get; }
+        [ObservableProperty]
+        private PerformanceMetrics _performanceMetrics;
 
         public string ExportStatusMessage
         {
@@ -25,44 +23,36 @@ namespace LightJockey.ViewModels
             set => SetProperty(ref _exportStatusMessage, value);
         }
 
+        public ICommand ExportMetricsCommand { get; }
+
         public MetricsViewModel(IMetricsService metricsService, ILogger<MetricsViewModel> logger)
         {
             _metricsService = metricsService;
             _logger = logger;
+            _performanceMetrics = new PerformanceMetrics();
+            _exportStatusMessage = string.Empty;
 
-            ExportMetricsCommand = new AsyncRelayCommand(ExportMetricsAsync);
-
-            _timer = new DispatcherTimer
-            {
-                Interval = TimeSpan.FromSeconds(1)
-            };
-            _timer.Tick += (s, e) => UpdateMetrics();
-            _timer.Start();
+            ExportMetricsCommand = new RelayCommand(ExportMetrics);
+            _metricsService.MetricsUpdated += OnMetricsUpdated;
         }
 
-        private void UpdateMetrics()
+        private void OnMetricsUpdated(object? sender, PerformanceMetrics e)
         {
-            MetricsHistory.Clear();
-            foreach (var metric in _metricsService.GetMetricsHistory())
-            {
-                MetricsHistory.Add(metric);
-            }
+            PerformanceMetrics = e;
         }
 
-        private async Task ExportMetricsAsync()
+        private void ExportMetrics(object? parameter)
         {
-            _logger.LogInformation("Exporting metrics...");
-            ExportStatusMessage = "Exporting...";
             try
             {
-                var filePath = await _metricsService.ExportMetricsToCsvAsync();
-                ExportStatusMessage = $"Metrics exported to {filePath}";
-                _logger.LogInformation("Metrics exported successfully to {FilePath}", filePath);
+                var path = "metrics.csv";
+                _metricsService.ExportMetrics(path);
+                ExportStatusMessage = $"Metrics exported to {path}";
             }
-            catch (Exception ex)
+            catch (System.Exception ex)
             {
-                ExportStatusMessage = "Export failed. Check logs for details.";
-                _logger.LogError(ex, "Failed to export metrics");
+                _logger.LogError(ex, "Error exporting metrics");
+                ExportStatusMessage = "Error exporting metrics";
             }
         }
     }

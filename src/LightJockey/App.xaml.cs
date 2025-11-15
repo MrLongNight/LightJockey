@@ -11,6 +11,7 @@ using LightJockey.Views;
 using LightJockey.ViewModels;
 using LightJockey.Services;
 using LightJockey.Models;
+using LightJockey.Services.Effects;
 
 namespace LightJockey;
 
@@ -97,6 +98,11 @@ public partial class App : Application
 
     private void ConfigureLogging()
     {
+        if (_appSettings == null)
+        {
+            // Handle the case where settings are not loaded.
+            _appSettings = new AppSettings();
+        }
         try
         {
             var baseDirectory = AppDomain.CurrentDomain.BaseDirectory;
@@ -178,20 +184,20 @@ public partial class App : Application
 
         // Register effect plugins
         // Slow HTTPS effects
-        services.AddTransient<Effects.SlowHttpsEffect>();
-        services.AddTransient<Effects.RainbowCycleEffect>();
-        services.AddTransient<Effects.SmoothFadeEffect>();
-        services.AddTransient<Effects.FFTLowFrequencyEffect>();
-        services.AddTransient<Effects.FFTMidFrequencyEffect>();
-        services.AddTransient<Effects.StrobeManualEffect>();
+        services.AddTransient<SlowHttpsEffect>();
+        services.AddTransient<RainbowCycleEffect>();
+        services.AddTransient<SmoothFadeEffect>();
+        services.AddTransient<FFTLowFrequencyEffect>();
+        services.AddTransient<FFTMidFrequencyEffect>();
+        services.AddTransient<StrobeManualEffect>();
         
         // Fast DTLS effects
-        services.AddTransient<Effects.FastEntertainmentEffect>();
-        services.AddTransient<Effects.FFTHighFrequencyEffect>();
-        services.AddTransient<Effects.RainbowFastEffect>();
-        services.AddTransient<Effects.PulseEffect>();
-        services.AddTransient<Effects.ChaseEffect>();
-        services.AddTransient<Effects.SparkleEffect>();
+        services.AddTransient<FastEntertainmentEffect>();
+        services.AddTransient<FFTHighFrequencyEffect>();
+        services.AddTransient<RainbowFastEffect>();
+        services.AddTransient<PulseEffect>();
+        services.AddTransient<ChaseEffect>();
+        services.AddTransient<SparkleEffect>();
 
         // Register EffectEngine with plugin registration
         services.AddSingleton<IEffectEngine>(sp =>
@@ -203,20 +209,20 @@ public partial class App : Application
                 sp.GetRequiredService<IBeatDetector>());
             
             // Register slow HTTPS effect plugins
-            engine.RegisterPlugin(sp.GetRequiredService<Effects.SlowHttpsEffect>());
-            engine.RegisterPlugin(sp.GetRequiredService<Effects.RainbowCycleEffect>());
-            engine.RegisterPlugin(sp.GetRequiredService<Effects.SmoothFadeEffect>());
-            engine.RegisterPlugin(sp.GetRequiredService<Effects.FFTLowFrequencyEffect>());
-            engine.RegisterPlugin(sp.GetRequiredService<Effects.FFTMidFrequencyEffect>());
-            engine.RegisterPlugin(sp.GetRequiredService<Effects.StrobeManualEffect>());
+            engine.RegisterPlugin(sp.GetRequiredService<SlowHttpsEffect>());
+            engine.RegisterPlugin(sp.GetRequiredService<RainbowCycleEffect>());
+            engine.RegisterPlugin(sp.GetRequiredService<SmoothFadeEffect>());
+            engine.RegisterPlugin(sp.GetRequiredService<FFTLowFrequencyEffect>());
+            engine.RegisterPlugin(sp.GetRequiredService<FFTMidFrequencyEffect>());
+            engine.RegisterPlugin(sp.GetRequiredService<StrobeManualEffect>());
             
             // Register fast DTLS effect plugins
-            engine.RegisterPlugin(sp.GetRequiredService<Effects.FastEntertainmentEffect>());
-            engine.RegisterPlugin(sp.GetRequiredService<Effects.FFTHighFrequencyEffect>());
-            engine.RegisterPlugin(sp.GetRequiredService<Effects.RainbowFastEffect>());
-            engine.RegisterPlugin(sp.GetRequiredService<Effects.PulseEffect>());
-            engine.RegisterPlugin(sp.GetRequiredService<Effects.ChaseEffect>());
-            engine.RegisterPlugin(sp.GetRequiredService<Effects.SparkleEffect>());
+            engine.RegisterPlugin(sp.GetRequiredService<FastEntertainmentEffect>());
+            engine.RegisterPlugin(sp.GetRequiredService<FFTHighFrequencyEffect>());
+            engine.RegisterPlugin(sp.GetRequiredService<RainbowFastEffect>());
+            engine.RegisterPlugin(sp.GetRequiredService<PulseEffect>());
+            engine.RegisterPlugin(sp.GetRequiredService<ChaseEffect>());
+            engine.RegisterPlugin(sp.GetRequiredService<SparkleEffect>());
             
             return engine;
         });
@@ -235,7 +241,10 @@ public partial class App : Application
         services.AddSingleton<IBackupService, BackupService>();
 
         // Register ConfigurationService for secure data storage
-        services.AddSingleton<IConfigurationService>(_configurationService);
+        if (_configurationService != null)
+        {
+            services.AddSingleton<IConfigurationService>(_configurationService);
+        }
 
         // Register views
         services.AddSingleton<MainWindow>();
