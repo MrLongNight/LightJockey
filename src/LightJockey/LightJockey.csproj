@@ -22,6 +22,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.0" />
     <PackageReference Include="HueApi" Version="3.0.0" />
     <PackageReference Include="HueApi.ColorConverters" Version="3.0.0" />
     <PackageReference Include="HueApi.Entertainment" Version="3.0.0" />
