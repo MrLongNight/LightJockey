@@ -99,7 +99,7 @@ public class MainWindowViewModel : ViewModelBase, IDisposable
         StopEffectCommand = new RelayCommand(async _ => await StopEffectAsync(), _ => CanStopEffect());
         
         ToggleThemeCommand = new RelayCommand(_ => ToggleTheme());
-        OpenSettingsCommand = new RelayCommand(new Action<object?>(OpenSettings));
+        OpenSettingsCommand = new RelayCommand(OpenSettings);
 
         // Load initial data
         RefreshAudioDevices();
@@ -616,7 +616,7 @@ public class MainWindowViewModel : ViewModelBase, IDisposable
 
     #region Settings Methods
 
-    private void OpenSettings(object? parameter)
+    private void OpenSettings()
     {
         var settingsViewModel = new SettingsViewModel(_configurationService);
         var settingsWindow = new SettingsWindow(settingsViewModel)
