@@ -1,0 +1,32 @@
+name: Hue Bridge Integration Tests
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+
+jobs:
+  build-and-test-on-pi:
+    name: Run Integration Tests on Raspberry Pi
+    runs-on: self-hosted # Wählt automatisch den Runner auf dem Pi aus
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: '9.0.x'
+
+    - name: Restore dependencies
+      run: dotnet restore
+
+    - name: Build project
+      run: dotnet build --no-restore --configuration Release
+
+    - name: Run Hue Integration Tests
+      env:
+        HUE_BRIDGE_IP: ${{ secrets.HUE_BRIDGE_IP }}
+        HUE_APP_KEY: ${{ secrets.HUE_APP_KEY }}
+      run: dotnet test --no-build --configuration Release --filter "FullyQualifiedName~HueServiceIntegrationTests"
