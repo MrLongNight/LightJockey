@@ -1,14 +1,13 @@
 using System.Windows;
-using LightJockey.ViewModels;
 
 namespace LightJockey.Views
 {
     public partial class SettingsWindow : Window
     {
-        public SettingsWindow(SettingsViewModel viewModel)
+        public SettingsWindow(object dataContext)
         {
             InitializeComponent();
-            DataContext = viewModel;
+            DataContext = dataContext;
         }
     }
 }

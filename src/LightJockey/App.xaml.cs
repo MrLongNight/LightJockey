@@ -10,6 +10,7 @@ using Serilog.Events;
 using LightJockey.Views;
 using LightJockey.ViewModels;
 using LightJockey.Services;
+using LightJockey.Services.Effects;
 using LightJockey.Models;
 using System.Reflection;
 using System.Threading.Tasks;
@@ -243,7 +244,10 @@ public partial class App : Application
         services.AddSingleton<IBackupService, BackupService>();
 
         // Register ConfigurationService for secure data storage
-        services.AddSingleton<IConfigurationService>(_configurationService);
+        if (_configurationService != null)
+        {
+            services.AddSingleton<IConfigurationService>(_configurationService);
+        }
 
         // Register views
         services.AddSingleton<MainWindow>();
