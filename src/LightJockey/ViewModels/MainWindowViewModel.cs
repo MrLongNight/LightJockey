@@ -208,7 +208,7 @@ public class MainWindowViewModel : ViewModelBase, IDisposable
         _logger.LogInformation("Theme changed to: {Theme}", IsDarkTheme ? "Dark" : "Light");
     }
 
-    private void OpenSettings(object obj)
+    private void OpenSettings(object? obj)
     {
         _dialogService.ShowSettings();
     }

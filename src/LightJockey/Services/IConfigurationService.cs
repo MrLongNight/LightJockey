@@ -11,7 +11,7 @@ namespace LightJockey.Services
         Task<string?> GetSecureValueAsync(string key);
         Task SetSecureValueAsync(string key, string value);
 
-        AppSettings LoadAppSettings();
-        void SaveAppSettings(AppSettings appSettings);
+        Task<AppSettings> LoadAppSettingsAsync();
+        Task SaveAppSettingsAsync(AppSettings appSettings);
     }
 }

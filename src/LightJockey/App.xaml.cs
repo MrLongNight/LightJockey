@@ -34,7 +34,7 @@ public partial class App : Application
         Log.Logger = new LoggerConfiguration()
             .MinimumLevel.Debug()
             .WriteTo.Console()
-            .CreateBootstrapLogger();
+            .CreateLogger();
 
         // Build a temporary service provider to get the logger for ConfigurationService
         var tempServices = new ServiceCollection();
