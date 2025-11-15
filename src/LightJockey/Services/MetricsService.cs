@@ -1,7 +1,11 @@
 using LightJockey.Models;
 using Microsoft.Extensions.Logging;
 using System.Collections.Generic;
+using System.Globalization;
+using System.IO;
 using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
 
 namespace LightJockey.Services
 {
@@ -29,6 +33,32 @@ namespace LightJockey.Services
         public IEnumerable<PerformanceMetrics> GetMetricsHistory()
         {
             return _metricsHistory.ToList();
+        }
+
+        public async Task<string> ExportMetricsToCsvAsync()
+        {
+            var history = GetMetricsHistory();
+            var filePath = Path.Combine(Path.GetTempPath(), $"metrics_{DateTime.UtcNow:yyyyMMddHHmmss}.csv");
+
+            var csv = new StringBuilder();
+            csv.AppendLine("Timestamp,StreamingFPS,AudioLatencyMs,FFTLatencyMs,EffectLatencyMs,TotalLatencyMs,FrameCount");
+
+            foreach (var metrics in history)
+            {
+                csv.AppendLine(string.Join(",",
+                    metrics.Timestamp.ToString(CultureInfo.InvariantCulture),
+                    metrics.StreamingFPS.ToString(CultureInfo.InvariantCulture),
+                    metrics.AudioLatencyMs.ToString(CultureInfo.InvariantCulture),
+                    metrics.FFTLatencyMs.ToString(CultureInfo.InvariantCulture),
+                    metrics.EffectLatencyMs.ToString(CultureInfo.InvariantCulture),
+                    metrics.TotalLatencyMs.ToString(CultureInfo.InvariantCulture),
+                    metrics.FrameCount
+                ));
+            }
+
+            await File.WriteAllTextAsync(filePath, csv.ToString());
+            _logger.LogInformation("Exported metrics to {FilePath}", filePath);
+            return filePath;
         }
     }
 }

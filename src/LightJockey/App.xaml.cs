@@ -69,14 +69,15 @@ public partial class App : Application
 
         Log.Logger = new LoggerConfiguration()
             .MinimumLevel.Debug()
+            .Enrich.FromLogContext()
             .Enrich.WithProcessId()
             .Enrich.WithThreadId()
-            .WriteTo.Console(outputTemplate: "{Timestamp:yyyy-MM-dd HH:mm:ss.fff zzz} [{Level:u3}] [{ProcessId}] [{ThreadId}] {Message:lj}{NewLine}{Exception}")
+            .WriteTo.Console(outputTemplate: "{Timestamp:yyyy-MM-dd HH:mm:ss.fff zzz} [{Level:u3}] [{SourceContext}] [{ProcessId}] [{ThreadId}] {Message:lj}{NewLine}{Exception}")
             .WriteTo.File(
                 Path.Combine(logsPath, "lightjockey-.log"),
                 rollingInterval: RollingInterval.Day,
                 retainedFileCountLimit: 7,
-                outputTemplate: "{Timestamp:yyyy-MM-dd HH:mm:ss.fff zzz} [{Level:u3}] [{ProcessId}] [{ThreadId}] {Message:lj}{NewLine}{Exception}")
+                outputTemplate: "{Timestamp:yyyy-MM-dd HH:mm:ss.fff zzz} [{Level:u3}] [{SourceContext}] [{ProcessId}] [{ThreadId}] {Message:lj}{NewLine}{Exception}")
             .CreateLogger();
     }
 
@@ -156,7 +157,9 @@ public partial class App : Application
 
         // Register ViewModels
         services.AddSingleton<MainWindowViewModel>();
-        services.AddSingleton<MetricsViewModel>();
+        services.AddSingleton(sp => new MetricsViewModel(
+            sp.GetRequiredService<Services.IMetricsService>(),
+            sp.GetRequiredService<ILogger<MetricsViewModel>>()));
 
         // Register PresetService
         services.AddSingleton<Services.IPresetService, Services.PresetService>();
