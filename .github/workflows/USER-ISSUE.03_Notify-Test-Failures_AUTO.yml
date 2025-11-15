@@ -1,0 +1,229 @@
+name: "USER-ISSUE.03_Notify-Test-Failures_AUTO.yml"
+
+# This workflow notifies users when unit tests fail on their issues
+# It monitors PRs created by Jules for user-submitted issues
+
+on:
+  workflow_run:
+    workflows: ["CI.01_Build-Test_on-Push-PR_AUTO.yml"]
+    types:
+      - completed
+
+jobs:
+  notify-test-failures:
+    runs-on: ubuntu-latest
+    if: github.event.workflow_run.conclusion == 'failure'
+    permissions:
+      issues: write
+      pull-requests: write
+      contents: read
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      
+      - name: Find related issue and PR
+        id: find_issue
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const workflowRun = context.payload.workflow_run;
+            const headBranch = workflowRun.head_branch;
+            const headSha = workflowRun.head_sha;
+            
+            console.log(`Workflow failed on branch: ${headBranch}`);
+            console.log(`Commit SHA: ${headSha}`);
+            
+            // Find PR associated with this branch
+            const prs = await github.rest.pulls.list({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              state: 'open',
+              head: `${context.repo.owner}:${headBranch}`
+            });
+            
+            if (prs.data.length === 0) {
+              console.log('No open PR found for this branch');
+              return null;
+            }
+            
+            const pr = prs.data[0];
+            console.log(`Found PR #${pr.number}`);
+            
+            // Check if this PR has jules-processing label (user-submitted issue)
+            const hasJulesLabel = pr.labels.some(label => 
+              label.name === 'jules-processing' || label.name === 'jules-pr'
+            );
+            
+            if (!hasJulesLabel) {
+              console.log('PR is not from Jules, skipping notification');
+              return null;
+            }
+            
+            // Try to find linked issue
+            let issueNumber = null;
+            
+            // Check PR body for issue references
+            const issueMatch = pr.body?.match(/#(\d+)/);
+            if (issueMatch) {
+              issueNumber = parseInt(issueMatch[1]);
+            }
+            
+            // If no issue found in PR body, search for issues with jules-processing label
+            if (!issueNumber) {
+              const issues = await github.rest.issues.listForRepo({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                state: 'open',
+                labels: 'jules-processing'
+              });
+              
+              // Find issue that mentions this PR or has matching session
+              for (const issue of issues.data) {
+                if (issue.body?.includes(`#${pr.number}`) || 
+                    issue.body?.includes(pr.head.ref)) {
+                  issueNumber = issue.number;
+                  break;
+                }
+              }
+            }
+            
+            return {
+              prNumber: pr.number,
+              prUrl: pr.html_url,
+              issueNumber: issueNumber,
+              branch: headBranch
+            };
+      
+      - name: Get workflow logs
+        id: get_logs
+        if: steps.find_issue.outputs.result != 'null'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const runId = context.payload.workflow_run.id;
+            
+            // Get jobs for this workflow run
+            const jobs = await github.rest.actions.listJobsForWorkflowRun({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              run_id: runId
+            });
+            
+            // Find failed jobs
+            const failedJobs = jobs.data.jobs.filter(job => 
+              job.conclusion === 'failure'
+            );
+            
+            if (failedJobs.length === 0) {
+              return 'No specific failed jobs found';
+            }
+            
+            // Extract failure information
+            let failureInfo = '### Failed Jobs:\n\n';
+            for (const job of failedJobs) {
+              failureInfo += `- **${job.name}**\n`;
+              
+              // Get failed steps
+              const failedSteps = job.steps.filter(step => 
+                step.conclusion === 'failure'
+              );
+              
+              for (const step of failedSteps) {
+                failureInfo += `  - ❌ ${step.name}\n`;
+              }
+            }
+            
+            return failureInfo;
+      
+      - name: Notify user on issue
+        if: steps.find_issue.outputs.result != 'null'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const data = ${{ steps.find_issue.outputs.result }};
+            
+            if (!data) {
+              console.log('No related issue found');
+              return;
+            }
+            
+            const failureInfo = ${{ steps.get_logs.outputs.result }};
+            const workflowUrl = context.payload.workflow_run.html_url;
+            
+            // Notify on PR
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: data.prNumber,
+              body: `## ⚠️ Unit-Tests fehlgeschlagen
+              
+              Die automatischen Tests für diesen Pull Request sind fehlgeschlagen.
+              
+              ${failureInfo}
+              
+              ### Was bedeutet das?
+              
+              Die von Jules erstellte Lösung hat die automatischen Tests nicht bestanden. Dies erfordert jetzt eine **manuelle Prüfung durch einen Menschen**.
+              
+              ### Nächste Schritte:
+              
+              1. 👀 Ein Maintainer wird die fehlgeschlagenen Tests analysieren
+              2. 🔧 Notwendige Korrekturen werden vorgenommen
+              3. ✅ Tests werden erneut ausgeführt
+              4. ⏳ **Es kann zu einer Wartezeit kommen**, bis die manuelle Prüfung abgeschlossen ist
+              
+              ### Logs ansehen:
+              
+              Du kannst die detaillierten Fehler hier einsehen: [Workflow-Logs](${workflowUrl})
+              
+              ---
+              
+              **Status:** ⏳ Warte auf manuelle Prüfung
+              
+              @${{ github.repository_owner }} Bitte prüfe die fehlgeschlagenen Tests.`
+            });
+            
+            // Also notify on the original issue if it exists
+            if (data.issueNumber) {
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: data.issueNumber,
+                body: `## ⚠️ Update: Tests fehlgeschlagen
+                
+                Jules hat einen Pull Request erstellt (#${data.prNumber}), aber die automatischen Tests sind fehlgeschlagen.
+                
+                ${failureInfo}
+                
+                ### Was bedeutet das?
+                
+                Die automatische Implementierung benötigt jetzt eine **manuelle Prüfung und Korrektur**.
+                
+                ⏳ **Es kann zu einer Wartezeit kommen**, bis ein Maintainer die Tests geprüft und Korrekturen vorgenommen hat.
+                
+                ### Du wirst benachrichtigt wenn:
+                - ✅ Die Tests erfolgreich sind und der PR gemergt wird
+                - 🔄 Weitere Informationen benötigt werden
+                
+                Weitere Details findest du im Pull Request: #${data.prNumber}
+                
+                **Status:** ⏳ Warte auf manuelle Prüfung`
+              });
+              
+              // Add label to indicate manual review needed
+              await github.rest.issues.addLabels({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: data.issueNumber,
+                labels: ['needs-manual-review']
+              });
+            }
+            
+            // Add label to PR
+            await github.rest.issues.addLabels({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: data.prNumber,
+              labels: ['tests-failed', 'needs-manual-review']
+            });

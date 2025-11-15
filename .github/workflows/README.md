@@ -81,6 +81,70 @@ The new **Jules API integration** provides near-complete automation (~98%) by le
 
 **Configuration**: Requires `JULES_AUTOMATION_ENABLED` variable and `JulesAPIKey` secret.
 
+## 🆕 User Issue Workflows (NEW)
+
+These workflows handle bug reports and feature requests submitted by users through GitHub issue templates. See [USER_ISSUE_AUTOMATION.md](../../docs/USER_ISSUE_AUTOMATION.md) for complete documentation.
+
+### USER-ISSUE.01: Process Bug Report
+**File**: `USER-ISSUE.01_Process-Bug-Report_AUTO.yml`
+
+**Purpose**: Automatically processes bug reports submitted by users - fully automated.
+
+**Triggers**:
+- Automatic when issue with label `jules-auto-process` is opened
+
+**What it does**:
+- Creates Jules session immediately (no approval needed)
+- Jules analyzes and fixes the bug
+- Creates pull request automatically
+- Runs tests and auto-merges if successful
+- Notifies user of progress
+
+**User Experience**: Bug is automatically fixed within minutes to hours.
+
+### USER-ISSUE.02: Process Feature Request
+**File**: `USER-ISSUE.02_Process-Feature-Request_AUTO.yml`
+
+**Purpose**: Processes feature requests with manual approval step.
+
+**Triggers**:
+- Automatic when issue with label `needs-approval` is opened (requests approval)
+- Automatic when label `approved-for-jules` is added (starts Jules)
+
+**What it does**:
+- Assigns issue to repository owner for review
+- Waits for maintainer approval
+- When approved: Creates Jules session
+- Jules implements the feature
+- Creates pull request automatically
+- Runs tests and auto-merges if successful
+- Notifies user at each step
+
+**User Experience**: 
+- User submits feature request
+- Waits for approval (1-7 days)
+- Feature is automatically implemented after approval
+
+### USER-ISSUE.03: Notify Test Failures
+**File**: `USER-ISSUE.03_Notify-Test-Failures_AUTO.yml`
+
+**Purpose**: Notifies users when unit tests fail on their issues, requiring manual review.
+
+**Triggers**:
+- Automatic when CI workflow fails
+
+**What it does**:
+- Detects failed tests on user-submitted issue PRs
+- Identifies the related original issue
+- Notifies user about test failures
+- Explains that manual review is needed
+- Adds labels: `tests-failed`, `needs-manual-review`
+- Mentions maintainer for manual intervention
+
+**User Experience**: User is kept informed when delays occur due to test failures.
+
+**Configuration**: Works automatically with existing CI workflow.
+
 ## Workflow Structure
 
 ### Auto-Task Workflows
@@ -307,6 +371,7 @@ dotnet tool install --global wix
 
 For detailed information:
 - [Task 10: CI/CD & MSI Packaging](../../docs/tasks/Task10_CICD_MSI.md)
+- [User Issue Automation](../../docs/USER_ISSUE_AUTOMATION.md)
 
 ## Summary
 
@@ -316,6 +381,10 @@ For detailed information:
 | CI.01_Build-Test_on-Push-PR_AUTO | Automatic (push/PR) | Run tests & coverage |
 | RELEASE.01_Create-MSI_on-Push_AUTO | Manual / Tags | Create installer package |
 | RELEASE.01_Create-MSI_on-Push_MAN | Manual only | Create pre-release installer |
+| **User Issue Workflows (NEW)** |
+| USER-ISSUE.01_Process-Bug-Report_AUTO | Issue opened (bug) | Auto-process bug reports |
+| USER-ISSUE.02_Process-Feature-Request_AUTO | Issue opened/labeled (feature) | Process feature requests with approval |
+| USER-ISSUE.03_Notify-Test-Failures_AUTO | CI failure | Notify users of test failures |
 | **Jules API Workflows (Recommended)** |
 | TASK-A.00_Reusable-Start-Task_on-Workflow-Call_AUTO | Workflow call | Reusable: Start Jules task |
 | TASK-A.00_Reusable-Monitor-PR_on-Workflow-Call_AUTO | Workflow call | Reusable: Monitor Jules PR |
@@ -335,3 +404,6 @@ This structure provides:
 - ✅ Manual control over release packaging
 - ✅ Clear separation of concerns
 - ✅ Multiple automation paths (Jules API or Copilot Workspace)
+- ✅ User-friendly issue templates with automated processing
+- ✅ Approval workflow for feature requests
+- ✅ Automatic notifications on test failures

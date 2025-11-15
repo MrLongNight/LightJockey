@@ -1,0 +1,99 @@
+name: Feature Request
+description: Schlage eine neue Funktion für LightJockey vor (benötigt manuelle Genehmigung)
+title: "[Feature]: "
+labels: ["enhancement", "needs-approval"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ## Feature Request
+        
+        Vielen Dank für deinen Verbesserungsvorschlag! 
+        
+        **Prozess für Feature Requests:**
+        1. 📝 Du erstellst dieses Issue mit deinem Vorschlag
+        2. 👀 Ein Maintainer prüft den Vorschlag
+        3. ✅ Bei Genehmigung: Das Label `approved-for-jules` wird hinzugefügt
+        4. 🤖 Jules AI Agent implementiert die Funktion automatisch
+        5. 🔄 Ein Pull Request wird erstellt und automatisch gemergt
+        6. ⚠️ Du wirst benachrichtigt, wenn manuelle Prüfung erforderlich ist
+        
+        **Hinweis:** Ohne Genehmigung wird dieses Feature nicht automatisch implementiert.
+        
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem/Bedarf
+      description: Welches Problem löst diese Funktion? Warum wird sie benötigt?
+      placeholder: Beschreibe das Problem oder den Bedarf, den diese Funktion adressiert
+    validations:
+      required: true
+      
+  - type: textarea
+    id: solution
+    attributes:
+      label: Vorgeschlagene Lösung
+      description: Wie sollte diese Funktion funktionieren?
+      placeholder: Beschreibe im Detail, wie die Funktion implementiert werden sollte
+    validations:
+      required: true
+      
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternative Lösungen
+      description: Gibt es alternative Ansätze, die du in Betracht gezogen hast?
+    validations:
+      required: false
+      
+  - type: textarea
+    id: benefits
+    attributes:
+      label: Vorteile
+      description: Welche Vorteile bringt diese Funktion?
+      placeholder: |
+        - Verbessert Benutzererfahrung
+        - Erhöht Performance
+        - Vereinfacht Bedienung
+    validations:
+      required: false
+      
+  - type: dropdown
+    id: priority
+    attributes:
+      label: Priorität (deine Einschätzung)
+      description: Wie wichtig ist diese Funktion?
+      options:
+        - Niedrig - Nice to have
+        - Mittel - Wäre sehr nützlich
+        - Hoch - Wichtig für meine Nutzung
+        - Kritisch - Blocker für meine Nutzung
+    validations:
+      required: true
+      
+  - type: textarea
+    id: use-cases
+    attributes:
+      label: Anwendungsfälle
+      description: Beschreibe konkrete Szenarien, in denen diese Funktion nützlich wäre
+      placeholder: |
+        1. Szenario 1: ...
+        2. Szenario 2: ...
+    validations:
+      required: false
+      
+  - type: textarea
+    id: mockups
+    attributes:
+      label: Mockups/Screenshots
+      description: Falls vorhanden, füge Mockups oder Beispiele hinzu
+    validations:
+      required: false
+      
+  - type: textarea
+    id: additional
+    attributes:
+      label: Zusätzlicher Kontext
+      description: Weitere Informationen zum Feature Request
+    validations:
+      required: false

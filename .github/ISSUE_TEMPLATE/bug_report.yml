@@ -1,0 +1,85 @@
+name: Bug Report
+description: Melde einen Fehler in LightJockey (wird automatisch von Jules bearbeitet)
+title: "[Bug]: "
+labels: ["bug", "jules-auto-process"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ## Bug Report
+        
+        Vielen Dank, dass du einen Fehler meldest! Dieses Issue wird **automatisch** von Jules AI Agent bearbeitet.
+        
+        **Was passiert automatisch:**
+        1. ✅ Jules analysiert den Bug und erstellt eine Lösung
+        2. ✅ Ein Pull Request wird automatisch erstellt
+        3. ✅ Unit-Tests werden ausgeführt
+        4. ✅ Code wird automatisch gemergt, wenn Tests erfolgreich sind
+        5. ⚠️ Du wirst benachrichtigt, wenn manuelle Prüfung erforderlich ist
+        
+  - type: textarea
+    id: description
+    attributes:
+      label: Fehlerbeschreibung
+      description: Beschreibe den Fehler so detailliert wie möglich
+      placeholder: Was ist passiert? Was sollte stattdessen passieren?
+    validations:
+      required: true
+      
+  - type: textarea
+    id: steps
+    attributes:
+      label: Schritte zur Reproduktion
+      description: Wie kann der Fehler reproduziert werden?
+      placeholder: |
+        1. Gehe zu '...'
+        2. Klicke auf '...'
+        3. Scrolle nach '...'
+        4. Fehler tritt auf
+    validations:
+      required: true
+      
+  - type: textarea
+    id: expected
+    attributes:
+      label: Erwartetes Verhalten
+      description: Was sollte normalerweise passieren?
+    validations:
+      required: true
+      
+  - type: textarea
+    id: actual
+    attributes:
+      label: Tatsächliches Verhalten
+      description: Was passiert stattdessen?
+    validations:
+      required: true
+      
+  - type: textarea
+    id: environment
+    attributes:
+      label: Umgebung
+      description: Informationen über deine Umgebung
+      value: |
+        - OS: [z.B. Windows 11]
+        - .NET Version: [z.B. .NET 9.0]
+        - LightJockey Version: [z.B. 1.0.0]
+    validations:
+      required: false
+      
+  - type: textarea
+    id: logs
+    attributes:
+      label: Logs/Screenshots
+      description: Füge relevante Logs oder Screenshots hinzu
+      placeholder: Logs oder Screenshots hier einfügen
+    validations:
+      required: false
+      
+  - type: textarea
+    id: additional
+    attributes:
+      label: Zusätzlicher Kontext
+      description: Weitere Informationen zum Problem
+    validations:
+      required: false
