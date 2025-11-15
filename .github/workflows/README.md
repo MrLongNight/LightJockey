@@ -194,6 +194,25 @@ The new **Jules API integration** provides near-complete automation (~98%) by le
 
 **Note**: This is the main workflow for creating MSI releases. Use this workflow when you need to build and publish installer packages.
 
+### 3. Release MSI Package (Manual - Pre-Release)
+**File**: `RELEASE.01_Create-MSI_on-Push_MAN.yml`  
+**Status**: [![Release MSI Manual](https://github.com/MrLongNight/LightJockey/actions/workflows/RELEASE.01_Create-MSI_on-Push_MAN.yml/badge.svg)](https://github.com/MrLongNight/LightJockey/actions/workflows/RELEASE.01_Create-MSI_on-Push_MAN.yml)
+
+**Purpose**: Create MSI installer package for pre-release testing.
+
+**Triggers**:
+- 🔧 Manual workflow dispatch only (with optional version input)
+
+**What it does**:
+- Builds the solution
+- Runs tests to ensure quality
+- Publishes the application
+- Creates MSI installer using WiX Toolset v4
+- Uploads MSI artifact (90-day retention)
+- Creates GitHub Pre-Release with tag `v{version}-pre`
+
+**Note**: This workflow is specifically for creating pre-release builds for testing purposes. The release is always marked as a pre-release and uses a different tag naming convention.
+
 ## Usage
 
 ### Running Tests (Automatic)
@@ -219,6 +238,20 @@ This will:
 - Trigger MSI package creation
 - Create a GitHub Release
 - Attach the MSI installer to the release
+
+### Creating a Pre-Release Package (Manual)
+
+For testing purposes, you can create a pre-release build:
+
+1. Go to **Actions** → **RELEASE.01_Create-MSI_on-Push_MAN**
+2. Click **Run workflow**
+3. Enter version number (e.g., `1.0.0-beta`) or leave default
+4. Click **Run workflow**
+
+This will:
+- Build and test the MSI package
+- Create a GitHub Pre-Release with tag `v{version}-pre`
+- Mark the release as pre-release for testing
 
 ## Workflow Requirements
 
@@ -282,6 +315,7 @@ For detailed information:
 | **CI/CD** |
 | CI.01_Build-Test_on-Push-PR_AUTO | Automatic (push/PR) | Run tests & coverage |
 | RELEASE.01_Create-MSI_on-Push_AUTO | Manual / Tags | Create installer package |
+| RELEASE.01_Create-MSI_on-Push_MAN | Manual only | Create pre-release installer |
 | **Jules API Workflows (Recommended)** |
 | TASK-A.00_Reusable-Start-Task_on-Workflow-Call_AUTO | Workflow call | Reusable: Start Jules task |
 | TASK-A.00_Reusable-Monitor-PR_on-Workflow-Call_AUTO | Workflow call | Reusable: Monitor Jules PR |
