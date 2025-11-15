@@ -20,14 +20,38 @@ namespace LightJockey.Services
             _logger = logger;
         }
 
-        public void RecordMetrics(PerformanceMetrics metrics)
+        public void RecordCpuUsage(double cpuUsage)
         {
-            _metricsHistory.Add(metrics);
-            if (_metricsHistory.Count > MaxHistorySize)
+            UpdateLatestMetrics(m => m.CpuUsage = cpuUsage);
+        }
+
+        public void RecordMemoryUsage(long memoryUsage)
+        {
+            UpdateLatestMetrics(m => m.MemoryUsage = memoryUsage);
+        }
+
+        public void RecordFps(double fps)
+        {
+            UpdateLatestMetrics(m => m.StreamingFPS = fps);
+        }
+
+        private void UpdateLatestMetrics(Action<PerformanceMetrics> updateAction)
+        {
+            var now = DateTime.UtcNow;
+            var latestMetrics = _metricsHistory.LastOrDefault();
+
+            if (latestMetrics == null || (now - latestMetrics.Timestamp).TotalSeconds > 1)
             {
-                _metricsHistory.RemoveAt(0);
+                latestMetrics = new PerformanceMetrics { Timestamp = now };
+                _metricsHistory.Add(latestMetrics);
+                if (_metricsHistory.Count > MaxHistorySize)
+                {
+                    _metricsHistory.RemoveAt(0);
+                }
             }
-            _logger.LogInformation("Metrics recorded at {Timestamp}", metrics.Timestamp);
+
+            updateAction(latestMetrics);
+            _logger.LogInformation("Metrics updated at {Timestamp}", latestMetrics.Timestamp);
         }
 
         public IEnumerable<PerformanceMetrics> GetMetricsHistory()
@@ -41,7 +65,7 @@ namespace LightJockey.Services
             var filePath = Path.Combine(Path.GetTempPath(), $"metrics_{DateTime.UtcNow:yyyyMMddHHmmss}.csv");
 
             var csv = new StringBuilder();
-            csv.AppendLine("Timestamp,StreamingFPS,AudioLatencyMs,FFTLatencyMs,EffectLatencyMs,TotalLatencyMs,FrameCount");
+            csv.AppendLine("Timestamp,StreamingFPS,AudioLatencyMs,FFTLatencyMs,EffectLatencyMs,TotalLatencyMs,FrameCount,CpuUsage,MemoryUsage");
 
             foreach (var metrics in history)
             {
@@ -52,7 +76,9 @@ namespace LightJockey.Services
                     metrics.FFTLatencyMs.ToString(CultureInfo.InvariantCulture),
                     metrics.EffectLatencyMs.ToString(CultureInfo.InvariantCulture),
                     metrics.TotalLatencyMs.ToString(CultureInfo.InvariantCulture),
-                    metrics.FrameCount
+                    metrics.FrameCount,
+                    metrics.CpuUsage.ToString(CultureInfo.InvariantCulture),
+                    metrics.MemoryUsage.ToString(CultureInfo.InvariantCulture)
                 ));
             }
 
