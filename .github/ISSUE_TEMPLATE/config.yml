@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: 💬 Diskussion / Fragen
+    url: https://github.com/MrLongNight/LightJockey/discussions
+    about: Stelle allgemeine Fragen oder diskutiere über LightJockey
+  - name: 📚 Dokumentation
+    url: https://github.com/MrLongNight/LightJockey/blob/main/README.md
+    about: Lies die Dokumentation für mehr Informationen

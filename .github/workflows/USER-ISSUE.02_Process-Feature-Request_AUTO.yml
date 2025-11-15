@@ -1,0 +1,253 @@
+name: "USER-ISSUE.02_Process-Feature-Request_AUTO.yml"
+
+# This workflow processes feature requests submitted by users
+# Feature requests require manual approval before Jules processes them
+
+on:
+  issues:
+    types: [opened, labeled]
+
+jobs:
+  request-approval:
+    runs-on: ubuntu-latest
+    # Only run for new feature requests with 'needs-approval' label
+    if: |
+      github.event.action == 'opened' && 
+      contains(github.event.issue.labels.*.name, 'needs-approval')
+    permissions:
+      issues: write
+    
+    steps:
+      - name: Add approval request comment
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const issueNumber = context.payload.issue.number;
+            
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: issueNumber,
+              body: `## 📋 Feature Request eingegangen
+              
+              Vielen Dank für deinen Verbesserungsvorschlag! 
+              
+              ### Genehmigungsprozess
+              
+              Dieses Feature Request wird von einem Maintainer geprüft. Der Prozess läuft wie folgt ab:
+              
+              1. 👀 **Prüfung:** Ein Maintainer bewertet den Vorschlag
+              2. ✅ **Genehmigung:** Bei positivem Bescheid wird das Label \`approved-for-jules\` hinzugefügt
+              3. 🤖 **Automatische Implementierung:** Jules AI Agent entwickelt die Funktion
+              4. 🔄 **Pull Request:** Automatische Erstellung und Tests
+              5. ✅ **Merge:** Automatisches Mergen bei erfolgreichen Tests
+              
+              ### Du wirst benachrichtigt wenn:
+              - ✅ Der Vorschlag genehmigt wurde
+              - ❌ Der Vorschlag abgelehnt wurde  
+              - ⚠️ Weitere Informationen benötigt werden
+              - ⚠️ Tests fehlschlagen und manuelle Prüfung erforderlich ist
+              
+              **Status:** ⏳ Warte auf Genehmigung durch Maintainer
+              
+              ---
+              
+              @${{ github.repository_owner }} Bitte prüfe diesen Feature Request. 
+              
+              **Zum Genehmigen:** Füge das Label \`approved-for-jules\` hinzu
+              **Zum Ablehnen:** Schließe das Issue mit einem Kommentar`
+            });
+      
+      - name: Assign to repository owner
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const issueNumber = context.payload.issue.number;
+            
+            // Assign to repository owner for review
+            await github.rest.issues.addAssignees({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: issueNumber,
+              assignees: [context.repo.owner]
+            });
+  
+  process-approved-feature:
+    runs-on: ubuntu-latest
+    # Only run when 'approved-for-jules' label is added
+    if: |
+      github.event.action == 'labeled' && 
+      github.event.label.name == 'approved-for-jules'
+    permissions:
+      issues: write
+      contents: write
+      pull-requests: write
+    
+    steps:
+      - name: Check if Jules automation is enabled
+        id: check_enabled
+        run: |
+          if [ "${{ vars.JULES_AUTOMATION_ENABLED }}" != "true" ]; then
+            echo "Jules automation is disabled. Set JULES_AUTOMATION_ENABLED repository variable to 'true' to enable."
+            echo "enabled=false" >> $GITHUB_OUTPUT
+            exit 0
+          fi
+          echo "enabled=true" >> $GITHUB_OUTPUT
+      
+      - name: Validate Jules API key
+        if: steps.check_enabled.outputs.enabled == 'true'
+        run: |
+          if [ -z "${{ secrets.JulesAPIKey }}" ]; then
+            echo "Error: JulesAPIKey secret is not set."
+            exit 1
+          fi
+      
+      - name: Add approval confirmation comment
+        if: steps.check_enabled.outputs.enabled == 'true'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const issueNumber = context.payload.issue.number;
+            
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: issueNumber,
+              body: `## ✅ Feature Request genehmigt!
+              
+              Dein Feature Request wurde genehmigt und wird jetzt automatisch von Jules AI Agent implementiert.
+              
+              ### Was passiert als nächstes:
+              
+              1. ✅ Jules analysiert die Anforderungen
+              2. ✅ Die Funktion wird entwickelt
+              3. ✅ Ein Pull Request wird automatisch erstellt
+              4. ✅ Unit-Tests werden ausgeführt
+              5. ✅ Code wird automatisch gemergt, wenn Tests erfolgreich sind
+              
+              ### Du wirst benachrichtigt wenn:
+              - ⚠️ Die Unit-Tests fehlschlagen und manuelle Prüfung erforderlich ist
+              - ✅ Die Funktion erfolgreich implementiert wurde
+              
+              **Status:** ⏳ Warte auf Jules Session-Erstellung...`
+            });
+      
+      - name: Checkout repository
+        if: steps.check_enabled.outputs.enabled == 'true'
+        uses: actions/checkout@v4
+      
+      - name: Get Jules source
+        if: steps.check_enabled.outputs.enabled == 'true'
+        id: get_source
+        run: |
+          RESPONSE=$(curl -s 'https://jules.googleapis.com/v1alpha/sources' \
+            -H "X-Goog-Api-Key: ${{ secrets.JulesAPIKey }}")
+          
+          SOURCE_NAME=$(echo "$RESPONSE" | jq -r ".sources[] | select(.githubRepo.owner==\"${{ github.repository_owner }}\" and .githubRepo.repo==\"${{ github.event.repository.name }}\") | .name")
+          
+          if [ -z "$SOURCE_NAME" ] || [ "$SOURCE_NAME" = "null" ]; then
+            echo "Error: Repository not found in Jules sources."
+            exit 1
+          fi
+          
+          echo "source_name=$SOURCE_NAME" >> $GITHUB_OUTPUT
+      
+      - name: Create Jules session for feature
+        if: steps.check_enabled.outputs.enabled == 'true'
+        id: create_session
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const issue = context.payload.issue;
+            const issueNumber = issue.number;
+            const issueTitle = issue.title;
+            const issueBody = issue.body || '';
+            const sourceName = '${{ steps.get_source.outputs.source_name }}';
+            
+            // Create prompt for Jules
+            const prompt = `Implement Feature Request from User - Issue #${issueNumber}: ${issueTitle}
+
+            ${issueBody}
+
+            Please implement this feature following these guidelines:
+            - Use the MVVM pattern (Models, ViewModels, Views, Services)
+            - Implement dependency injection for all services
+            - Add comprehensive unit tests with xUnit and Moq
+            - Follow C# and WPF best practices
+            - Add XML documentation for all public members
+            - Update relevant documentation files
+            - Ensure code coverage is above 80%
+            
+            The implementation should be clean, maintainable, and follow the existing architecture of the LightJockey application.`;
+            
+            // Create session via Jules API
+            const response = await fetch('https://jules.googleapis.com/v1alpha/sessions', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                'X-Goog-Api-Key': '${{ secrets.JulesAPIKey }}'
+              },
+              body: JSON.stringify({
+                prompt: prompt,
+                sourceContext: {
+                  source: sourceName,
+                  githubRepoContext: {
+                    startingBranch: 'main'
+                  }
+                },
+                automationMode: 'AUTO_CREATE_PR',
+                title: `Feature: ${issueTitle}`
+              })
+            });
+            
+            const sessionData = await response.json();
+            const sessionId = sessionData.id;
+            
+            if (!sessionId) {
+              throw new Error('Failed to create Jules session');
+            }
+            
+            console.log(`Created Jules session: ${sessionId}`);
+            return sessionId;
+      
+      - name: Update issue with session info
+        if: steps.check_enabled.outputs.enabled == 'true'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const issueNumber = context.payload.issue.number;
+            const sessionId = ${{ steps.create_session.outputs.result }};
+            
+            // Remove needs-approval label and add processing label
+            await github.rest.issues.removeLabel({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: issueNumber,
+              name: 'needs-approval'
+            });
+            
+            await github.rest.issues.addLabels({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: issueNumber,
+              labels: ['jules-processing']
+            });
+            
+            // Add comment with session info
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: issueNumber,
+              body: `## ✅ Jules Session erstellt
+              
+              **Jules Session ID:** \`${sessionId}\`
+              **Session URL:** https://jules.google.com/sessions/${sessionId}
+              
+              Jules arbeitet jetzt an der Implementierung der Funktion. Du kannst den Fortschritt unter dem obigen Link verfolgen.
+              
+              **Nächste Schritte:**
+              1. Jules analysiert die Anforderungen
+              2. Jules erstellt die Implementierung und einen Pull Request
+              3. Automatische Tests werden ausgeführt
+              4. Du wirst über den Fortschritt informiert`
+            });
