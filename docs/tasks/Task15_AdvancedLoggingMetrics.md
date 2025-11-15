@@ -1,34 +1,19 @@
 # Task 15: Advanced Logging & Metrics
 
-This document provides an overview of the advanced logging and metrics system implemented in LightJockey.
+## Description
 
-## Serilog Configuration
+This task focused on enhancing the logging and metrics capabilities of LightJockey. The following features were implemented:
 
-The Serilog logging configuration has been updated to provide more detailed and structured logs. The following enrichers have been added:
+- **Enhanced Serilog Configuration:** The Serilog configuration was updated to include the `SourceContext` in the log output, which provides more detailed and useful information for debugging.
+- **Metrics Export:** The `MetricsService` was updated to include the ability to export the metrics history to a CSV file.
+- **UI for Metrics:** A new UI was created to display the metrics history and provide a button to export the data.
 
-- `WithProcessId()`: Adds the process ID to each log event.
-- `WithThreadId()`: Adds the thread ID to each log event.
+## Screenshots
 
-The log output template has been updated to include this new information, which will help with debugging and performance analysis.
+### Metrics View
 
-## Metrics Service
+*TODO: Add a screenshot of the new metrics view, showing the data grid and the export button.*
 
-A new `MetricsService` has been implemented to collect and store historical performance data. This service records a history of `PerformanceMetrics` objects, which include the following information:
+### Exported CSV File
 
-- Streaming FPS
-- Audio Latency
-- FFT Latency
-- Effect Latency
-- Total Latency
-- Frame Count
-- Timestamp
-
-The `MetricsService` stores a maximum of 100 metrics records in memory.
-
-## UI Display
-
-A new "Metrics" tab has been added to the main window to display the collected metrics. This view provides a real-time display of the metrics history in a data grid.
-
-### Screenshot
-
-![Metrics View](placeholder.png)
+*TODO: Add a screenshot of the exported CSV file, showing the metrics data in a spreadsheet application.*
