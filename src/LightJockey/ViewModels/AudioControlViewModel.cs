@@ -46,7 +46,7 @@ namespace LightJockey.ViewModels
                     _audioService.SelectDevice(value!);
                     _logger.LogInformation("Selected audio device: {DeviceName}", value.Name);
                     // Re-evaluate command states when selection changes
-                    ((RelayCommand)StartAudioCaptureCommand).RaiseCanExecuteChanged();
+                    ((RelayCommand)StartAudioCaptureCommand).NotifyCanExecuteChanged();
                 }
             }
         }
@@ -59,8 +59,8 @@ namespace LightJockey.ViewModels
                 if (SetProperty(ref _isAudioCapturing, value))
                 {
                     // Update command states when capture status changes
-                    ((RelayCommand)StartAudioCaptureCommand).RaiseCanExecuteChanged();
-                    ((RelayCommand)StopAudioCaptureCommand).RaiseCanExecuteChanged();
+                    ((RelayCommand)StartAudioCaptureCommand).NotifyCanExecuteChanged();
+                    ((RelayCommand)StopAudioCaptureCommand).NotifyCanExecuteChanged();
                 }
             }
         }

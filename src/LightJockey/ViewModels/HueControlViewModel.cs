@@ -42,7 +42,7 @@ namespace LightJockey.ViewModels
             {
                 if (SetProperty(ref _selectedHueBridge, value))
                 {
-                    ((RelayCommand)ConnectToHueBridgeCommand).RaiseCanExecuteChanged();
+                    ((RelayCommand)ConnectToHueBridgeCommand).NotifyCanExecuteChanged();
                 }
             }
         }
@@ -60,7 +60,7 @@ namespace LightJockey.ViewModels
             {
                 if (SetProperty(ref _isHueConnected, value))
                 {
-                    ((RelayCommand)ConnectToHueBridgeCommand).RaiseCanExecuteChanged();
+                    ((RelayCommand)ConnectToHueBridgeCommand).NotifyCanExecuteChanged();
                 }
             }
         }

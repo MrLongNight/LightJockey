@@ -47,7 +47,7 @@ namespace LightJockey.ViewModels
             {
                 if (e.PropertyName == nameof(HueControlViewModel.IsHueConnected))
                 {
-                    ((RelayCommand)StartEffectCommand).RaiseCanExecuteChanged();
+                    ((RelayCommand)StartEffectCommand).NotifyCanExecuteChanged();
                 }
             };
 
@@ -78,7 +78,7 @@ namespace LightJockey.ViewModels
             {
                 if (SetProperty(ref _selectedEffect, value))
                 {
-                    ((RelayCommand)StartEffectCommand).RaiseCanExecuteChanged();
+                    ((RelayCommand)StartEffectCommand).NotifyCanExecuteChanged();
                 }
             }
         }
@@ -90,8 +90,8 @@ namespace LightJockey.ViewModels
             {
                 if (SetProperty(ref _isEffectRunning, value))
                 {
-                    ((RelayCommand)StartEffectCommand).RaiseCanExecuteChanged();
-                    ((RelayCommand)StopEffectCommand).RaiseCanExecuteChanged();
+                    ((RelayCommand)StartEffectCommand).NotifyCanExecuteChanged();
+                    ((RelayCommand)StopEffectCommand).NotifyCanExecuteChanged();
                 }
             }
         }

@@ -164,7 +164,14 @@ public class PerformanceMetricsService : IPerformanceMetricsService
             }
             
             // Defensive: only record metrics if service is available
-            _metricsService?.RecordMetrics(GetMetrics());
+            if (_metricsService != null)
+            {
+                var metrics = GetMetrics();
+                _metricsService.RecordFps(metrics.StreamingFPS);
+                // TODO: Implement actual CPU and memory usage monitoring.
+                _metricsService.RecordCpuUsage(0.0); // Placeholder
+                _metricsService.RecordMemoryUsage(0);    // Placeholder
+            }
         }
     }
 
