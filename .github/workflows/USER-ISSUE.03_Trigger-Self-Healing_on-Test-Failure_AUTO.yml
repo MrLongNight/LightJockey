@@ -1,0 +1,106 @@
+name: "USER-ISSUE.03_Trigger-Self-Healing_on-Test-Failure_AUTO.yml"
+
+on:
+  workflow_run:
+    workflows: ["CI.01_Build-Test_on-Push-PR_AUTO.yml"]
+    types:
+      - completed
+
+jobs:
+  trigger-self-healing:
+    uses: ./.github/workflows/GEMINI-A.00_Reusable-Setup-Gemini-CLI_on-Workflow-Call_AUTO.yml
+    secrets:
+      GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+
+  self-healing-flow:
+    needs: trigger-self-healing
+    runs-on: ubuntu-latest
+    if: github.event.workflow_run.conclusion == 'failure'
+
+    permissions:
+      contents: write
+      pull-requests: write
+      actions: read
+      issues: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js and dependencies
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - run: npm install
+
+      - name: Find PR created by Jules
+        id: find_pr
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const workflowRun = context.payload.workflow_run;
+            const headBranch = workflowRun.head_branch;
+            if (!headBranch) {
+              console.log('Could not determine branch from workflow run.');
+              return { isJulesPR: false };
+            }
+            const prs = await github.rest.pulls.list({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              state: 'open',
+              head: `${context.repo.owner}:${headBranch}`
+            });
+            if (prs.data.length === 0) {
+              console.log(`No open PR found for branch ${headBranch}.`);
+              return { isJulesPR: false };
+            }
+            const pr = prs.data[0];
+            const hasJulesLabel = pr.labels.some(label =>
+              label.name === 'jules-processing' || label.name === 'jules-pr'
+            );
+            if (!hasJulesLabel) {
+              console.log('PR is not from Jules, skipping self-healing.');
+              return { isJulesPR: false };
+            }
+            console.log(`Jules PR #${pr.number} found. Starting self-healing process.`);
+            return { isJulesPR: true, prNumber: pr.number };
+
+      - name: Attempt to self-heal the failed tests
+        id: attempt-to-self-heal
+        if: steps.find_pr.outputs.result.isJulesPR == 'true'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+          FAILED_WORKFLOW_RUN_ID: ${{ github.event.workflow_run.id }}
+        run: |
+          npm run build
+          node dist/run-self-healing-flow.js
+
+      - name: Notify on failure to self-heal
+        if: always() && steps.find_pr.outputs.result.isJulesPR == 'true' && steps.attempt-to-self-heal.conclusion == 'failure'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const prNumber = ${{ steps.find_pr.outputs.result.prNumber }};
+            const workflowUrl = context.payload.workflow_run.html_url;
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: prNumber,
+              body: `## ⚠️ Selbstheilung fehlgeschlagen
+
+              Der Versuch, die fehlgeschlagenen Tests automatisch zu korrigieren, war nicht erfolgreich.
+
+              Ein menschlicher Entwickler muss nun eingreifen, um das Problem zu beheben.
+
+              **Fehlerhafte Workflow-Logs:** [Logs ansehen](${workflowUrl})
+
+              **Status:** ⏳ Benötigt manuelle Prüfung`
+            });
+            await github.rest.issues.addLabels({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: prNumber,
+              labels: ['tests-failed', 'needs-manual-review']
+            });
