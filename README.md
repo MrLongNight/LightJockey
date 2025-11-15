@@ -89,6 +89,19 @@ See [docs/adr/README.md](docs/adr/README.md) for important architectural decisio
 
 This project follows a task-based development approach. See [LIGHTJOCKEY_Entwicklungsplan.md](LIGHTJOCKEY_Entwicklungsplan.md) for the complete development plan.
 
+#### 🐛 Report Bugs or 💡 Request Features
+
+We welcome bug reports and feature requests from users! The process is automated:
+
+- **Bug Reports**: Automatically processed by AI - fixes are typically delivered within hours
+- **Feature Requests**: Reviewed by maintainers, then automatically implemented if approved
+
+📝 [Submit a Bug Report or Feature Request](https://github.com/MrLongNight/LightJockey/issues/new/choose)
+
+For more details, see:
+- [User Issue Automation Documentation](docs/USER_ISSUE_AUTOMATION.md)
+- [Quick Start Guide](docs/USER_ISSUE_QUICKSTART.md)
+
 ## Technology Stack
 
 - **Framework**: .NET 9.0
