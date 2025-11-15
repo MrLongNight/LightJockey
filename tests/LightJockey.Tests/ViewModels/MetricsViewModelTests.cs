@@ -1,8 +1,11 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using LightJockey.Models;
 using LightJockey.Services;
 using LightJockey.ViewModels;
 using Microsoft.Extensions.Logging;
 using Moq;
-using System.Threading.Tasks;
 using Xunit;
 
 namespace LightJockey.Tests.ViewModels
@@ -21,31 +24,39 @@ namespace LightJockey.Tests.ViewModels
         }
 
         [Fact]
-        public async Task ExportMetricsCommand_CallsServiceAndUpdatesStatus()
+        public void Constructor_InitializesSeriesAndLabels()
         {
-            // Arrange
-            var expectedFilePath = "path/to/metrics.csv";
-            _metricsServiceMock.Setup(s => s.ExportMetricsToCsvAsync()).ReturnsAsync(expectedFilePath);
-
-            // Act
-            await _viewModel.ExportMetricsCommand.ExecuteAsync(null);
-
-            // Assert
-            _metricsServiceMock.Verify(s => s.ExportMetricsToCsvAsync(), Times.Once);
-            Assert.Equal($"Metrics exported to {expectedFilePath}", _viewModel.ExportStatusMessage);
+            Assert.NotNull(_viewModel.Series);
+            Assert.Equal(2, _viewModel.Series.Count);
+            Assert.NotNull(_viewModel.Labels);
         }
 
         [Fact]
-        public async Task ExportMetricsCommand_HandlesExceptionAndUpdatesStatus()
+        public void UpdateChart_UpdatesSeriesAndLabelsFromMetricsHistory()
         {
             // Arrange
-            _metricsServiceMock.Setup(s => s.ExportMetricsToCsvAsync()).ThrowsAsync(new System.Exception("Test exception"));
+            var metrics = new List<PerformanceMetrics>
+            {
+                new PerformanceMetrics { StreamingFPS = 60, TotalLatencyMs = 15, Timestamp = DateTime.Now },
+                new PerformanceMetrics { StreamingFPS = 58, TotalLatencyMs = 18, Timestamp = DateTime.Now.AddSeconds(1) }
+            };
+            _metricsServiceMock.Setup(s => s.MetricsHistory).Returns(metrics.AsReadOnly());
 
             // Act
-            await _viewModel.ExportMetricsCommand.ExecuteAsync(null);
+            // The timer will trigger the UpdateChart method, but for testing, we call it directly.
+            // In a real scenario, you might need to use a mock dispatcher timer.
+            _viewModel.GetType().GetMethod("UpdateChart", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance).Invoke(_viewModel, null);
 
             // Assert
-            Assert.Equal("Export failed. Check logs for details.", _viewModel.ExportStatusMessage);
+            Assert.Equal(2, ((ICollection<double>)_viewModel.Series[0].Values).Count);
+            Assert.Equal(60, ((ICollection<double>)_viewModel.Series[0].Values).First());
+            Assert.Equal(58, ((ICollection<double>)_viewModel.Series[0].Values).Last());
+
+            Assert.Equal(2, ((ICollection<double>)_viewModel.Series[1].Values).Count);
+            Assert.Equal(15, ((ICollection<double>)_viewModel.Series[1].Values).First());
+            Assert.Equal(18, ((ICollection<double>)_viewModel.Series[1].Values).Last());
+
+            Assert.Equal(2, _viewModel.Labels.Count);
         }
     }
 }

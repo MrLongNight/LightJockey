@@ -14,7 +14,15 @@ namespace LightJockey;
 /// </summary>
 public partial class App : Application
 {
-    private ServiceProvider? _serviceProvider;
+    /// <summary>
+    /// Gets the current application instance.
+    /// </summary>
+    public new static App Current => (App)Application.Current;
+
+    /// <summary>
+    /// Gets the service provider.
+    /// </summary>
+    public IServiceProvider Services { get; private set; }
 
     protected override void OnStartup(StartupEventArgs e)
     {
@@ -29,14 +37,14 @@ public partial class App : Application
 
         var serviceCollection = new ServiceCollection();
         ConfigureServices(serviceCollection);
-        _serviceProvider = serviceCollection.BuildServiceProvider();
+        Services = serviceCollection.BuildServiceProvider();
 
         Log.Information("LightJockey application starting");
 
-        var mainWindow = _serviceProvider.GetRequiredService<MainWindow>();
+        var mainWindow = Services.GetRequiredService<MainWindow>();
         
         // Subscribe to theme changes
-        var viewModel = _serviceProvider.GetRequiredService<MainWindowViewModel>();
+        var viewModel = Services.GetRequiredService<MainWindowViewModel>();
         viewModel.PropertyChanged += (s, args) =>
         {
             if (args.PropertyName == nameof(MainWindowViewModel.IsDarkTheme))
@@ -72,12 +80,13 @@ public partial class App : Application
             .Enrich.FromLogContext()
             .Enrich.WithProcessId()
             .Enrich.WithThreadId()
-            .WriteTo.Console(outputTemplate: "{Timestamp:yyyy-MM-dd HH:mm:ss.fff zzz} [{Level:u3}] [{SourceContext}] [{ProcessId}] [{ThreadId}] {Message:lj}{NewLine}{Exception}")
+            .Enrich.WithCaller() // Add method name enrichment
+            .WriteTo.Console(outputTemplate: "{Timestamp:yyyy-MM-dd HH:mm:ss.fff zzz} [{Level:u3}] [{SourceContext}] [{Caller}] [{ProcessId}] [{ThreadId}] {Message:lj}{NewLine}{Exception}")
             .WriteTo.File(
                 Path.Combine(logsPath, "lightjockey-.log"),
                 rollingInterval: RollingInterval.Day,
-                retainedFileCountLimit: 7,
-                outputTemplate: "{Timestamp:yyyy-MM-dd HH:mm:ss.fff zzz} [{Level:u3}] [{SourceContext}] [{ProcessId}] [{ThreadId}] {Message:lj}{NewLine}{Exception}")
+                retainedFileCountLimit: 14, // Retain logs for 14 days
+                outputTemplate: "{Timestamp:yyyy-MM-dd HH:mm:ss.fff zzz} [{Level:u3}] [{SourceContext}] [{Caller}] [{ProcessId}] [{ThreadId}] {Message:lj}{NewLine}{Exception}")
             .CreateLogger();
     }
 
@@ -202,7 +211,7 @@ public partial class App : Application
     protected override void OnExit(ExitEventArgs e)
     {
         Log.Information("LightJockey application shutting down");
-        _serviceProvider?.Dispose();
+        (Services as IDisposable)?.Dispose();
         Log.CloseAndFlush();
         base.OnExit(e);
     }

@@ -263,7 +263,7 @@
                 </Grid>
             </TabItem>
             <TabItem Header="Metrics">
-                <views:MetricsView DataContext="{Binding MetricsViewModel}"/>
+                <views:MetricsView/>
             </TabItem>
         </TabControl>
 
