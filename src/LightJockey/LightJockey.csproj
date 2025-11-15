@@ -37,4 +37,10 @@
     <PackageReference Include="Serilog.Enrichers.Process" Version="3.0.0" />
   </ItemGroup>
 
+  <ItemGroup>
+    <None Update="App.config">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
 </Project>

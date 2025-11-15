@@ -1,239 +1,93 @@
+using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
-using Microsoft.Extensions.Logging;
+using System.Threading.Tasks;
+using LightJockey.Models;
 
-namespace LightJockey.Services;
-
-/// <summary>
-/// Configuration service that encrypts sensitive data using Windows DPAPI
-/// </summary>
-public class ConfigurationService : IConfigurationService
+namespace LightJockey.Services
 {
-    private readonly ILogger<ConfigurationService> _logger;
-    private readonly string _configDirectory;
-    private readonly string _configFilePath;
-    private readonly SemaphoreSlim _fileLock = new(1, 1);
-    private Dictionary<string, byte[]> _encryptedData;
-
-    private static readonly JsonSerializerOptions JsonOptions = new()
+    public class ConfigurationService : IConfigurationService
     {
-        WriteIndented = true
-    };
+        private readonly string _configPath;
+        private readonly string _appSettingsPath;
+        private static readonly byte[] Entropy = { 1, 2, 3, 4, 5, 6, 7, 8 };
 
-    /// <summary>
-    /// Initializes a new instance of the ConfigurationService class
-    /// </summary>
-    /// <param name="logger">Logger instance</param>
-    public ConfigurationService(ILogger<ConfigurationService> logger)
-    {
-        _logger = logger ?? throw new ArgumentNullException(nameof(logger));
-
-        // Set up configuration directory
-        var appDataPath = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
-        _configDirectory = Path.Combine(appDataPath, "LightJockey");
-        _configFilePath = Path.Combine(_configDirectory, "secure-config.dat");
-
-        Directory.CreateDirectory(_configDirectory);
-        _encryptedData = new Dictionary<string, byte[]>();
-
-        // Load existing configuration
-        LoadConfigurationAsync().GetAwaiter().GetResult();
-
-        _logger.LogDebug("ConfigurationService initialized with path: {ConfigPath}", _configFilePath);
-    }
-
-    /// <inheritdoc/>
-    public async Task<bool> SetSecureValueAsync(string key, string value)
-    {
-        ArgumentException.ThrowIfNullOrWhiteSpace(key);
-        ArgumentNullException.ThrowIfNull(value);
-
-        await _fileLock.WaitAsync();
-        try
+        public ConfigurationService()
         {
-            // Encrypt the value using DPAPI
-            var plainTextBytes = Encoding.UTF8.GetBytes(value);
-            var encryptedBytes = ProtectedData.Protect(
-                plainTextBytes,
-                optionalEntropy: null,
-                scope: DataProtectionScope.CurrentUser);
-
-            // Store encrypted data
-            _encryptedData[key] = encryptedBytes;
-
-            // Persist to disk
-            await SaveConfigurationAsync();
-
-            _logger.LogDebug("Securely stored value for key: {Key}", key);
-            return true;
+            var appDataFolder = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "LightJockey");
+            Directory.CreateDirectory(appDataFolder);
+            _configPath = Path.Combine(appDataFolder, "config.json");
+            _appSettingsPath = Path.Combine(appDataFolder, "settings.json");
         }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Error storing secure value for key: {Key}", key);
-            return false;
-        }
-        finally
-        {
-            _fileLock.Release();
-        }
-    }
 
-    /// <inheritdoc/>
-    public async Task<string?> GetSecureValueAsync(string key)
-    {
-        ArgumentException.ThrowIfNullOrWhiteSpace(key);
-
-        await _fileLock.WaitAsync();
-        try
+        public async Task<LightJockeyEntertainmentConfig> LoadConfigAsync(string? encryptionKey = null)
         {
-            if (!_encryptedData.TryGetValue(key, out var encryptedBytes))
+            if (!File.Exists(_configPath))
             {
-                _logger.LogDebug("Key not found: {Key}", key);
-                return null;
+                return new LightJockeyEntertainmentConfig();
             }
 
-            // Decrypt using DPAPI
-            var decryptedBytes = ProtectedData.Unprotect(
-                encryptedBytes,
-                optionalEntropy: null,
-                scope: DataProtectionScope.CurrentUser);
-
-            var decryptedValue = Encoding.UTF8.GetString(decryptedBytes);
-            _logger.LogDebug("Successfully retrieved and decrypted value for key: {Key}", key);
-            return decryptedValue;
+            var encryptedJson = await File.ReadAllBytesAsync(_configPath);
+            var json = Decrypt(encryptedJson);
+            return JsonSerializer.Deserialize<LightJockeyEntertainmentConfig>(json) ?? new LightJockeyEntertainmentConfig();
         }
-        catch (CryptographicException ex)
+
+        public async Task SaveConfigAsync(LightJockeyEntertainmentConfig config, string? encryptionKey = null)
         {
-            _logger.LogError(ex, "Failed to decrypt value for key: {Key}", key);
+            var json = JsonSerializer.Serialize(config, new JsonSerializerOptions { WriteIndented = true });
+            var encryptedJson = Encrypt(json);
+            await File.WriteAllBytesAsync(_configPath, encryptedJson);
+        }
+
+        public async Task<string?> GetSecureValueAsync(string key)
+        {
+            var config = await LoadConfigAsync();
+            if (config.SecureValues.TryGetValue(key, out var encryptedValue))
+            {
+                var decryptedValue = Decrypt(Convert.FromBase64String(encryptedValue));
+                return decryptedValue;
+            }
             return null;
         }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Error retrieving secure value for key: {Key}", key);
-            return null;
-        }
-        finally
-        {
-            _fileLock.Release();
-        }
-    }
 
-    /// <inheritdoc/>
-    public async Task<bool> RemoveValueAsync(string key)
-    {
-        ArgumentException.ThrowIfNullOrWhiteSpace(key);
-
-        await _fileLock.WaitAsync();
-        try
+        public async Task SetSecureValueAsync(string key, string value)
         {
-            if (!_encryptedData.Remove(key))
+            var config = await LoadConfigAsync();
+            var encryptedValue = Convert.ToBase64String(Encrypt(value));
+            config.SecureValues[key] = encryptedValue;
+            await SaveConfigAsync(config);
+        }
+
+        public AppSettings LoadAppSettings()
+        {
+            if (!File.Exists(_appSettingsPath))
             {
-                _logger.LogDebug("Key not found for removal: {Key}", key);
-                return false;
+                return new AppSettings();
             }
 
-            await SaveConfigurationAsync();
-            _logger.LogDebug("Removed value for key: {Key}", key);
-            return true;
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Error removing value for key: {Key}", key);
-            return false;
-        }
-        finally
-        {
-            _fileLock.Release();
-        }
-    }
-
-    /// <inheritdoc/>
-    public async Task<bool> ContainsKeyAsync(string key)
-    {
-        ArgumentException.ThrowIfNullOrWhiteSpace(key);
-
-        await _fileLock.WaitAsync();
-        try
-        {
-            return _encryptedData.ContainsKey(key);
-        }
-        finally
-        {
-            _fileLock.Release();
-        }
-    }
-
-    /// <inheritdoc/>
-    public async Task<bool> ClearAllAsync()
-    {
-        await _fileLock.WaitAsync();
-        try
-        {
-            _encryptedData.Clear();
-            await SaveConfigurationAsync();
-            _logger.LogInformation("Cleared all secure configuration data");
-            return true;
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Error clearing all configuration data");
-            return false;
-        }
-        finally
-        {
-            _fileLock.Release();
-        }
-    }
-
-    private async Task LoadConfigurationAsync()
-    {
-        if (!File.Exists(_configFilePath))
-        {
-            _logger.LogDebug("No existing configuration file found");
-            return;
+            var json = File.ReadAllText(_appSettingsPath);
+            return JsonSerializer.Deserialize<AppSettings>(json) ?? new AppSettings();
         }
 
-        try
+        public void SaveAppSettings(AppSettings appSettings)
         {
-            var json = await File.ReadAllTextAsync(_configFilePath);
-            var data = JsonSerializer.Deserialize<Dictionary<string, string>>(json, JsonOptions);
-            
-            if (data != null)
-            {
-                // Convert base64 strings back to byte arrays
-                _encryptedData = data.ToDictionary(
-                    kvp => kvp.Key,
-                    kvp => Convert.FromBase64String(kvp.Value));
-                
-                _logger.LogInformation("Loaded {Count} encrypted configuration values", _encryptedData.Count);
-            }
+            var json = JsonSerializer.Serialize(appSettings, new JsonSerializerOptions { WriteIndented = true });
+            File.WriteAllText(_appSettingsPath, json);
         }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Error loading configuration, starting with empty configuration");
-            _encryptedData = new Dictionary<string, byte[]>();
-        }
-    }
 
-    private async Task SaveConfigurationAsync()
-    {
-        try
+        private byte[] Encrypt(string plainText)
         {
-            // Convert byte arrays to base64 strings for JSON serialization
-            var data = _encryptedData.ToDictionary(
-                kvp => kvp.Key,
-                kvp => Convert.ToBase64String(kvp.Value));
-
-            var json = JsonSerializer.Serialize(data, JsonOptions);
-            await File.WriteAllTextAsync(_configFilePath, json);
-            _logger.LogDebug("Saved configuration to disk");
+            var data = Encoding.UTF8.GetBytes(plainText);
+            return ProtectedData.Protect(data, Entropy, DataProtectionScope.CurrentUser);
         }
-        catch (Exception ex)
+
+        private string Decrypt(byte[] cipherText)
         {
-            _logger.LogError(ex, "Error saving configuration to disk");
-            throw;
+            var data = ProtectedData.Unprotect(cipherText, Entropy, DataProtectionScope.CurrentUser);
+            return Encoding.UTF8.GetString(data);
         }
     }
 }

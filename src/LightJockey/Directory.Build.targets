@@ -1,0 +1,8 @@
+<Project>
+  <Target Name="CopyToLibFolder" AfterTargets="Build">
+    <ItemGroup>
+      <ReferenceCopyLocalPaths Include="@(ReferenceCopyLocalPaths)" />
+    </ItemGroup>
+    <Copy SourceFiles="@(ReferenceCopyLocalPaths)" DestinationFolder="$(OutputPath)\lib" SkipUnchangedFiles="true" />
+  </Target>
+</Project>
