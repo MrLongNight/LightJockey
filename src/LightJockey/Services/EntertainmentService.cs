@@ -319,7 +319,7 @@ public class EntertainmentService : IEntertainmentService
         try
         {
             // Start auto-update for the streaming group
-            _ = _streamingClient.AutoUpdateAsync(_streamingGroup, cancellationToken, updateRateMs, onlySendDirtyStates: false);
+            _ = _streamingClient.AutoUpdateAsync(_streamingGroup, cancellationToken, (int)updateRateMs, onlySendDirtyStates: false);
 
             while (!cancellationToken.IsCancellationRequested)
             {

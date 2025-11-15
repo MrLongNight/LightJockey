@@ -9,6 +9,7 @@ namespace LightJockey.Models
         public bool AudioReactive { get; set; } = true;
         public double MinBrightness { get; set; } = 0.2;
         public double MaxBrightness { get; set; } = 1.0;
+        public double AudioSensitivity { get; set; } = 1.0;
         public Dictionary<string, string> SecureValues { get; set; } = new();
     }
 }
