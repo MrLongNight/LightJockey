@@ -1,8 +1,10 @@
+using System;
 using System.Collections.ObjectModel;
 using System.Windows.Input;
 using LightJockey.Models;
 using LightJockey.Services;
 using LightJockey.Utilities;
+using LightJockey.Views;
 using Microsoft.Extensions.Logging;
 
 namespace LightJockey.ViewModels;
@@ -17,6 +19,7 @@ public class MainWindowViewModel : ViewModelBase, IDisposable
     private readonly IHueService _hueService;
     private readonly IEffectEngine _effectEngine;
     private readonly IFFTProcessor _fftProcessor;
+    private readonly IConfigurationService _configurationService;
     private bool _disposed;
 
     // Audio devices
@@ -67,13 +70,15 @@ public class MainWindowViewModel : ViewModelBase, IDisposable
         IFFTProcessor fftProcessor,
         ISpectralAnalyzer spectralAnalyzer,
         IBeatDetector beatDetector,
-        MetricsViewModel metricsViewModel)
+        MetricsViewModel metricsViewModel,
+        IConfigurationService configurationService)
     {
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         _audioService = audioService ?? throw new ArgumentNullException(nameof(audioService));
         _hueService = hueService ?? throw new ArgumentNullException(nameof(hueService));
         _effectEngine = effectEngine ?? throw new ArgumentNullException(nameof(effectEngine));
         _fftProcessor = fftProcessor ?? throw new ArgumentNullException(nameof(fftProcessor));
+        _configurationService = configurationService;
         MetricsViewModel = metricsViewModel;
 
         // Subscribe to events
@@ -95,6 +100,7 @@ public class MainWindowViewModel : ViewModelBase, IDisposable
         StopEffectCommand = new RelayCommand(async _ => await StopEffectAsync(), _ => CanStopEffect());
         
         ToggleThemeCommand = new RelayCommand(_ => ToggleTheme());
+        OpenSettingsCommand = new RelayCommand(_ => OpenSettings());
 
         // Load initial data
         RefreshAudioDevices();
@@ -322,6 +328,7 @@ public class MainWindowViewModel : ViewModelBase, IDisposable
     public ICommand StartEffectCommand { get; }
     public ICommand StopEffectCommand { get; }
     public ICommand ToggleThemeCommand { get; }
+    public ICommand OpenSettingsCommand { get; }
 
     #endregion
 
@@ -604,6 +611,20 @@ public class MainWindowViewModel : ViewModelBase, IDisposable
     {
         IsDarkTheme = !IsDarkTheme;
         _logger.LogInformation("Theme changed to: {Theme}", IsDarkTheme ? "Dark" : "Light");
+    }
+
+    #endregion
+
+    #region Settings Methods
+
+    private void OpenSettings()
+    {
+        var settingsViewModel = new SettingsViewModel(_configurationService);
+        var settingsWindow = new SettingsWindow(settingsViewModel)
+        {
+            Owner = System.Windows.Application.Current.MainWindow
+        };
+        settingsWindow.ShowDialog();
     }
 
     #endregion

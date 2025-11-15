@@ -1,13 +1,11 @@
+using System;
 using LightJockey.Models;
-using System.Collections.Generic;
-using System.Threading.Tasks;
 
 namespace LightJockey.Services
 {
     public interface IMetricsService
     {
-        void RecordMetrics(PerformanceMetrics metrics);
-        IEnumerable<PerformanceMetrics> GetMetricsHistory();
-        Task<string> ExportMetricsToCsvAsync();
+        event EventHandler<PerformanceMetrics> MetricsUpdated;
+        void ExportMetrics(string filePath);
     }
 }

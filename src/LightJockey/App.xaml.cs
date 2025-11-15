@@ -1,11 +1,17 @@
+using System;
 using System.IO;
+using System.Linq;
 using System.Windows;
 using System.Windows.Threading;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Serilog;
+using Serilog.Events;
 using LightJockey.Views;
 using LightJockey.ViewModels;
+using LightJockey.Services;
+using LightJockey.Models;
+using LightJockey.Services.Effects;
 
 namespace LightJockey;
 
@@ -15,37 +21,58 @@ namespace LightJockey;
 public partial class App : Application
 {
     private ServiceProvider? _serviceProvider;
+    private IConfigurationService? _configurationService;
+    private AppSettings? _appSettings;
 
     protected override void OnStartup(StartupEventArgs e)
     {
         base.OnStartup(e);
 
-        // Configure Serilog
+        _configurationService = new ConfigurationService();
+        _appSettings = _configurationService.LoadAppSettings();
+
+        // Configure Serilog first to catch all startup errors
         ConfigureLogging();
 
         // Set up global exception handling
         DispatcherUnhandledException += OnDispatcherUnhandledException;
         AppDomain.CurrentDomain.UnhandledException += OnUnhandledException;
 
-        var serviceCollection = new ServiceCollection();
-        ConfigureServices(serviceCollection);
-        _serviceProvider = serviceCollection.BuildServiceProvider();
-
-        Log.Information("LightJockey application starting");
-
-        var mainWindow = _serviceProvider.GetRequiredService<MainWindow>();
-        
-        // Subscribe to theme changes
-        var viewModel = _serviceProvider.GetRequiredService<MainWindowViewModel>();
-        viewModel.PropertyChanged += (s, args) =>
+        try
         {
-            if (args.PropertyName == nameof(MainWindowViewModel.IsDarkTheme))
+            Log.Information("LightJockey application starting");
+
+            // Load the default theme at startup
+            SwitchTheme(isDarkTheme: true);
+
+            var serviceCollection = new ServiceCollection();
+            ConfigureServices(serviceCollection);
+            _serviceProvider = serviceCollection.BuildServiceProvider();
+
+            var mainWindow = _serviceProvider.GetRequiredService<MainWindow>();
+
+            // Subscribe to theme changes from the ViewModel
+            var viewModel = _serviceProvider.GetRequiredService<MainWindowViewModel>();
+            viewModel.PropertyChanged += (s, args) =>
             {
-                SwitchTheme(viewModel.IsDarkTheme);
-            }
-        };
-        
-        mainWindow.Show();
+                if (args.PropertyName == nameof(MainWindowViewModel.IsDarkTheme))
+                {
+                    SwitchTheme(viewModel.IsDarkTheme);
+                }
+            };
+
+            mainWindow.Show();
+        }
+        catch (Exception ex)
+        {
+            Log.Fatal(ex, "A critical error occurred during application startup.");
+            MessageBox.Show(
+                $"A critical error occurred and the application must close.\n\n{ex.Message}\n\nPlease check the log files for more details.",
+                "Startup Error",
+                MessageBoxButton.OK,
+                MessageBoxImage.Error);
+            Shutdown(-1);
+        }
     }
 
     private void SwitchTheme(bool isDarkTheme)
@@ -55,7 +82,15 @@ public partial class App : Application
         
         var newTheme = new ResourceDictionary { Source = themeUri };
         
-        Resources.MergedDictionaries.Clear();
+        // Find the existing theme dictionary and replace it
+        var existingTheme = Resources.MergedDictionaries
+            .FirstOrDefault(d => d.Source != null && d.Source.OriginalString.Contains("Theme.xaml"));
+
+        if (existingTheme != null)
+        {
+            Resources.MergedDictionaries.Remove(existingTheme);
+        }
+
         Resources.MergedDictionaries.Add(newTheme);
         
         Log.Information("Switched to {Theme} theme", isDarkTheme ? "Dark" : "Light");
@@ -63,22 +98,59 @@ public partial class App : Application
 
     private void ConfigureLogging()
     {
-        // Create logs directory if it doesn't exist
-        var logsPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "logs");
-        Directory.CreateDirectory(logsPath);
+        if (_appSettings == null)
+        {
+            // Handle the case where settings are not loaded.
+            _appSettings = new AppSettings();
+        }
+        try
+        {
+            var baseDirectory = AppDomain.CurrentDomain.BaseDirectory;
+            var logsPath = Path.Combine(baseDirectory, "logs");
+            Directory.CreateDirectory(logsPath);
 
-        Log.Logger = new LoggerConfiguration()
-            .MinimumLevel.Debug()
-            .Enrich.FromLogContext()
-            .Enrich.WithProcessId()
-            .Enrich.WithThreadId()
-            .WriteTo.Console(outputTemplate: "{Timestamp:yyyy-MM-dd HH:mm:ss.fff zzz} [{Level:u3}] [{SourceContext}] [{ProcessId}] [{ThreadId}] {Message:lj}{NewLine}{Exception}")
-            .WriteTo.File(
-                Path.Combine(logsPath, "lightjockey-.log"),
-                rollingInterval: RollingInterval.Day,
-                retainedFileCountLimit: 7,
-                outputTemplate: "{Timestamp:yyyy-MM-dd HH:mm:ss.fff zzz} [{Level:u3}] [{SourceContext}] [{ProcessId}] [{ThreadId}] {Message:lj}{NewLine}{Exception}")
-            .CreateLogger();
+            // Custom log file cleanup
+            var logFiles = new DirectoryInfo(logsPath)
+                .GetFiles("lightjockey-*.log")
+                .OrderByDescending(f => f.CreationTime)
+                .Skip(_appSettings.RetainedLogFileCount - 1) // Keep the newest files
+                .ToList();
+
+            foreach (var logFile in logFiles)
+            {
+                try
+                {
+                    logFile.Delete();
+                }
+                catch (IOException ex)
+                {
+                    System.Diagnostics.Debug.WriteLine($"Error deleting log file: {ex.Message}");
+                }
+            }
+
+            var timestamp = DateTime.Now.ToString("yyyyMMdd_HHmmss");
+            var logFilePath = Path.Combine(logsPath, $"lightjockey-{timestamp}.log");
+
+            var logLevel = Enum.TryParse<LogEventLevel>(_appSettings.LogLevel, true, out var level)
+                ? level
+                : LogEventLevel.Information;
+
+            Log.Logger = new LoggerConfiguration()
+                .MinimumLevel.Is(logLevel)
+                .Enrich.FromLogContext()
+                .Enrich.WithProcessId()
+                .Enrich.WithThreadId()
+                .WriteTo.Console(outputTemplate: "{Timestamp:yyyy-MM-dd HH:mm:ss.fff zzz} [{Level:u3}] [{SourceContext}] [{ProcessId}] [{ThreadId}] {Message:lj}{NewLine}{Exception}")
+                .WriteTo.File(
+                    logFilePath,
+                    outputTemplate: "{Timestamp:yyyy-MM-dd HH:mm:ss.fff zzz} [{Level:u3}] [{SourceContext}] [{ProcessId}] [{ThreadId}] {Message:lj}{NewLine}{Exception}")
+                .CreateLogger();
+        }
+        catch (Exception ex)
+        {
+            MessageBox.Show($"Failed to configure logging: {ex.Message}", "Logging Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            File.AppendAllText("logging_error.txt", $"{DateTime.Now}: {ex}\n");
+        }
     }
 
     private void ConfigureServices(IServiceCollection services)
@@ -91,87 +163,92 @@ public partial class App : Application
         });
 
         // Register application services
-        services.AddSingleton<Services.IExampleService, Services.ExampleService>();
-        services.AddSingleton<Services.IAudioService, Services.AudioService>();
+        services.AddSingleton<IExampleService, ExampleService>();
+        services.AddSingleton<IAudioService, AudioService>();
 
         // Register audio analysis services
-        services.AddSingleton<Services.IFFTProcessor, Services.FFTProcessor>();
-        services.AddSingleton<Services.ISpectralAnalyzer, Services.SpectralAnalyzer>();
-        services.AddSingleton<Services.IBeatDetector, Services.BeatDetector>();
+        services.AddSingleton<IFFTProcessor, FFTProcessor>();
+        services.AddSingleton<ISpectralAnalyzer, SpectralAnalyzer>();
+        services.AddSingleton<IBeatDetector, BeatDetector>();
 
         // Register performance metrics service
-        services.AddSingleton<Services.IMetricsService, Services.MetricsService>();
-        services.AddSingleton<Services.IPerformanceMetricsService, Services.PerformanceMetricsService>();
+        services.AddSingleton<IMetricsService, MetricsService>();
+        services.AddSingleton<IPerformanceMetricsService, PerformanceMetricsService>();
 
         // Register Hue services
-        services.AddSingleton<Services.IHueService>(sp =>
-            new Services.HueService(
-                sp.GetRequiredService<ILogger<Services.HueService>>(),
-                sp.GetRequiredService<Services.IConfigurationService>()));
-        services.AddSingleton<Services.IEntertainmentService, Services.EntertainmentService>();
+        services.AddSingleton<IHueService>(sp =>
+            new HueService(
+                sp.GetRequiredService<ILogger<HueService>>(),
+                sp.GetRequiredService<IConfigurationService>()));
+        services.AddSingleton<IEntertainmentService, EntertainmentService>();
 
         // Register effect plugins
         // Slow HTTPS effects
-        services.AddTransient<Services.Effects.SlowHttpsEffect>();
-        services.AddTransient<Services.Effects.RainbowCycleEffect>();
-        services.AddTransient<Services.Effects.SmoothFadeEffect>();
-        services.AddTransient<Services.Effects.FFTLowFrequencyEffect>();
-        services.AddTransient<Services.Effects.FFTMidFrequencyEffect>();
-        services.AddTransient<Services.Effects.StrobeManualEffect>();
+        services.AddTransient<SlowHttpsEffect>();
+        services.AddTransient<RainbowCycleEffect>();
+        services.AddTransient<SmoothFadeEffect>();
+        services.AddTransient<FFTLowFrequencyEffect>();
+        services.AddTransient<FFTMidFrequencyEffect>();
+        services.AddTransient<StrobeManualEffect>();
         
         // Fast DTLS effects
-        services.AddTransient<Services.Effects.FastEntertainmentEffect>();
-        services.AddTransient<Services.Effects.FFTHighFrequencyEffect>();
-        services.AddTransient<Services.Effects.RainbowFastEffect>();
-        services.AddTransient<Services.Effects.PulseEffect>();
-        services.AddTransient<Services.Effects.ChaseEffect>();
-        services.AddTransient<Services.Effects.SparkleEffect>();
+        services.AddTransient<FastEntertainmentEffect>();
+        services.AddTransient<FFTHighFrequencyEffect>();
+        services.AddTransient<RainbowFastEffect>();
+        services.AddTransient<PulseEffect>();
+        services.AddTransient<ChaseEffect>();
+        services.AddTransient<SparkleEffect>();
 
         // Register EffectEngine with plugin registration
-        services.AddSingleton<Services.IEffectEngine>(sp =>
+        services.AddSingleton<IEffectEngine>(sp =>
         {
-            var engine = new Services.EffectEngine(
-                sp.GetRequiredService<ILogger<Services.EffectEngine>>(),
-                sp.GetRequiredService<Services.IAudioService>(),
-                sp.GetRequiredService<Services.ISpectralAnalyzer>(),
-                sp.GetRequiredService<Services.IBeatDetector>());
+            var engine = new EffectEngine(
+                sp.GetRequiredService<ILogger<EffectEngine>>(),
+                sp.GetRequiredService<IAudioService>(),
+                sp.GetRequiredService<ISpectralAnalyzer>(),
+                sp.GetRequiredService<IBeatDetector>());
             
             // Register slow HTTPS effect plugins
-            engine.RegisterPlugin(sp.GetRequiredService<Services.Effects.SlowHttpsEffect>());
-            engine.RegisterPlugin(sp.GetRequiredService<Services.Effects.RainbowCycleEffect>());
-            engine.RegisterPlugin(sp.GetRequiredService<Services.Effects.SmoothFadeEffect>());
-            engine.RegisterPlugin(sp.GetRequiredService<Services.Effects.FFTLowFrequencyEffect>());
-            engine.RegisterPlugin(sp.GetRequiredService<Services.Effects.FFTMidFrequencyEffect>());
-            engine.RegisterPlugin(sp.GetRequiredService<Services.Effects.StrobeManualEffect>());
+            engine.RegisterPlugin(sp.GetRequiredService<SlowHttpsEffect>());
+            engine.RegisterPlugin(sp.GetRequiredService<RainbowCycleEffect>());
+            engine.RegisterPlugin(sp.GetRequiredService<SmoothFadeEffect>());
+            engine.RegisterPlugin(sp.GetRequiredService<FFTLowFrequencyEffect>());
+            engine.RegisterPlugin(sp.GetRequiredService<FFTMidFrequencyEffect>());
+            engine.RegisterPlugin(sp.GetRequiredService<StrobeManualEffect>());
             
             // Register fast DTLS effect plugins
-            engine.RegisterPlugin(sp.GetRequiredService<Services.Effects.FastEntertainmentEffect>());
-            engine.RegisterPlugin(sp.GetRequiredService<Services.Effects.FFTHighFrequencyEffect>());
-            engine.RegisterPlugin(sp.GetRequiredService<Services.Effects.RainbowFastEffect>());
-            engine.RegisterPlugin(sp.GetRequiredService<Services.Effects.PulseEffect>());
-            engine.RegisterPlugin(sp.GetRequiredService<Services.Effects.ChaseEffect>());
-            engine.RegisterPlugin(sp.GetRequiredService<Services.Effects.SparkleEffect>());
+            engine.RegisterPlugin(sp.GetRequiredService<FastEntertainmentEffect>());
+            engine.RegisterPlugin(sp.GetRequiredService<FFTHighFrequencyEffect>());
+            engine.RegisterPlugin(sp.GetRequiredService<RainbowFastEffect>());
+            engine.RegisterPlugin(sp.GetRequiredService<PulseEffect>());
+            engine.RegisterPlugin(sp.GetRequiredService<ChaseEffect>());
+            engine.RegisterPlugin(sp.GetRequiredService<SparkleEffect>());
             
             return engine;
         });
 
         // Register ViewModels
         services.AddSingleton<MainWindowViewModel>();
+        services.AddTransient<SettingsViewModel>();
         services.AddSingleton(sp => new MetricsViewModel(
-            sp.GetRequiredService<Services.IMetricsService>(),
+            sp.GetRequiredService<IMetricsService>(),
             sp.GetRequiredService<ILogger<MetricsViewModel>>()));
 
         // Register PresetService
-        services.AddSingleton<Services.IPresetService, Services.PresetService>();
+        services.AddSingleton<IPresetService, PresetService>();
 
         // Register BackupService
-        services.AddSingleton<Services.IBackupService, Services.BackupService>();
+        services.AddSingleton<IBackupService, BackupService>();
 
         // Register ConfigurationService for secure data storage
-        services.AddSingleton<Services.IConfigurationService, Services.ConfigurationService>();
+        if (_configurationService != null)
+        {
+            services.AddSingleton<IConfigurationService>(_configurationService);
+        }
 
         // Register views
         services.AddSingleton<MainWindow>();
+        services.AddTransient<SettingsWindow>();
     }
 
     private void OnDispatcherUnhandledException(object sender, DispatcherUnhandledExceptionEventArgs e)
@@ -189,14 +266,16 @@ public partial class App : Application
 
     private void OnUnhandledException(object sender, UnhandledExceptionEventArgs e)
     {
-        if (e.ExceptionObject is Exception exception)
-        {
-            Log.Fatal(exception, "Unhandled exception occurred");
-        }
-        else
-        {
-            Log.Fatal("Unhandled non-exception object: {ExceptionObject}", e.ExceptionObject);
-        }
+        var exception = e.ExceptionObject as Exception;
+        Log.Fatal(exception, "A fatal unhandled exception occurred, forcing application shutdown. IsTerminating: {IsTerminating}", e.IsTerminating);
+
+        MessageBox.Show(
+            "A fatal error occurred and the application must close. Please check the log files for details.",
+            "Fatal Error",
+            MessageBoxButton.OK,
+            MessageBoxImage.Error);
+
+        Log.CloseAndFlush();
     }
 
     protected override void OnExit(ExitEventArgs e)
