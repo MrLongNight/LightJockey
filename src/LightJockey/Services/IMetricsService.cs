@@ -6,6 +6,7 @@ namespace LightJockey.Services
 {
     public interface IMetricsService
     {
+        void RecordMetrics(PerformanceMetrics metrics);
         void RecordCpuUsage(double cpuUsage);
         void RecordMemoryUsage(long memoryUsage);
         void RecordFps(double fps);
