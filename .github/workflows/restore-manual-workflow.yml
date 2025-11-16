@@ -1,0 +1,17 @@
+name: "Restore manual run (temporary)"
+
+on:
+  workflow_dispatch: {}
+
+jobs:
+  sanity:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+      - name: Show current branch
+        run: echo "Ref: $GITHUB_REF"
+      - name: Show workflows dir (sanity)
+        run: ls -la .github/workflows || true
+      - name: Sanity echo
+        run: echo "Manual run restored — now we can trigger workflows manually. Remove this file after debugging."

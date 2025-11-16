@@ -2,7 +2,7 @@
 <Wix xmlns="http://wixtoolset.org/schemas/v4/wxs" xmlns:bal="http://wixtoolset.org/schemas/v4/wxs/bal" xmlns:util="http://wixtoolset.org/schemas/v4/wxs/util">
     <Bundle Name="LightJockey" Version="{{VERSION}}" Manufacturer="LightJockey" UpgradeCode="6c0a6b6d-4c3a-4f2b-8a1a-3e5a5b9b0d1e">
         <BootstrapperApplication>
-          <bal:WixStandardBootstrapperApplication Theme="hyperlinkLicense" LicenseUrl="https://github.com/MrLongNight/LightJockey/blob/main/LICENSE" />
+          <bal:WixStandardBootstrapperApplication Theme="hyperlink" />
         </BootstrapperApplication>
         <Chain>
             <PackageGroupRef Id="NetCoreDesktopRuntime_9_0_x64"/>
@@ -13,12 +13,12 @@
         <util:RegistrySearch Root="HKLM" Key="SOFTWARE\dotnet\Setup\InstalledVersions\x64\sharedhost" Value="Version" Variable="DOTNET_SHARED_HOST_VERSION" />
         <PackageGroup Id="NetCoreDesktopRuntime_9_0_x64">
             <ExePackage Id="NetCoreDesktopRuntime_9_0_x64" PerMachine="yes" Permanent="yes" Vital="yes"
-                        DetectCondition="DOTNET_SHARED_HOST_VERSION AND (DOTNET_SHARED_HOST_VERSION &gt;= v9.0.0)"
-                        InstallArguments="/install /quiet /norestart">
+                        DetectCondition="DOTNET_SHARED_HOST_VERSION AND (DOTNET_SHARED_HOST_VERSION &gt;= v9.0.0)">
                 <Payload Name="windowsdesktop-runtime-9.0.0-win-x64.exe"
                          DownloadUrl="https://download.visualstudio.microsoft.com/download/pr/4e44d3ba-52b3-4621-a472-b7e1c070f31c/8a1b5c4c9b8f8e7f8a1b5c4c9b8f8e7f/windowsdesktop-runtime-9.0.0-win-x64.exe"
                          Size="69242880"
                          Hash="E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855" />
+                <InstallCommand>/install /quiet /norestart</InstallCommand>
             </ExePackage>
         </PackageGroup>
     </Fragment>
