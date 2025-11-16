@@ -1,0 +1,86 @@
+# .github/workflows/BUG.01_Process-Bug-Report_AUTO.yml
+name: "BUG.01 | Process Bug Report | AUTO"
+
+on:
+  issues:
+    types: [labeled]
+
+jobs:
+  process-bug-report:
+    # Führt den Job nur aus, wenn das hinzugefügte Label "Bug Report" ist.
+    if: github.event.label.name == 'Bug Report'
+    runs-on: ubuntu-latest
+    permissions:
+      issues: write # Berechtigung zum Hinzufügen von Labels und Kommentaren
+      contents: read # Berechtigung zum Auschecken des Codes
+
+    steps:
+      - name: "Checkout Repository"
+        uses: actions/checkout@v4
+
+      - name: "Setup Gemini CLI"
+        # Annahme: Es gibt einen wiederverwendbaren Workflow zum Einrichten der CLI.
+        # Falls nicht, müssten die Schritte hier direkt eingefügt werden.
+        # uses: ./.github/workflows/GEMINI-A.00_Reusable-Setup-Gemini-CLI_on-Workflow-Call_AUTO.yml
+        # Da der Workflow archiviert wurde, füge ich hier beispielhafte Schritte ein.
+        run: |
+          echo "Gemini CLI Setup Placeholder"
+          # wget .../gemini-linux -O gemini
+          # chmod +x gemini
+          # sudo mv gemini /usr/local/bin/
+
+      - name: "Analyze Issue Content with Gemini CLI"
+        id: analyze
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          ISSUE_BODY: ${{ github.event.issue.body }}
+          ISSUE_NUMBER: ${{ github.event.issue.number }}
+        run: |
+          # Dies ist ein simulierter Aufruf. Der tatsächliche Befehl der Gemini CLI
+          # würde den I_BODY analysieren und einen entsprechenden Output produzieren.
+          #
+          # Annahme: Die CLI gibt "sufficient" oder "insufficient" zurück.
+          echo "Analysiere Issue #${ISSUE_NUMBER}..."
+
+          # Simulierte Logik: Prüft, ob der Body eine Mindestlänge hat.
+          if [ ${#ISSUE_BODY} -gt 100 ]; then
+            echo "issue_quality=sufficient" >> $GITHUB_OUTPUT
+          else
+            echo "issue_quality=insufficient" >> $GITHUB_OUTPUT
+          fi
+
+      - name: "Add 'jules-ready' label if info is sufficient"
+        if: steps.analyze.outputs.issue_quality == 'sufficient'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            github.rest.issues.addLabels({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              labels: ['jules-ready']
+            })
+
+      - name: "Request more information if info is insufficient"
+        if: steps.analyze.outputs.issue_quality == 'insufficient'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: `Hallo @${context.payload.issue.user.login},
+
+            danke für den Bug-Report!
+
+            Um das Problem effizient analysieren zu können, benötigen wir bitte noch ein paar weitere Informationen. Könntest du den Report bitte um folgende Punkte ergänzen:
+
+            - **Schritte zur Reproduktion:** Eine genaue, schrittweise Anleitung, wie der Fehler ausgelöst werden kann.
+            - **Erwartetes Verhalten:** Was hättest du erwartet, das stattdessen passiert?
+            - **Tatsächliches Verhalten:** Was ist genau passiert? (inkl. Screenshots, falls relevant)
+            - **Systeminformationen:** Betriebssystem, App-Version, etc.
+
+            Vielen Dank für deine Mithilfe!
+            `
+            })
