@@ -1,0 +1,20 @@
+<Project Sdk="WixToolset.Sdk/4.0.5">
+  <PropertyGroup>
+    <OutputName>LightJockey-Installer-v$(Version)</OutputName>
+    <OutputPath>.</OutputPath>
+    <DefineConstants>publishPath=..\publish</DefineConstants>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Content Include="installer/LightJockey.wxs" />
+    <Content Include="installer/Bundle.wxs" />
+    <Content Include="installer/AppComponents.wxs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="WixToolset.UI.wixext" Version="4.0.5" />
+    <PackageReference Include="WixToolset.Bal.wixext" Version="4.0.5" />
+    <PackageReference Include="WixToolset.Util.wixext" Version="4.0.5" />
+    <PackageReference Include="WixToolset.Netfx.wixext" Version="4.0.5" />
+  </ItemGroup>
+</Project>
