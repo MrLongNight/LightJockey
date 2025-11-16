@@ -13,5 +13,9 @@ namespace LightJockey.Services
 
         Task<AppSettings> LoadAppSettingsAsync();
         Task SaveAppSettingsAsync(AppSettings appSettings);
+
+        void RemoveValue(string key);
+        bool ContainsKey(string key);
+        void ClearAll();
     }
 }
