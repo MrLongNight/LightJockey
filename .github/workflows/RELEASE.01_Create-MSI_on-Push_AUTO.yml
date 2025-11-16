@@ -67,7 +67,7 @@ jobs:
       shell: pwsh
       run: |
         $version = "${{ steps.get_version.outputs.VERSION }}"
-        
+
         # --- MSI Generation ---
         $directories = @"
             <StandardDirectory Id="ProgramFiles64Folder">
@@ -77,21 +77,24 @@ jobs:
                 <Directory Id="ApplicationProgramsFolder" Name="LightJockey"/>
             </StandardDirectory>
             <StandardDirectory Id="DesktopFolder" />
-        "@
+"@
 
         $files = Get-ChildItem -Path "${{ env.PUBLISH_DIR }}" -Recurse -File
         $componentRefs = ""
         $components = ""
         foreach ($file in $files) {
-          $componentId = "Comp_" + $file.Name.Replace(".","_").Replace("-","_")
+          # safe component id: use full path sanitized to avoid duplicate IDs and illegal chars
+          $safeName = ($file.FullName -replace '[\\/:]','_') -replace '[\s]','_'
+          $componentId = "Comp_" + ($safeName -replace '[^A-Za-z0-9_]', '_')
           $components += @"
               <Component Id='$componentId' Directory='INSTALLFOLDER' Guid='*'>
                 <File Id='File_$componentId' Source='$($file.FullName)' KeyPath='yes' />
               </Component>
-        "@
-          $componentRefs += "<ComponentRef Id='$componentId' />`n"
+"@
+          $componentRefs += "                <ComponentRef Id='$componentId' />`n"
         }
 
+        # Build WXS: include directories, feature referencing ComponentGroup, and add components + a ComponentGroup fragment.
         $wxsContent = @"
         <?xml version="1.0" encoding="UTF-8"?>
         <Wix xmlns="http://wixtoolset.org/schemas/v4/wxs" xmlns:ui="http://wixtoolset.org/schemas/v4/wxs/ui">
@@ -103,16 +106,26 @@ jobs:
             <ui:WixUI Id="WixUI_FeatureTree" />
             $directories
             <Feature Id="MainApplication" Title="LightJockey Application" Level="1">
-              $componentRefs
+              <ComponentGroupRef Id="AppComponents" />
             </Feature>
-            $components
           </Package>
+
+          <!-- Fragments for components and component group -->
+          <Fragment>
+$components
+            <ComponentGroup Id="AppComponents">
+$componentRefs
+            </ComponentGroup>
+          </Fragment>
+
         </Wix>
-        "@
-        
+"@
         New-Item -ItemType Directory -Force -Path "installer"
         $wxsContent | Out-File -FilePath "installer\LightJockey.wxs" -Encoding UTF8
         wix build -ext WixToolset.UI.wixext -arch x64 -o "installer\LightJockey.msi" "installer\LightJockey.wxs"
+
+        wix build -ext WixToolset.UI.wixext -arch x64 -o "installer\LightJockey.msi" "installer\LightJockey.wxs" `
+          -dpublishPath="$PWD\${{ env.PUBLISH_DIR }}"
 
         # --- Bootstrapper Generation ---
         $bundleContent = @"
@@ -141,7 +154,7 @@ jobs:
                 </PackageGroup>
             </Fragment>
         </Wix>
-        "@
+"@
         $bundleContent | Out-File -FilePath "installer\Bundle.wxs" -Encoding UTF8
         wix build -ext WixToolset.Bal.wixext -ext WixToolset.Util.wixext -arch x64 -o "LightJockey-Installer-v$version.exe" "installer\Bundle.wxs"
 
