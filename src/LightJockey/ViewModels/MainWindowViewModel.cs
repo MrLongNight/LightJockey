@@ -69,8 +69,8 @@ public class MainWindowViewModel : ViewModelBase, IDisposable
         HueControlViewModel.PropertyChanged += OnSubViewModelPropertyChanged;
         EffectControlViewModel.PropertyChanged += OnSubViewModelPropertyChanged;
 
-        ToggleThemeCommand = new RelayCommand(ToggleTheme);
-        OpenSettingsCommand = new RelayCommand<object?>(OpenSettings);
+        ToggleThemeCommand = new RelayCommand(_ => ToggleTheme());
+        OpenSettingsCommand = new RelayCommand(OpenSettings);
     }
 
     #region Properties for Tests
