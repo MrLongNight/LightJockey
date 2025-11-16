@@ -83,6 +83,7 @@ jobs:
         $componentRefs = ""
         $components = ""
         foreach ($file in $files) {
+          # safe component id: use full path sanitized to avoid duplicate IDs and illegal chars
           $safeName = ($file.FullName -replace '[\\/:]','_') -replace '[\s]','_'
           $componentId = "Comp_" + ($safeName -replace '[^A-Za-z0-9_]', '_')
           $components += @"
