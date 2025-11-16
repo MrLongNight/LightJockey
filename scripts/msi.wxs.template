@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Wix xmlns="http://wixtoolset.org/schemas/v4/wxs" xmlns:ui="http://wixtoolset.org/schemas/v4/wxs/ui">
+  <Package Name="LightJockey" Version="{{VERSION}}" Manufacturer="LightJockey" UpgradeCode="A1B2C3D4-E5F6-4A5B-8C9D-0E1F2A3B4C5D" Language="1033">
+    <MajorUpgrade DowngradeErrorMessage="A newer version of [ProductName] is already installed." />
+    <MediaTemplate EmbedCab="yes" />
+    <Icon Id="icon.ico" SourceFile="src/LightJockey/ressources/icon.ico"/>
+    <Property Id="ARPPRODUCTICON" Value="icon.ico" />
+    <ui:WixUI Id="WixUI_FeatureTree" />
+
+    <StandardDirectory Id="ProgramFiles64Folder">
+      <Directory Id="INSTALLFOLDER" Name="LightJockey" />
+    </StandardDirectory>
+
+    <Feature Id="MainApplication" Title="LightJockey Application" Level="1">
+      <ComponentGroupRef Id="AppComponents" />
+    </Feature>
+  </Package>
+</Wix>
