@@ -122,6 +122,7 @@ $componentRefs
 "@
         New-Item -ItemType Directory -Force -Path "installer"
         $wxsContent | Out-File -FilePath "installer\LightJockey.wxs" -Encoding UTF8
+        wix build -ext WixToolset.UI.wixext -arch x64 -o "installer\LightJockey.msi" "installer\LightJockey.wxs"
 
         wix build -ext WixToolset.UI.wixext -arch x64 -o "installer\LightJockey.msi" "installer\LightJockey.wxs" `
           -dpublishPath="$PWD\${{ env.PUBLISH_DIR }}"
@@ -139,7 +140,6 @@ $componentRefs
                     <MsiPackage SourceFile="installer\LightJockey.msi"/>
                 </Chain>
             </Bundle>
-
             <Fragment>
                 <util:RegistrySearch Root="HKLM" Key="SOFTWARE\dotnet\Setup\InstalledVersions\x64\sharedhost" Value="Version" Variable="DOTNET_SHARED_HOST_VERSION" />
                 <PackageGroup Id="NetCoreDesktopRuntime_9_0_x64">
