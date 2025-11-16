@@ -75,7 +75,7 @@ jobs:
           -replace '{{VERSION}}', $version | Out-File "installer/Bundle.wxs"
           
         # --- Generate Heat command to harvest files ---
-        "heat dir `${{ env.PUBLISH_DIR }}` -o installer/AppComponents.wxs -gg -sreg -srd -dr INSTALLFOLDER -cg AppComponents -var var.publishPath" | Out-File "run-heat.bat"
+        "wix heat dir `${{ env.PUBLISH_DIR }}` -o installer/AppComponents.wxs -gg -sreg -srd -dr INSTALLFOLDER -cg AppComponents -sfr -var var.publishPath" | Out-File "run-heat.bat"
 
     - name: Create WiX project file
       shell: pwsh
