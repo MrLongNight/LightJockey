@@ -1,0 +1,25 @@
+<Project Sdk="WixToolset.Sdk/4.0.5">
+  <PropertyGroup>
+    <OutputName>LightJockey-Installer-v$(Version)</OutputName>
+    <OutputPath>.</OutputPath>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Content Include="installer/LightJockey.wxs" />
+    <Content Include="installer/Bundle.wxs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="WixToolset.UI.wixext" Version="4.0.5" />
+    <PackageReference Include="WixToolset.Bal.wixext" Version="4.0.5" />
+    <PackageReference Include="WixToolset.Util.wixext" Version="4.0.5" />
+    <PackageReference Include="WixToolset.Netfx.wixext" Version="4.0.5" />
+  </ItemGroup>
+
+  <Target Name="Harvest" BeforeTargets="Build">
+    <Exec Command="wix heat dir ../publish -o AppComponents.wxs -gg -sreg -srd -dr INSTALLFOLDER -cg AppComponents" WorkingDirectory="installer" />
+    <ItemGroup>
+      <Content Include="installer/AppComponents.wxs" />
+    </ItemGroup>
+  </Target>
+</Project>
