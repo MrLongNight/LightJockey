@@ -162,5 +162,27 @@ namespace LightJockey.Services
                 _logger.LogError(ex, "Failed to back up corrupted file: {FilePath}", filePath);
             }
         }
+
+        public async Task RemoveValueAsync(string key)
+        {
+            var config = await LoadConfigAsync();
+            if (config.SecureValues.Remove(key))
+            {
+                await SaveConfigAsync(config);
+            }
+        }
+
+        public async Task<bool> ContainsKeyAsync(string key)
+        {
+            var config = await LoadConfigAsync();
+            return config.SecureValues.ContainsKey(key);
+        }
+
+        public async Task ClearAllAsync()
+        {
+            var config = await LoadConfigAsync();
+            config.SecureValues.Clear();
+            await SaveConfigAsync(config);
+        }
     }
 }
