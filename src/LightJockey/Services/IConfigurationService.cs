@@ -9,9 +9,13 @@ namespace LightJockey.Services
         Task SaveConfigAsync(LightJockeyEntertainmentConfig config);
 
         Task<string?> GetSecureValueAsync(string key);
-        Task SetSecureValueAsync(string key, string value);
+        Task<bool> SetSecureValueAsync(string key, string value);
 
         Task<AppSettings> LoadAppSettingsAsync();
         Task SaveAppSettingsAsync(AppSettings appSettings);
+
+        Task<bool> RemoveValueAsync(string key);
+        Task<bool> ContainsKeyAsync(string key);
+        Task<bool> ClearAllAsync();
     }
 }

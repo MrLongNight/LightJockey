@@ -8,12 +8,21 @@ public class HueBridge
     /// <summary>
     /// Gets or sets the IP address of the bridge
     /// </summary>
-    public required string IpAddress { get; set; }
+    public string IpAddress { get; set; } = string.Empty;
 
     /// <summary>
     /// Gets or sets the unique bridge identifier
     /// </summary>
-    public required string BridgeId { get; set; }
+    public string BridgeId { get; set; } = string.Empty;
+
+    /// <summary>
+    /// Legacy Id property for test compatibility
+    /// </summary>
+    public string Id
+    {
+        get => BridgeId;
+        set => BridgeId = value;
+    }
 
     /// <summary>
     /// Gets or sets the friendly name of the bridge (if available)

@@ -89,12 +89,13 @@ namespace LightJockey.Services
             return null;
         }
 
-        public async Task SetSecureValueAsync(string key, string value)
+        public async Task<bool> SetSecureValueAsync(string key, string value)
         {
             var config = await LoadConfigAsync();
             var encryptedValue = Convert.ToBase64String(Encrypt(value));
             config.SecureValues[key] = encryptedValue;
             await SaveConfigAsync(config);
+            return true;
         }
 
         public async Task<AppSettings> LoadAppSettingsAsync()
@@ -161,6 +162,31 @@ namespace LightJockey.Services
             {
                 _logger.LogError(ex, "Failed to back up corrupted file: {FilePath}", filePath);
             }
+        }
+
+        public async Task<bool> RemoveValueAsync(string key)
+        {
+            var config = await LoadConfigAsync();
+            if (config.SecureValues.Remove(key))
+            {
+                await SaveConfigAsync(config);
+                return true;
+            }
+            return false;
+        }
+
+        public async Task<bool> ContainsKeyAsync(string key)
+        {
+            var config = await LoadConfigAsync();
+            return config.SecureValues.ContainsKey(key);
+        }
+
+        public async Task<bool> ClearAllAsync()
+        {
+            var config = await LoadConfigAsync();
+            config.SecureValues.Clear();
+            await SaveConfigAsync(config);
+            return true;
         }
     }
 }
