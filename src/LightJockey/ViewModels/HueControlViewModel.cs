@@ -6,6 +6,7 @@ using System.Linq;
 using System.Windows.Input;
 using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.Input;
+using RelayCommand = CommunityToolkit.Mvvm.Input.RelayCommand;
 
 namespace LightJockey.ViewModels
 {
@@ -25,11 +26,8 @@ namespace LightJockey.ViewModels
             _logger = logger;
             _hueService = hueService;
 
-            DiscoverHueBridgesCommand = new RelayCommand(async _ => await DiscoverHueBridgesAsync());
-            ConnectToHueBridgeCommand = new RelayCommand(
-                async obj => await ConnectToHueBridgeAsync(),
-                obj => CanConnectToHueBridge()
-            );
+            DiscoverHueBridgesCommand = new RelayCommand<object?>(async _ => await DiscoverHueBridgesAsync());
+            ConnectToHueBridgeCommand = new RelayCommand<object?>(async _ => await ConnectToHueBridgeAsync(), _ => CanConnectToHueBridge());
         }
 
         public ObservableCollection<HueBridge> HueBridges
@@ -45,7 +43,7 @@ namespace LightJockey.ViewModels
             {
                 if (SetProperty(ref _selectedHueBridge, value))
                 {
-                    ((RelayCommand)ConnectToHueBridgeCommand).RaiseCanExecuteChanged();
+                    ConnectToHueBridgeCommand.NotifyCanExecuteChanged();
                 }
             }
         }
@@ -63,7 +61,7 @@ namespace LightJockey.ViewModels
             {
                 if (SetProperty(ref _isHueConnected, value))
                 {
-                    ((RelayCommand)ConnectToHueBridgeCommand).RaiseCanExecuteChanged();
+                    ConnectToHueBridgeCommand.NotifyCanExecuteChanged();
                 }
             }
         }
@@ -74,8 +72,8 @@ namespace LightJockey.ViewModels
             set => SetProperty(ref _statusMessage, value);
         }
 
-        public ICommand DiscoverHueBridgesCommand { get; }
-        public ICommand ConnectToHueBridgeCommand { get; }
+        public IRelayCommand DiscoverHueBridgesCommand { get; }
+        public IRelayCommand ConnectToHueBridgeCommand { get; }
 
         private async Task DiscoverHueBridgesAsync()
         {
