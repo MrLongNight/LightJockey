@@ -20,6 +20,15 @@ namespace LightJockey.Services
             _logger = logger;
         }
 
+        public void RecordMetrics(PerformanceMetrics metrics)
+        {
+            if (_metricsHistory.Count >= MaxHistorySize)
+            {
+                _metricsHistory.RemoveAt(0);
+            }
+            _metricsHistory.Add(metrics);
+        }
+
         public void RecordCpuUsage(double cpuUsage)
         {
             UpdateLatestMetrics(m => m.CpuUsage = cpuUsage);

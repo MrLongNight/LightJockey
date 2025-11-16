@@ -1,4 +1,4 @@
-name: "RELEASE.01_Create-MSI-on-Push_AUTO.yml"
+name: "Create MSI Installer on Release"
 
 on:
   workflow_dispatch:
@@ -37,15 +37,6 @@ jobs:
       with:
         dotnet-version: ${{ env.DOTNET_VERSION }}
 
-    - name: Cache NuGet packages
-      uses: actions/cache@v4
-      with:
-        path: |
-          ~/.nuget/packages
-        key: nuget-packages-${{ runner.os }}-${{ hashFiles('**/*.sln', '**/*.csproj') }}
-        restore-keys: |
-          nuget-packages-${{ runner.os }}-
-
     - name: Get version
       id: get_version
       shell: pwsh
@@ -62,206 +53,38 @@ jobs:
         echo "VERSION=$version" >> $env:GITHUB_OUTPUT
         echo "Version: $version"
 
-    - name: Restore dependencies
-      run: dotnet restore ${{ env.SOLUTION_PATH }}
-
-    - name: Build solution
-      run: dotnet build ${{ env.SOLUTION_PATH }} --no-restore --configuration ${{ env.BUILD_CONFIGURATION }}
-
-    - name: Run tests
-      run: dotnet test ${{ env.SOLUTION_PATH }} --no-build --configuration ${{ env.BUILD_CONFIGURATION }} --verbosity normal
-
-    - name: Publish application
+    - name: Restore, Build, Test, Publish
       run: |
-        dotnet publish ${{ env.PROJECT_PATH }} `
-          --configuration ${{ env.BUILD_CONFIGURATION }} `
-          --runtime win-x64 `
-          --self-contained false `
-          --output ${{ env.PUBLISH_DIR }}
+        dotnet restore ${{ env.SOLUTION_PATH }}
+        dotnet build ${{ env.SOLUTION_PATH }} --no-restore -c ${{ env.BUILD_CONFIGURATION }}
+        dotnet test ${{ env.SOLUTION_PATH }} --no-build -c ${{ env.BUILD_CONFIGURATION }}
+        dotnet publish ${{ env.PROJECT_PATH }} -c ${{ env.BUILD_CONFIGURATION }} -r win-x64 --self-contained false -o ${{ env.PUBLISH_DIR }}
 
-    - name: Install WiX Toolset
-      run: |
-        dotnet tool install --global wix
-        wix --version
-
-    - name: Build MSI and Bootstrapper with WiX
+    - name: Generate WiX source files
       shell: pwsh
       run: |
-        wix extension add WixToolset.Util.wixext
-        wix extension add WixToolset.UI.wixext
-        wix extension add WixToolset.Netfx.wixext
-        wix extension add WixToolset.Bal.wixext
-
         $version = "${{ steps.get_version.outputs.VERSION }}"
-        
-        # --- MSI Generation ---
-        $directories = @"
-            <StandardDirectory Id="ProgramFiles64Folder">
-              <Directory Id="INSTALLFOLDER" Name="LightJockey">
-                <Directory Id="LIB" Name="lib" />
-                <Directory Id="CONFIG" Name="Config" />
-                <Directory Id="LOGS" Name="Logs" />
-                <Directory Id="PRESETS" Name="Presets" />
-                <Directory Id="BACKUPS" Name="Config-Backup" />
-              </Directory>
-            </StandardDirectory>
-            <StandardDirectory Id="ProgramMenuFolder">
-                <Directory Id="ApplicationProgramsFolder" Name="LightJockey"/>
-            </StandardDirectory>
-            <StandardDirectory Id="DesktopFolder" Name="Desktop" />
-        "@
-
-        $files = Get-ChildItem -Path "${{ env.PUBLISH_DIR }}" -Recurse -File
-        $componentRefs = ""
-        $components = ""
-        $fileId = 1
-        
-        foreach ($file in $files) {
-          $relativePath = $file.FullName.Replace("$PWD\${{ env.PUBLISH_DIR }}\", "")
-          $componentId = "Comp$fileId"
-          $directoryRef = "INSTALLFOLDER"
-          if ($file.DirectoryName.EndsWith("lib")) {
-            $directoryRef = "LIB"
-          }
-          
-          $components += @"
-              <Component Id="$componentId" Directory="$directoryRef" Guid="*">
-                <File Id="File$fileId" Source="${{ env.PUBLISH_DIR }}\$relativePath" KeyPath="yes" />
-              </Component>
-        "@
-          $componentRefs += "<ComponentRef Id=`"$componentId`" />`n"
-          $fileId++
-        }
-
-        $wxsContent = @"
-        <?xml version="1.0" encoding="UTF-8"?>
-        <Wix xmlns="http://wixtoolset.org/schemas/v4/wxs"
-             xmlns:ui="http://wixtoolset.org/schemas/v4/wxs/ui">
-
-          <Package Name="LightJockey" 
-                   Version="$version" 
-                   Manufacturer="LightJockey" 
-                   UpgradeCode="A1B2C3D4-E5F6-4A5B-8C9D-0E1F2A3B4C5D"
-                   Language="1033">
-            
-            <MajorUpgrade DowngradeErrorMessage="A newer version of [ProductName] is already installed." />
-            
-            <MediaTemplate EmbedCab="yes" />
-
-            <WixVariable Id="WixUIBannerBmp" Value="src/LightJockey/ressources/logo-banner_big.png" />
-            <WixVariable Id="WixUIDialogBmp" Value="src/LightJockey/ressources/logo-banner_small.png" />
-            <Icon Id="icon.ico" SourceFile="src/LightJockey/ressources/icon.ico"/>
-            <Property Id="ARPPRODUCTICON" Value="icon.ico" />
-
-            <ui:WixUI Id="WixUI_FeatureTree">
-                <ui:Dialog Id="WelcomeDlg" Width="370" Height="270" Title="Welcome to the LightJockey Setup Wizard"/>
-            </ui:WixUI>
-
-            $directories
-
-            <Feature Id="MainApplication" Title="LightJockey Application" Level="1">
-              $componentRefs
-            </Feature>
-
-            <Feature Id="StartMenuShortcut" Title="Start Menu Shortcut" Level="1">
-                <ComponentRef Id="ApplicationShortcut" />
-            </Feature>
-
-            <Feature Id="DesktopShortcut" Title="Desktop Shortcut" Level="1">
-                <ComponentRef Id="DesktopShortcutComponent" />
-            </Feature>
-
-            <Component Id="ApplicationShortcut" Directory="ApplicationProgramsFolder" Guid="*">
-                <Shortcut Id="ApplicationStartMenuShortcut"
-                          Name="LightJockey"
-                          Description="LightJockey"
-                          Target="[INSTALLFOLDER]LightJockey.exe"
-                          WorkingDirectory="INSTALLFOLDER"
-                          Icon="icon.ico"/>
-                <RemoveFolder Id="ApplicationProgramsFolder" On="uninstall"/>
-                <RegistryValue Root="HKCU" Key="Software\LightJockey" Name="installed" Type="integer" Value="1" KeyPath="yes"/>
-            </Component>
-
-            <Component Id="DesktopShortcutComponent" Directory="DesktopFolder" Guid="*">
-                <Shortcut Id="ApplicationDesktopShortcut"
-                          Name="LightJockey"
-                          Description="LightJockey"
-                          Target="[INSTALLFOLDER]LightJockey.exe"
-                          WorkingDirectory="INSTALLFOLDER"
-                          Icon="icon.ico"/>
-                <RegistryValue Root="HKCU" Key="Software\LightJockey" Name="desktop_shortcut" Type="integer" Value="1" KeyPath="yes"/>
-            </Component>
-          </Package>
-        </Wix>
-        "@
-        
         New-Item -ItemType Directory -Force -Path "installer"
-        $wxsContent | Out-File -FilePath "installer\LightJockey.wxs" -Encoding UTF8
-        wix build -arch x64 -o "installer\LightJockey.msi" "installer\LightJockey.wxs"
+        
+        (Get-Content -Path "scripts/msi.wxs.template" -Raw) -replace '{{VERSION}}', $version | Out-File "installer/LightJockey.wxs"
+        (Get-Content -Path "scripts/bundle.wxs.template" -Raw) -replace '{{VERSION}}', $version | Out-File "installer/Bundle.wxs"
+        
+    - name: Install WiX v4
+      run: dotnet tool install --global wix
 
-        # --- Bootstrapper Generation ---
-        $bundleContent = @"
-        <?xml version="1.0" encoding="UTF-8"?>
-        <Wix xmlns="http://wixtoolset.org/schemas/v4/wxs"
-             xmlns:bal="http://wixtoolset.org/schemas/v4/wxs/bal"
-             xmlns:util="http://wixtoolset.org/schemas/v4/wxs/util">
-
-            <Bundle Name="LightJockey" Version="$version" Manufacturer="LightJockey" UpgradeCode="6c0a6b6d-4c3a-4f2b-8a1a-3e5a5b9b0d1e">
-                <BootstrapperApplication>
-                    <bal:WixStandardBootstrapperApplication
-                        LicenseUrl=""
-                        Theme="hyperlink" />
-                </BootstrapperApplication>
-
-                <Chain>
-                    <PackageGroupRef Id="NetCoreDesktopRuntime_9_0_x64"/>
-                    <MsiPackage SourceFile="installer\LightJockey.msi"/>
-                </Chain>
-            </Bundle>
-
-            <Fragment>
-                <util:RegistrySearch Root="HKLM" Key="SOFTWARE\dotnet\Setup\InstalledVersions\x64\sharedhost" Value="Version" Variable="DOTNET_SHARED_HOST_VERSION" />
-                <PackageGroup Id="NetCoreDesktopRuntime_9_0_x64">
-                    <ExePackage
-                        Id="NetCoreDesktopRuntime_9_0_x64"
-                        Cache="no"
-                        Compressed="no"
-                        PerMachine="yes"
-                        Permanent="yes"
-                        Vital="yes"
-                        SourceFile="C:\Program Files\dotnet\shared\Microsoft.NETCore.App\9.0.0\dotnet.exe"
-                        InstallCommand="/install /quiet /norestart"
-                        DetectCondition="DOTNET_SHARED_HOST_VERSION AND (DOTNET_SHARED_HOST_VERSION &gt;= v9.0.0)"
-                        InstallCondition="NOT DOTNET_SHARED_HOST_VERSION OR (DOTNET_SHARED_HOST_VERSION &lt; v9.0.0)">
-                        <RemotePayload
-                            ProductName=".NET Desktop Runtime 9.0 (x64)"
-                            Description="Microsoft .NET Desktop Runtime 9.0 for Windows (x64)"
-                            Size="69242880"
-                            Version="9.0.0.0"
-                            Hash="E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855"
-                            Url="https://download.visualstudio.microsoft.com/download/pr/4e44d3ba-52b3-4621-a472-b7e1c070f31c/8a1b5c4c9b8f8e7f8a1b5c4c9b8f8e7f/windowsdesktop-runtime-9.0.0-win-x64.exe" />
-                    </ExePackage>
-                </PackageGroup>
-            </Fragment>
-        </Wix>
-        "@
-        $bundleContent | Out-File -FilePath "installer\Bundle.wxs" -Encoding UTF8
-        wix build -arch x64 -o "LightJockey-Installer-v$version.exe" "installer\Bundle.wxs"
-
+    - name: Build Installer with WiX
+      run: dotnet build installer.wixproj -c Release -a x64 -p:Version="${{ steps.get_version.outputs.VERSION }}"
 
     - name: Upload Installer artifact
       uses: actions/upload-artifact@v4
       with:
         name: ${{ env.ARTIFACT_NAME }}
-        path: '*.exe'
-        retention-days: 90
+        path: 'LightJockey-Installer-v*.exe'
 
     - name: Create Release (on tag)
       if: startsWith(github.ref, 'refs/tags/v')
       uses: softprops/action-gh-release@v1
       with:
-        files: '*.exe'
-        draft: false
-        prerelease: false
+        files: 'LightJockey-Installer-v*.exe'
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
