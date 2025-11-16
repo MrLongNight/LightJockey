@@ -14,7 +14,6 @@ namespace LightJockey.Services
         private readonly ILogger<ConfigurationService> _logger;
         private readonly string _configPath;
         private readonly string _appSettingsPath;
-        private static readonly byte[] Entropy = { 1, 2, 3, 4, 5, 6, 7, 8 };
 
         private LightJockeyEntertainmentConfig? _cachedConfig;
         private AppSettings? _cachedAppSettings;
@@ -30,11 +29,7 @@ namespace LightJockey.Services
 
         public async Task<LightJockeyEntertainmentConfig> LoadConfigAsync()
         {
-            if (_cachedConfig != null)
-            {
-                return _cachedConfig;
-            }
-
+            if (_cachedConfig != null) return _cachedConfig;
             if (!File.Exists(_configPath))
             {
                 _cachedConfig = new LightJockeyEntertainmentConfig();
@@ -43,22 +38,14 @@ namespace LightJockey.Services
 
             try
             {
-                var encryptedJson = await File.ReadAllBytesAsync(_configPath);
-                var json = Decrypt(encryptedJson);
-                _cachedConfig = JsonSerializer.Deserialize<LightJockeyEntertainmentConfig>(json) ?? new LightJockeyEntertainmentConfig();
-            }
-            catch (JsonException ex)
-            {
-                _logger.LogError(ex, "Failed to deserialize config.json. A new configuration will be created. Old file will be backed up.");
-                BackupCorruptedFile(_configPath);
-                _cachedConfig = new LightJockeyEntertainmentConfig();
+                var fileContent = await File.ReadAllTextAsync(_configPath);
+                _cachedConfig = JsonSerializer.Deserialize<LightJockeyEntertainmentConfig>(fileContent) ?? new LightJockeyEntertainmentConfig();
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "An unexpected error occurred while loading the configuration.");
+                _logger.LogError(ex, "Failed to load or deserialize config.json.");
                 _cachedConfig = new LightJockeyEntertainmentConfig();
             }
-
             return _cachedConfig;
         }
 
@@ -66,8 +53,7 @@ namespace LightJockey.Services
         {
             _cachedConfig = config;
             var json = JsonSerializer.Serialize(config, new JsonSerializerOptions { WriteIndented = true });
-            var encryptedJson = Encrypt(json);
-            await File.WriteAllBytesAsync(_configPath, encryptedJson);
+            await File.WriteAllTextAsync(_configPath, json);
         }
 
         public async Task<string?> GetSecureValueAsync(string key)
@@ -77,8 +63,7 @@ namespace LightJockey.Services
             {
                 try
                 {
-                    var decryptedValue = Decrypt(Convert.FromBase64String(encryptedValue));
-                    return decryptedValue;
+                    return Decrypt(encryptedValue);
                 }
                 catch (Exception ex)
                 {
@@ -92,19 +77,14 @@ namespace LightJockey.Services
         public async Task<bool> SetSecureValueAsync(string key, string value)
         {
             var config = await LoadConfigAsync();
-            var encryptedValue = Convert.ToBase64String(Encrypt(value));
-            config.SecureValues[key] = encryptedValue;
+            config.SecureValues[key] = Encrypt(value);
             await SaveConfigAsync(config);
             return true;
         }
 
         public async Task<AppSettings> LoadAppSettingsAsync()
         {
-            if (_cachedAppSettings != null)
-            {
-                return _cachedAppSettings;
-            }
-
+            if (_cachedAppSettings != null) return _cachedAppSettings;
             if (!File.Exists(_appSettingsPath))
             {
                 _cachedAppSettings = new AppSettings();
@@ -116,18 +96,11 @@ namespace LightJockey.Services
                 var json = await File.ReadAllTextAsync(_appSettingsPath);
                 _cachedAppSettings = JsonSerializer.Deserialize<AppSettings>(json) ?? new AppSettings();
             }
-            catch (JsonException ex)
-            {
-                _logger.LogError(ex, "Failed to deserialize settings.json. New settings will be created. Old file will be backed up.");
-                BackupCorruptedFile(_appSettingsPath);
-                _cachedAppSettings = new AppSettings();
-            }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "An unexpected error occurred while loading app settings.");
+                _logger.LogError(ex, "Failed to load or deserialize settings.json.");
                 _cachedAppSettings = new AppSettings();
             }
-
             return _cachedAppSettings;
         }
 
@@ -138,25 +111,56 @@ namespace LightJockey.Services
             await File.WriteAllTextAsync(_appSettingsPath, json);
         }
 
-        private byte[] Encrypt(string plainText)
+        private string Encrypt(string plainText)
         {
-            var data = Encoding.UTF8.GetBytes(plainText);
-            return ProtectedData.Protect(data, Entropy, DataProtectionScope.CurrentUser);
+            var encryptionKey = Environment.GetEnvironmentVariable("CONFIGURATION_ENCRYPTION_KEY");
+            if (string.IsNullOrEmpty(encryptionKey))
+            {
+                _logger.LogError("Encryption key is not set. Secure value cannot be stored.");
+                throw new InvalidOperationException("Encryption key missing.");
+            }
+
+            using var aes = Aes.Create();
+            aes.Key = SHA256.Create().ComputeHash(Encoding.UTF8.GetBytes(encryptionKey));
+            aes.IV = new byte[16]; // Initialization Vector
+
+            var encryptor = aes.CreateEncryptor(aes.Key, aes.IV);
+            using var ms = new MemoryStream();
+            using var cs = new CryptoStream(ms, encryptor, CryptoStreamMode.Write);
+            using (var sw = new StreamWriter(cs))
+            {
+                sw.Write(plainText);
+            }
+            return Convert.ToBase64String(ms.ToArray());
         }
 
-        private string Decrypt(byte[] cipherText)
+        private string Decrypt(string cipherText)
         {
-            var data = ProtectedData.Unprotect(cipherText, Entropy, DataProtectionScope.CurrentUser);
-            return Encoding.UTF8.GetString(data);
+            var encryptionKey = Environment.GetEnvironmentVariable("CONFIGURATION_ENCRYPTION_KEY");
+            if (string.IsNullOrEmpty(encryptionKey))
+            {
+                _logger.LogError("Encryption key is not set. Secure value cannot be decrypted.");
+                throw new InvalidOperationException("Encryption key missing.");
+            }
+
+            using var aes = Aes.Create();
+            aes.Key = SHA256.Create().ComputeHash(Encoding.UTF8.GetBytes(encryptionKey));
+            aes.IV = new byte[16];
+
+            var decryptor = aes.CreateDecryptor(aes.Key, aes.IV);
+            using var ms = new MemoryStream(Convert.FromBase64String(cipherText));
+            using var cs = new CryptoStream(ms, decryptor, CryptoStreamMode.Read);
+            using var sr = new StreamReader(cs);
+            return sr.ReadToEnd();
         }
 
         private void BackupCorruptedFile(string filePath)
         {
+            var backupPath = $"{filePath}.{DateTime.Now:yyyyMMddHHmmss}.bak";
             try
             {
-                var backupPath = $"{filePath}.{DateTime.Now:yyyyMMddHHmmss}.bak";
                 File.Move(filePath, backupPath);
-                _logger.LogInformation("Backed up corrupted file to: {BackupPath}", backupPath);
+                _logger.LogInformation("Backed up corrupted file to {BackupPath}", backupPath);
             }
             catch (Exception ex)
             {
