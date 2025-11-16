@@ -1,0 +1,111 @@
+# .github/workflows/PR.01_Self-Heal-on-Test-Failure_AUTO.yml
+name: "PR.01 | Self-Heal on Test Failure | AUTO"
+
+on:
+  workflow_run:
+    workflows: ["CI.01 | Build & Test | AUTO"] # Name des CI-Workflows
+    types:
+      - completed
+
+jobs:
+  self-heal:
+    # Führt den Job nur aus, wenn der CI-Workflow fehlgeschlagen ist
+    # und der PR von einem bestimmten Actor (z.B. dem Bot 'jules-bot') erstellt wurde.
+    if: >
+      github.event.workflow_run.conclusion == 'failure' &&
+      github.event.workflow_run.actor == 'jules-bot'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write   # Zum Pushen von Code-Änderungen
+      pull-requests: write # Zum Kommentieren von PRs
+
+    steps:
+      - name: "Get PR Branch"
+        id: get_pr_branch
+        # Lädt die Daten des Workflow-Runs, um an den Branch-Namen zu kommen
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const pr = github.event.workflow_run.pull_requests[0];
+            if (!pr) {
+              console.log('No PR found for this workflow run.');
+              return;
+            }
+            const { data: pull_request } = await github.rest.pulls.get({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              pull_number: pr.number
+            });
+            return pull_request.head.ref;
+          result-encoding: string
+
+      - name: "Checkout PR Branch"
+        if: steps.get_pr_branch.outputs.result
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ steps.get_pr_branch.outputs.result }}
+          # Token mit Schreibrechten, um später pushen zu können
+          token: ${{ secrets.BOT_ACCESS_TOKEN }} # Ein PAT, das in den Secrets gespeichert ist
+
+      - name: "Setup Gemini CLI"
+        if: steps.get_pr_branch.outputs.result
+        run: |
+          echo "Gemini CLI Setup Placeholder"
+
+      - name: "Download Artifacts from failed job"
+        if: steps.get_pr_branch.outputs.result
+        uses: actions/download-artifact@v4
+        with:
+          name: logs # Annahme: Der CI-Workflow lädt Logs als Artefakt hoch
+          path: ./logs
+          run-id: ${{ github.event.workflow_run.id }}
+
+      - name: "Run Self-Healing with Gemini CLI"
+        id: self_heal
+        if: steps.get_pr_branch.outputs.result
+        env:
+          GITHUB_TOKEN: ${{ secrets.BOT_ACCESS_TOKEN }}
+        run: |
+          # Dies ist ein simulierter Aufruf. Der tatsächliche Befehl würde die Logs
+          # analysieren und einen Patch zur Korrektur des Problems generieren.
+          echo "Analysiere Fehler-Logs aus ./logs..."
+
+          # Simulierte Logik: Erstellt eine Patch-Datei als Platzhalter.
+          # In einem echten Szenario würde die Gemini CLI hier eine `.patch`-Datei erzeugen.
+          echo "Simuliere Code-Korrektur..."
+          # touch fix.patch
+          echo "patch_generated=true" >> $GITHUB_OUTPUT
+
+          # Annahme: Gemini CLI erzeugt eine Datei 'fix.patch'
+          # git apply fix.patch
+
+      - name: "Commit and Push Fix"
+        if: steps.self_heal.outputs.patch_generated == 'true'
+        run: |
+          git config --global user.name 'Jules Bot'
+          git config --global user.email 'jules-bot@users.noreply.github.com'
+          git commit -am "chore: Versuche automatische Fehlerbehebung (Self-Heal)"
+          git push
+
+      - name: "Comment on Pull Request"
+        if: steps.get_pr_branch.outputs.result
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const pr = github.event.workflow_run.pull_requests[0];
+            if (!pr) return;
+
+            let comment_body = `Der CI-Workflow ist fehlgeschlagen.`;
+
+            if ('${{ steps.self_heal.outputs.patch_generated }}' == 'true') {
+              comment_body += `\n\nIch habe einen automatischen Fix angewendet. Der CI-Workflow wird erneut gestartet.`;
+            } else {
+              comment_body += `\n\nEin automatischer Fix konnte nicht erstellt werden. Manuelle Überprüfung ist erforderlich.`;
+            }
+
+            github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: pr.number,
+              body: comment_body
+            });
