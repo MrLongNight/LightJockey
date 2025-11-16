@@ -85,7 +85,6 @@ jobs:
           <PropertyGroup>
             <OutputName>LightJockey-Installer-v${{ steps.get_version.outputs.VERSION }}</OutputName>
             <OutputPath>.</OutputPath>
-            <DefineConstants>publishPath=$([System.IO.Path]::GetFullPath('${{ env.PUBLISH_DIR }}'))</DefineConstants>
           </PropertyGroup>
           <ItemGroup>
             <Content Include="installer/LightJockey.wxs" />
@@ -108,7 +107,7 @@ jobs:
         ./run-heat.bat
 
     - name: Build Installer with WiX
-      run: dotnet build installer.wixproj -c Release -a x64
+      run: dotnet build installer.wixproj -c Release -a x64 -p:publishPath="$PWD\${{ env.PUBLISH_DIR }}"
 
     - name: Upload Installer artifact
       uses: actions/upload-artifact@v4
