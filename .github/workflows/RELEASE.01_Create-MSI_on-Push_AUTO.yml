@@ -133,8 +133,14 @@ jobs:
         "@
         $wixprojContent | Out-File -FilePath "installer-bundle.wixproj"
 
-    - name: Build Bundle Installer
-      run: dotnet build installer-bundle.wixproj -c Release -a x64
+    - name: Fix WiX Namespace
+      shell: pwsh
+      run: |
+        (Get-Content -Path "installer/AppComponents.wxs" -Raw) `
+          -replace 'xmlns="http://schemas.microsoft.com/wix/2006/wi"', 'xmlns="http://wixtoolset.org/schemas/v4/wxs"' | Out-File "installer/AppComponents.wxs"
+
+    - name: Build Installer with WiX
+      run: dotnet build installer.wixproj -c Release -a x64
 
     - name: Upload Installer artifact
       uses: actions/upload-artifact@v4
