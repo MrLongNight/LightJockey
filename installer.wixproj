@@ -19,7 +19,7 @@
   </ItemGroup>
 
   <Target Name="Harvest" BeforeTargets="Build">
-    <Exec Command="wix heat dir $(PublishDir) -o AppComponents.wxs -gg -sreg -srd -dr INSTALLFOLDER -cg AppComponents" WorkingDirectory="installer" />
+    <Exec Command="wix heat dir $(PublishDir) -o AppComponents.wxs -gg -sreg -srd -dr INSTALLFOLDER -cg AppComponents -var var.publishPath" WorkingDirectory="installer" />
     <ItemGroup>
       <Content Include="installer/AppComponents.wxs" />
     </ItemGroup>

@@ -77,35 +77,61 @@ jobs:
         # --- Generate Heat command to harvest files ---
         "heat dir `${{ env.PUBLISH_DIR }}` -o installer/AppComponents.wxs -gg -sreg -srd -dr INSTALLFOLDER -cg AppComponents -sfr -var var.publishPath" | Out-File "run-heat.bat"
 
-    - name: Create WiX project file
+    - name: Harvest application files with Heat
+      run: |
+        dotnet tool install --global wix
+        ./run-heat.bat
+
+    - name: Fix WiX Namespace in Harvested File
+      shell: pwsh
+      run: |
+        (Get-Content -Path "installer/AppComponents.wxs" -Raw) `
+          -replace 'xmlns="http://schemas.microsoft.com/wix/2006/wi"', 'xmlns="http://wixtoolset.org/schemas/v4/wxs"' | Out-File "installer/AppComponents.wxs"
+
+    - name: Create MSI Project File
       shell: pwsh
       run: |
         $wixprojContent = @"
         <Project Sdk="WixToolset.Sdk/4.0.5">
           <PropertyGroup>
-            <OutputName>LightJockey-Installer-v${{ steps.get_version.outputs.VERSION }}</OutputName>
+            <OutputName>LightJockey</OutputName>
             <OutputPath>.</OutputPath>
             <DefineConstants>publishPath=$($env:GITHUB_WORKSPACE)\${{ env.PUBLISH_DIR }}</DefineConstants>
           </PropertyGroup>
           <ItemGroup>
             <Content Include="installer/LightJockey.wxs" />
-            <Content Include="installer/Bundle.wxs" />
             <Content Include="installer/AppComponents.wxs" />
           </ItemGroup>
           <ItemGroup>
             <PackageReference Include="WixToolset.UI.wixext" Version="4.0.5" />
-            <PackageReference Include="WixToolset.Bal.wixext" Version="4.0.5" />
-            <PackageReference Include="WixToolset.Util.wixext" Version="4.0.5" />
-            <PackageReference Include="WixToolset.Netfx.wixext" Version="4.0.5" />
           </ItemGroup>
         </Project>
         "@
-        $wixprojContent | Out-File -FilePath "installer.wixproj"
+        $wixprojContent | Out-File -FilePath "installer-msi.wixproj"
 
-    - name: Harvest application files with Heat
+    - name: Build MSI Package
+      run: dotnet build installer-msi.wixproj -c Release -a x64
+
+    - name: Create Bundle Project File
+      shell: pwsh
       run: |
-        dotnet tool install --global wix
-        ./run-heat.bat
+        Move-Item -Path "LightJockey.msi" -Destination "installer/LightJockey.msi" -Force
+        $wixprojContent = @"
+        <Project Sdk="WixToolset.Sdk/4.0.5">
+          <PropertyGroup>
+            <OutputName>LightJockey-Installer-v${{ steps.get_version.outputs.VERSION }}</OutputName>
+            <OutputPath>.</OutputPath>
+          </PropertyGroup>
+          <ItemGroup>
+            <Content Include="installer/Bundle.wxs" />
+          </ItemGroup>
+          <ItemGroup>
+            <PackageReference Include="WixToolset.Bal.wixext" Version="4.0.5" />
+            <PackageReference Include="WixToolset.Util.wixext" Version="4.0.5" />
+          </ItemGroup>
+        </Project>
+        "@
+        $wixprojContent | Out-File -FilePath "installer-bundle.wixproj"
 
     - name: Fix WiX Namespace
       shell: pwsh
