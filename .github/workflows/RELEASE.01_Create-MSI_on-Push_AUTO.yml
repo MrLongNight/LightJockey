@@ -37,6 +37,13 @@ jobs:
       with:
         dotnet-version: ${{ env.DOTNET_VERSION }}
 
+    - name: Install WiX Toolset
+      run: choco install wix --version=4.0.4 -y
+
+    - name: Add WiX to PATH
+      run: echo "C:\Program Files (x86)\WiX Toolset v4.0\bin" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
+      shell: pwsh
+
     - name: Get version
       id: get_version
       shell: pwsh
@@ -53,61 +60,23 @@ jobs:
         echo "VERSION=$version" >> $env:GITHUB_OUTPUT
         echo "Version: $version"
 
-    - name: Restore, Build, Test, Publish
-      run: |
-        dotnet restore ${{ env.SOLUTION_PATH }}
-        dotnet build ${{ env.SOLUTION_PATH }} --no-restore -c ${{ env.BUILD_CONFIGURATION }}
-        dotnet test ${{ env.SOLUTION_PATH }} --no-build -c ${{ env.BUILD_CONFIGURATION }}
-        dotnet publish ${{ env.PROJECT_PATH }} -c ${{ env.BUILD_CONFIGURATION }} -r win-x64 --self-contained false -o ${{ env.PUBLISH_DIR }}
+    - name: Restore packages
+      run: dotnet restore ${{ env.SOLUTION_PATH }}
 
-    - name: Generate WiX source files
-      shell: pwsh
-      run: |
-        $version = "${{ steps.get_version.outputs.VERSION }}"
-        New-Item -ItemType Directory -Force -Path "installer"
-        
-        # --- Generate MSI WXS ---
-        (Get-Content -Path "scripts/msi.wxs.template" -Raw) `
-          -replace '{{VERSION}}', $version | Out-File "installer/LightJockey.wxs"
-        
-        # --- Generate Bundle WXS ---
-        (Get-Content -Path "scripts/bundle.wxs.template" -Raw) `
-          -replace '{{VERSION}}', $version | Out-File "installer/Bundle.wxs"
-          
-        # --- Generate Heat command to harvest files ---
-        "heat dir `${{ env.PUBLISH_DIR }}` -o installer/AppComponents.wxs -gg -sreg -srd -dr INSTALLFOLDER -cg AppComponents -var var.publishPath" | Out-File "run-heat.bat"
+    - name: Build solution
+      run: dotnet build ${{ env.SOLUTION_PATH }} --configuration ${{ env.BUILD_CONFIGURATION }} --no-restore
 
-    - name: Create WiX project file
-      shell: pwsh
-      run: |
-        $wixprojContent = @"
-        <Project Sdk="WixToolset.Sdk/4.0.5">
-          <PropertyGroup>
-            <OutputName>LightJockey-Installer-v${{ steps.get_version.outputs.VERSION }}</OutputName>
-            <OutputPath>.</OutputPath>
-          </PropertyGroup>
-          <ItemGroup>
-            <Content Include="installer/LightJockey.wxs" />
-            <Content Include="installer/Bundle.wxs" />
-            <Content Include="installer/AppComponents.wxs" />
-          </ItemGroup>
-          <ItemGroup>
-            <PackageReference Include="WixToolset.UI.wixext" Version="4.0.5" />
-            <PackageReference Include="WixToolset.Bal.wixext" Version="4.0.5" />
-            <PackageReference Include="WixToolset.Util.wixext" Version="4.0.5" />
-            <PackageReference Include="WixToolset.Netfx.wixext" Version="4.0.5" />
-          </ItemGroup>
-        </Project>
-        "@
-        $wixprojContent | Out-File -FilePath "installer.wixproj"
+    - name: Run tests
+      run: dotnet test ${{ env.SOLUTION_PATH }} --configuration ${{ env.BUILD_CONFIGURATION }} --no-build --verbosity normal
 
-    - name: Harvest application files with Heat
-      run: |
-        dotnet tool install --global wix
-        ./run-heat.bat
+    - name: Publish application
+      run: dotnet publish ${{ env.PROJECT_PATH }} -c ${{ env.BUILD_CONFIGURATION }} -r win-x64 --self-contained false -o ${{ env.PUBLISH_DIR }} --no-build
 
-    - name: Build Installer with WiX
-      run: dotnet build installer.wixproj -c Release -a x64 -p:publishPath="$PWD\${{ env.PUBLISH_DIR }}"
+    - name: Harvest application files
+      run: wix heat dir ${{ env.PUBLISH_DIR }} -o installer/AppComponents.wxs -gg -sreg -srd -dr INSTALLFOLDER -cg AppComponents -var var.publishPath=${{ env.PUBLISH_DIR }}
+
+    - name: Build MSI Installer
+      run: dotnet build installer/installer.wixproj -c ${{ env.BUILD_CONFIGURATION }} -a x64
 
     - name: Upload Installer artifact
       uses: actions/upload-artifact@v4
