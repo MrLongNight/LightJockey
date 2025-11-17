@@ -2,13 +2,11 @@
   <PropertyGroup>
     <OutputName>LightJockey-Installer-v$(Version)</OutputName>
     <OutputPath>.</OutputPath>
-    <PublishDir>src/LightJockey/publish</PublishDir>
-    <DefineConstants>publishPath=$(PublishDir)</DefineConstants>
   </PropertyGroup>
 
   <ItemGroup>
-    <Content Include="installer/LightJockey.wxs" />
-    <Content Include="installer/Bundle.wxs" />
+    <Content Include="LightJockey.wxs" />
+    <Content Include="Bundle.wxs" />
   </ItemGroup>
 
   <ItemGroup>
@@ -18,10 +16,15 @@
     <PackageReference Include="WixToolset.Netfx.wixext" Version="4.0.5" />
   </ItemGroup>
 
+  <ItemGroup>
+    <WixExtension Include="WixToolset.Bal.wixext" />
+    <WixExtension Include="WixToolset.Util.wixext" />
+  </ItemGroup>
+
   <Target Name="Harvest" BeforeTargets="Build">
-    <Exec Command="wix heat dir $(PublishDir) -o AppComponents.wxs -gg -sreg -srd -dr INSTALLFOLDER -cg AppComponents -var var.publishPath" WorkingDirectory="installer" />
+    <Exec Command="wix heat dir ../publish -o AppComponents.wxs -var var.publishPath=../publish -gg -sreg -srd -dr INSTALLFOLDER -cg AppComponents" WorkingDirectory="." />
     <ItemGroup>
-      <Content Include="installer/AppComponents.wxs" />
+      <Content Include="AppComponents.wxs" />
     </ItemGroup>
   </Target>
 </Project>
