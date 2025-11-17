@@ -107,6 +107,12 @@ jobs:
         dotnet tool install --global wix
         ./run-heat.bat
 
+    - name: Fix WiX Namespace
+      shell: pwsh
+      run: |
+        (Get-Content -Path "installer/AppComponents.wxs" -Raw) `
+          -replace 'xmlns="http://schemas.microsoft.com/wix/2006/wi"', 'xmlns="http://wixtoolset.org/schemas/v4/wxs"' | Out-File "installer/AppComponents.wxs"
+
     - name: Build Installer with WiX
       run: dotnet build installer.wixproj -c Release -a x64
 
