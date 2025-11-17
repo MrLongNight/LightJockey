@@ -5,8 +5,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Content Include="LightJockey.wxs" />
-    <Content Include="Bundle.wxs" />
+    <Content Include="installer/LightJockey.wxs" />
+    <Content Include="installer/Bundle.wxs" />
   </ItemGroup>
 
   <ItemGroup>
@@ -16,15 +16,10 @@
     <PackageReference Include="WixToolset.Netfx.wixext" Version="4.0.5" />
   </ItemGroup>
 
-  <ItemGroup>
-    <WixExtension Include="WixToolset.Bal.wixext" />
-    <WixExtension Include="WixToolset.Util.wixext" />
-  </ItemGroup>
-
   <Target Name="Harvest" BeforeTargets="Build">
-    <Exec Command="wix heat dir ../publish -o AppComponents.wxs -var var.publishPath=../publish -gg -sreg -srd -dr INSTALLFOLDER -cg AppComponents" WorkingDirectory="." />
+    <Exec Command="wix heat dir ../publish -o AppComponents.wxs -gg -sreg -srd -dr INSTALLFOLDER -cg AppComponents" WorkingDirectory="installer" />
     <ItemGroup>
-      <Content Include="AppComponents.wxs" />
+      <Content Include="installer/AppComponents.wxs" />
     </ItemGroup>
   </Target>
 </Project>

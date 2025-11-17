@@ -8,9 +8,7 @@
     <ui:WixUI Id="WixUI_FeatureTree" />
 
     <StandardDirectory Id="ProgramFiles64Folder">
-      <Directory Id="INSTALLFOLDER" Name="LightJockey">
-        <Directory Id="LibFolder" Name="lib" />
-      </Directory>
+      <Directory Id="INSTALLFOLDER" Name="LightJockey" />
     </StandardDirectory>
 
     <Feature Id="MainApplication" Title="LightJockey Application" Level="1">
