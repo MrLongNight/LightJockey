@@ -1,0 +1,125 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Wix xmlns="http://wixtoolset.org/schemas/v4/wxs" xmlns:bal="http://wixtoolset.org/schemas/v4/wxs/ba">
+  <Package>
+    <Product Name="LightJockey" Version="1.0.0" Language="1031" Manufacturer="MrLongNight" UpgradeCode="310AE6A6-71B7-4D90-9433-5AC246A60189">
+      <PackageDetails InstallerVersion="500" Compressed="yes" InstallScope="perMachine" />
+      <MajorUpgrade DowngradeErrorMessage="Eine neuere Version ist bereits installiert." />
+      <MediaTemplate />
+      <Feature Id="MainFeature" Title="LightJockey" Description="Audio-reactive lighting control application" Level="1" Display="expand">
+        <ComponentGroupRef Id="AppComponents"/>
+        <ComponentGroupRef Id="ShortcutComponents"/>
+      </Feature>
+    </Product>
+  </Package>
+  
+  <Fragment>
+    <Directory Id="TARGETDIR" Name="SourceDir">
+      <Directory Id="ProgramFilesFolder">
+        <Directory Id="INSTALLFOLDER" Name="LightJockey">
+          <Directory Id="DLL_DIR" Name="dll"/>
+          <Directory Id="PRESET_DIR" Name="presets"/>
+          <Directory Id="CONFIG_DIR" Name="config"/>
+          <Directory Id="BACKUP_DIR" Name="backup"/>
+          <Directory Id="ICONS_DIR" Name="icons"/>
+        </Directory>
+      </Directory>
+      <Directory Id="DesktopFolder" />
+      <Directory Id="ProgramMenuFolder">
+        <Directory Id="AppShortcutFolder" Name="LightJockey"/>
+      </Directory>
+    </Directory>
+  </Fragment>
+
+  <Fragment>
+    <ComponentGroup Id="AppComponents" Directory="INSTALLFOLDER">
+      <Component Id="Exe" Guid="F6108A15-8225-4D9C-AA88-B4B2BB5484D9">
+        <File Source="publish\LightJockey.exe" KeyPath="yes"/>
+      </Component>
+      <!-- DLLs -->
+      <Component Id="NAudio_DLL" Guid="F2C755ED-3635-4A42-B908-08BC1D8A7CE3" Directory="DLL_DIR">
+        <File Source="publish\dll\NAudio.dll"/>
+      </Component>
+      <Component Id="Serilog_DLL" Guid="59682DC3-40E9-4986-929B-36D3E0277AA6" Directory="DLL_DIR">
+        <File Source="publish\dll\Serilog.dll"/>
+      </Component>
+      <!-- Füge weitere DLLs hier nach diesem Muster hinzu -->
+      <!-- Presets -->
+      <Component Id="Preset_Default" Guid="72AA77D8-60EA-4DEA-BB59-34DBE6AF8BE3" Directory="PRESET_DIR">
+        <File Source="publish\presets\Default.preset"/>
+      </Component>
+      <!-- Config -->
+      <Component Id="Config" Guid="17C68159-0F1E-48DB-BA94-687319B8AD16" Directory="CONFIG_DIR">
+        <File Source="publish\config\App.config"/>
+      </Component>
+      <!-- Backup -->
+      <Component Id="Backup" Guid="553F0200-2232-4D19-A309-AA675229B256" Directory="BACKUP_DIR">
+        <File Source="publish\backup\Backup.bak"/>
+      </Component>
+      <!-- Icons -->
+      <Component Id="AppIcon" Guid="73C2E4B5-B2C2-4518-8A2E-F294B5C62459" Directory="ICONS_DIR">
+        <File Source="publish\icons\app.ico"/>
+      </Component>
+    </ComponentGroup>
+  </Fragment>
+
+  <Fragment>
+    <!-- Shortcuts (je nach UI-Option siehe Property Default: 1 = anlegen, 0 = nicht anlegen) -->
+    <ComponentGroup Id="ShortcutComponents">
+      <Component Id="DesktopShortcut" Guid="E8D7DD31-09E1-42C1-9C2B-3F9E742E9B18" Directory="DesktopFolder" >
+        <Shortcut Id="DesktopShortcut" Name="LightJockey" 
+            Description="LightJockey starten" 
+            Target="[INSTALLFOLDER]LightJockey.exe" 
+            Icon="AppIcon.ico" 
+            WorkingDirectory="INSTALLFOLDER"/>
+        <RemoveFolder Id="DesktopShortcutFolder" On="uninstall"/>
+        <Condition>DESKTOPSHORTCUT=1</Condition>
+      </Component>
+      <Component Id="MenuShortcut" Guid="993D8328-DC56-484B-B651-C320A827BED0" Directory="AppShortcutFolder">
+        <Shortcut Id="MenuShortcut" Name="LightJockey" 
+            Description="LightJockey starten" 
+            Target="[INSTALLFOLDER]LightJockey.exe" 
+            Icon="AppIcon.ico" 
+            WorkingDirectory="INSTALLFOLDER"/>
+        <RemoveFolder Id="AppShortcutFolder" On="uninstall"/>
+        <Condition>MENUSHORTCUT=1</Condition>
+      </Component>
+    </ComponentGroup>
+  </Fragment>
+
+  <!-- Prerequisite: .NET 9 Desktop Runtime prüfen und installieren -->
+  <Fragment>
+    <bal:Bundle>
+      <bal:WixVariable Id="WixMbaPrereqLicenseUrl" Value="https://dotnet.microsoft.com/en-us/license"/>
+      <bal:PackageGroupRef Id="NetCoreInstall"/>
+    </bal:Bundle>
+    <PackageGroup Id="NetCoreInstall">
+      <ExePackage
+        Id="NetCore"
+        DisplayName=".NET Desktop Runtime 9.0.x"
+        DownloadUrl="https://download.visualstudio.microsoft.com/download/pr/7b1c9659-9bad-4ac2-be15-995adb2ffa50/9035e86e2836e136d8fc9be6da7b0d4d/windowsdesktop-runtime-9.0.0-win-x64.exe"
+        InstallCommand="/install /quiet /norestart"
+        DetectCondition="NetDesktop_9x64"
+        Vital="yes"
+        Permanent="no"
+        InstallCondition="NOT NetDesktop_9x64"
+      />
+    </PackageGroup>
+    <!-- Custom Property für Detection, falls in CustomBA verwendet
+         Alternativ: Custom-Condition per Registry-Check implementieren -->
+    <Property Id="NetDesktop_9x64">
+      <RegistrySearch Id="NetDesktop9"
+        Root="HKLM"
+        Key="SOFTWARE\Microsoft\NET Framework Setup\NDP\v4\Full"
+        Name="Release"
+        Type="integer"
+        Win64="yes"
+      />
+    </Property>
+  </Fragment>
+
+  <UI>
+    <UIRef Id="WixUI_InstallDir"/>
+    <Property Id="DESKTOPSHORTCUT" Value="1"/>
+    <Property Id="MENUSHORTCUT" Value="1"/>
+  </UI>
+</Wix>
