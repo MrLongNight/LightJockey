@@ -26,8 +26,6 @@ public class MainWindowViewModel : ViewModelBase, IDisposable
     private float[] _spectralData = Array.Empty<float>();
     private double _currentBpm;
     private bool _isBeatDetected;
-    private DateTime _lastUiUpdate = DateTime.MinValue;
-    private const int UiUpdateIntervalMs = 30; // 30ms throttle interval
 
     // Theme
     private bool _isDarkTheme = true;
@@ -146,13 +144,6 @@ public class MainWindowViewModel : ViewModelBase, IDisposable
 
     private void OnSpectralDataAvailable(object? sender, SpectralDataEventArgs e)
     {
-        // Throttle UI updates to avoid overwhelming the dispatcher
-        if ((DateTime.Now - _lastUiUpdate).TotalMilliseconds < UiUpdateIntervalMs)
-        {
-            return;
-        }
-        _lastUiUpdate = DateTime.Now;
-
         // Update visualizer data on UI thread
         System.Windows.Application.Current?.Dispatcher.Invoke(() =>
         {

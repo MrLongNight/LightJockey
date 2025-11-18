@@ -14,6 +14,7 @@ namespace LightJockey.Services
         private readonly ILogger<ConfigurationService> _logger;
         private readonly string _configPath;
         private readonly string _appSettingsPath;
+        private static readonly byte[] Entropy = { 1, 2, 3, 4, 5, 6, 7, 8 };
 
         private LightJockeyEntertainmentConfig? _cachedConfig;
         private AppSettings? _cachedAppSettings;
@@ -42,12 +43,7 @@ namespace LightJockey.Services
 
             try
             {
-                var encryptedJson = await File.ReadAllTextAsync(_configPath);
-                if (string.IsNullOrEmpty(encryptedJson))
-                {
-                    _cachedConfig = new LightJockeyEntertainmentConfig();
-                    return _cachedConfig;
-                }
+                var encryptedJson = await File.ReadAllBytesAsync(_configPath);
                 var json = Decrypt(encryptedJson);
                 _cachedConfig = JsonSerializer.Deserialize<LightJockeyEntertainmentConfig>(json) ?? new LightJockeyEntertainmentConfig();
             }
@@ -71,7 +67,7 @@ namespace LightJockey.Services
             _cachedConfig = config;
             var json = JsonSerializer.Serialize(config, new JsonSerializerOptions { WriteIndented = true });
             var encryptedJson = Encrypt(json);
-            await File.WriteAllTextAsync(_configPath, encryptedJson);
+            await File.WriteAllBytesAsync(_configPath, encryptedJson);
         }
 
         public async Task<string?> GetSecureValueAsync(string key)
@@ -81,7 +77,8 @@ namespace LightJockey.Services
             {
                 try
                 {
-                    return Decrypt(encryptedValue);
+                    var decryptedValue = Decrypt(Convert.FromBase64String(encryptedValue));
+                    return decryptedValue;
                 }
                 catch (Exception ex)
                 {
@@ -95,7 +92,8 @@ namespace LightJockey.Services
         public async Task SetSecureValueAsync(string key, string value)
         {
             var config = await LoadConfigAsync();
-            config.SecureValues[key] = Encrypt(value);
+            var encryptedValue = Convert.ToBase64String(Encrypt(value));
+            config.SecureValues[key] = encryptedValue;
             await SaveConfigAsync(config);
         }
 
@@ -139,18 +137,16 @@ namespace LightJockey.Services
             await File.WriteAllTextAsync(_appSettingsPath, json);
         }
 
-        private string Encrypt(string plainText)
+        private byte[] Encrypt(string plainText)
         {
-            return Convert.ToBase64String(
-                ProtectedData.Protect(Encoding.UTF8.GetBytes(plainText), null, DataProtectionScope.CurrentUser)
-            );
+            var data = Encoding.UTF8.GetBytes(plainText);
+            return ProtectedData.Protect(data, Entropy, DataProtectionScope.CurrentUser);
         }
 
-        private string Decrypt(string cipherText)
+        private string Decrypt(byte[] cipherText)
         {
-            return Encoding.UTF8.GetString(
-                ProtectedData.Unprotect(Convert.FromBase64String(cipherText), null, DataProtectionScope.CurrentUser)
-            );
+            var data = ProtectedData.Unprotect(cipherText, Entropy, DataProtectionScope.CurrentUser);
+            return Encoding.UTF8.GetString(data);
         }
 
         private void BackupCorruptedFile(string filePath)
