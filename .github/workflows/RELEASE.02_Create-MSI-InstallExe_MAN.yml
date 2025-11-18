@@ -1,4 +1,4 @@
-name: "RELEASE.01 | Create MSI Installer | AUTO"
+name: "RELEASE.02 | Create MSI Installer | AUTO"
 
 on:
   workflow_dispatch:
