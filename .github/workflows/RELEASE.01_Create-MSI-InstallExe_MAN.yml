@@ -27,8 +27,8 @@ jobs:
       - name: Restore
         run: dotnet restore
 
-      - name: Build
-        run: dotnet build --configuration Release --no-restore
+      - name: Build Lösung
+        run: dotnet build LightJockey.sln --configuration Release --no-restore
 
       - name: Publish
         run: dotnet publish src/LightJockey/LightJockey.csproj --configuration Release --output publish --runtime win-x64 --self-contained false
