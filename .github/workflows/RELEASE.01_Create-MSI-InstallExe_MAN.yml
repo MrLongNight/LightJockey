@@ -1,7 +1,12 @@
 name: "RELEASE.01 | Create MSI Installer | Manuell"
 
 on:
-  workflow_dispatch:      # Damit im Actions-Menü manuell startbar!
+  workflow_dispatch:
+    inputs:
+      release_version:
+        description: "Gib die gewünschte Release-Version an"
+        required: true
+        default: "v0.0.3"
   push:
     branches:
       - main
