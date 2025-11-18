@@ -37,12 +37,6 @@ jobs:
       with:
         dotnet-version: ${{ env.DOTNET_VERSION }}
 
-    - name: Download WiX Toolset 4.x
-      run: |
-        curl -LO https://github.com/wixtoolset/wix/releases/download/v4.0.4/wix-v4.0.4-win-x64.zip
-        7z x wix-v4.0.4-win-x64.zip -oC:\wix
-        echo "C:\\wix" | Out-File -Append $env:GITHUB_PATH
-
     - name: Get version
       id: get_version
       shell: pwsh
@@ -80,38 +74,22 @@ jobs:
         (Get-Content -Path "scripts/bundle.wxs.template" -Raw) `
           -replace '{{VERSION}}', $version | Out-File "installer/Bundle.wxs"
 
-        # --- Generate Heat command to harvest files ---
-        "heat dir `${{ env.PUBLISH_DIR }}` -o installer/AppComponents.wxs -gg -sreg -srd -dr INSTALLFOLDER -cg AppComponents -var var.publishPath" | Out-File "run-heat.bat"
+    - name: Install WiX Toolset v3.14 (via Chocolatey)
+      run: choco install wixtoolset --version=3.14.0.6526 -y
 
-    - name: Create WiX project file
+    - name: Harvest, Compile, and Link Installer
       shell: pwsh
       run: |
-        $wixprojContent = @"
-        <Project Sdk="WixToolset.Sdk/4.0.5">
-          <PropertyGroup>
-            <OutputName>LightJockey-Installer-v${{ steps.get_version.outputs.VERSION }}</OutputName>
-            <OutputPath>.</OutputPath>
-          </PropertyGroup>
-          <ItemGroup>
-            <Content Include="installer/LightJockey.wxs" />
-            <Content Include="installer/Bundle.wxs" />
-            <Content Include="installer/AppComponents.wxs" />
-          </ItemGroup>
-          <ItemGroup>
-            <PackageReference Include="WixToolset.UI.wixext" Version="4.0.5" />
-            <PackageReference Include="WixToolset.Bal.wixext" Version="4.0.5" />
-            <PackageReference Include="WixToolset.Util.wixext" Version="4.0.5" />
-            <PackageReference Include="WixToolset.Netfx.wixext" Version="4.0.5" />
-          </ItemGroup>
-        </Project>
-        "@
-        $wixprojContent | Out-File -FilePath "installer.wixproj"
+        $wixBinPath = "C:\Program Files (x86)\WiX Toolset v3.14\bin"
 
-    - name: Harvest application files
-      run: heat dir ${{ env.PUBLISH_DIR }} -o installer/AppComponents.wxs -gg -sreg -srd -sfr -dr INSTALLFOLDER -cg AppComponents -var var.publishPath=${{ env.PUBLISH_DIR }}
+        # Harvest application files
+        & "$wixBinPath\heat.exe" dir "${{ env.PUBLISH_DIR }}" -o installer/AppComponents.wxs -gg -sreg -srd -dr INSTALLFOLDER -cg AppComponents -var var.publishPath
 
-    - name: Build Installer with WiX
-      run: dotnet build installer.wixproj -c Release -a x64 -p:publishPath="$PWD\${{ env.PUBLISH_DIR }}"
+        # Compile WiX source files
+        & "$wixBinPath\candle.exe" -dpublishPath="$PWD\${{ env.PUBLISH_DIR }}" installer/LightJockey.wxs installer/Bundle.wxs installer/AppComponents.wxs -o installer/
+
+        # Link object files to create the installer
+        & "$wixBinPath\light.exe" -ext WixUIExtension -ext WixUtilExtension -ext WixBalExtension -ext WixNetFxExtension installer/LightJockey.wixobj installer/Bundle.wixobj installer/AppComponents.wixobj -o LightJockey-Installer-v${{ steps.get_version.outputs.VERSION }}.exe
 
     - name: Upload Installer artifact
       uses: actions/upload-artifact@v4
