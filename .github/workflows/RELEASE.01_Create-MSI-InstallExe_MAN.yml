@@ -40,7 +40,7 @@ jobs:
         run: .wix/wix.exe build installer/Product.wxs -o installer/LightJockey.msi
 
       - name: Upload MSI als Artefakt
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: LightJockey-Installer
           path: installer/LightJockey.msi
