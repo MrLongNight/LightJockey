@@ -37,3 +37,4 @@ jobs:
         token: ${{ secrets.CODECOV_TOKEN }}
         files: '**/coverage.cobertura.xml'
         fail_ci_if_error: false
+
