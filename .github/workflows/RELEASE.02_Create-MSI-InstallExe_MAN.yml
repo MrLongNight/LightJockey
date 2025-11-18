@@ -1,7 +1,12 @@
 name: "RELEASE.02 | Create MSI Installer | MANUELL | Release-02-Create-MSI-Installer-Manuell.yml"
 
 on:
-  workflow_dispatch:            # <-- Jetzt im Actions-Menü startbar!
+  workflow_dispatch:
+    inputs:
+      release_version:
+        description: "Gib die gewünschte Release-Version an"
+        required: true
+        default: "v0.0.3"
   push:
     branches:
       - main
