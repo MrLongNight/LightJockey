@@ -1,0 +1,42 @@
+name: "CI.01 | Build & Test | AUTO"
+
+on:
+  pull_request:
+    branches: [ main, develop ]
+  push:
+    branches: [ main, develop ]
+
+jobs:
+  test:
+    runs-on: windows-latest
+    permissions:
+      contents: read
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: '9.0.x'
+
+    - name: Restore dependencies
+      run: dotnet restore LightJockey.sln
+
+    - name: Build
+      run: dotnet build LightJockey.sln --no-restore --configuration Release
+
+    - name: Check Formatting
+      run: dotnet format LightJockey.sln --verify-no-changes
+
+    - name: Test
+      run: dotnet test LightJockey.sln --no-build --configuration Release --verbosity normal --collect:"XPlat Code Coverage"
+
+    - name: Upload coverage reports
+      uses: codecov/codecov-action@v4
+      if: success()
+      with:
+        token: ${{ secrets.CODECOV_TOKEN }}
+        files: '**/coverage.cobertura.xml'
+        fail_ci_if_error: false
