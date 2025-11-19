@@ -27,6 +27,9 @@ public class MainWindowViewModel : ViewModelBase, IDisposable
     private bool _isDarkTheme = true;
     private string _statusMessage = "Ready";
 
+    // Throttling für UI Updates
+    private DateTime _lastSpectralUpdate = DateTime.MinValue;
+
     public AudioControlViewModel AudioControlViewModel { get; }
     public HueControlViewModel HueControlViewModel { get; }
     public EffectControlViewModel EffectControlViewModel { get; }
@@ -114,7 +117,23 @@ public class MainWindowViewModel : ViewModelBase, IDisposable
     public ICommand OpenSettingsCommand { get; }
 
     private void OnAudioDataAvailable(object? sender, AudioDataEventArgs e) => _fftProcessor.ProcessAudio(e.Samples, e.SampleRate);
-    private void OnSpectralDataAvailable(object? sender, SpectralDataEventArgs e) => System.Windows.Application.Current?.Dispatcher.Invoke(() => { SpectralData = new float[] { (float)e.LowFrequencyEnergy, (float)e.MidFrequencyEnergy, (float)e.HighFrequencyEnergy }; });
+    
+    private void OnSpectralDataAvailable(object? sender, SpectralDataEventArgs e) 
+    {
+        // Throttling: Update UI max every 30ms to prevent freezing
+        var now = DateTime.Now;
+        if ((now - _lastSpectralUpdate).TotalMilliseconds < 30)
+        {
+            return;
+        }
+        _lastSpectralUpdate = now;
+
+        System.Windows.Application.Current?.Dispatcher.Invoke(() => 
+        { 
+            SpectralData = new float[] { (float)e.LowFrequencyEnergy, (float)e.MidFrequencyEnergy, (float)e.HighFrequencyEnergy }; 
+        });
+    }
+
     private void OnBeatDetected(object? sender, BeatDetectedEventArgs e) => System.Windows.Application.Current?.Dispatcher.Invoke(() => { CurrentBpm = e.BPM; IsBeatDetected = true; _beatIndicatorTimer.Start(); });
     private void OnActiveEffectChanged(object? sender, string? effectName) => System.Windows.Application.Current?.Dispatcher.Invoke(() => { EffectControlViewModel.IsEffectRunning = effectName != null; });
     private void OnEffectError(object? sender, string error) => System.Windows.Application.Current?.Dispatcher.Invoke(() => { StatusMessage = $"Effect error: {error}"; _logger.LogError("Effect error: {Error}", error); });
