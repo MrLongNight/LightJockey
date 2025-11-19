@@ -30,13 +30,13 @@ jobs:
       run: dotnet tool install --global wix
 
     - name: Publish Application
-      # Veröffentlicht die App in den Ordner 'publish' im Root-Verzeichnis
+      # Veröffentlicht die App für x64 in den Ordner 'publish'
       run: dotnet publish src/LightJockey/LightJockey.csproj -c Release -r win-x64 --self-contained false -o ./publish /p:Version=${{ github.event.inputs.version }}
 
     - name: Build MSI Installer
       working-directory: ./installer
-      # FIX: -d Configuration=Release hinzugefügt, damit die .wixproj Variable gefüllt ist
-      run: wix build installer.wixproj -o lightjockey.msi -d Version=${{ github.event.inputs.version }} -d Configuration=Release
+      # FIX: -d Platform=x64 und -d Configuration=Release müssen explizit übergeben werden!
+      run: wix build installer.wixproj -o lightjockey.msi -d Version=${{ github.event.inputs.version }} -d Configuration=Release -d Platform=x64
 
     - name: Upload Artifact
       uses: actions/upload-artifact@v4
