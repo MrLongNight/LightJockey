@@ -1,32 +1,45 @@
-<Project Sdk="WixToolset.Sdk/4.0.5">
-  <PropertyGroup>
-    <!-- Name der Ausgabe-MSI -->
-    <OutputName>LightJockey</OutputName>
-    <OutputPath>bin\$(Configuration)\</OutputPath>
-  </PropertyGroup>
+<Wix xmlns="http://wixtoolset.org/schemas/v4/wxs" xmlns:ui="http://wixtoolset.org/schemas/v4/wxs/ui">
+  <Package Name="LightJockey" Manufacturer="MrLongNight" Version="1.0.0" UpgradeCode="310AE6A6-71B7-4D90-9433-5AC246A60189" Language="1033">
+    
+    <MajorUpgrade DowngradeErrorMessage="A newer version of [ProductName] is already installed." />
+    
+    <!-- Einbettung der CAB-Dateien in die MSI -->
+    <MediaTemplate EmbedCab="yes" />
 
-  <ItemGroup>
-    <!-- Referenz auf die Haupt-Logik -->
-    <Content Include="Product.wxs" />
-  </ItemGroup>
+    <!-- Standard Feature Struktur -->
+    <Feature Id="ProductFeature" Title="LightJockey" Level="1">
+      <!-- Referenz auf die automatisch generierten Dateien (Harvest aus wixproj) -->
+      <ComponentGroupRef Id="AppComponents" />
+      <!-- Referenz auf die manuellen Shortcuts -->
+      <ComponentGroupRef Id="ShortcutComponents" />
+    </Feature>
 
-  <ItemGroup>
-    <!-- WiX Erweiterungen für UI und .NET Checks -->
-    <PackageReference Include="WixToolset.UI.wixext" Version="4.0.5" />
-    <PackageReference Include="WixToolset.Netfx.wixext" Version="4.0.5" />
-    <PackageReference Include="WixToolset.Heat" Version="4.0.5" />
-  </ItemGroup>
+    <!-- Benutzeroberfläche -->
+    <ui:WixUI Id="WixUI_InstallDir" InstallDirectory="INSTALLFOLDER" />
 
-  <!-- Dieser Schritt sammelt automatisch alle Dateien aus dem Publish-Ordner -->
-  <!-- WICHTIG: Der Pfad ../publish muss existieren, bevor dieser Build läuft -->
-  <Target Name="Harvest" BeforeTargets="Build">
-    <Exec Command="wix heat dir ..\publish -o AppComponents.wxs -gg -sreg -srd -dr INSTALLFOLDER -cg AppComponents -var var.PublishDir" />
-    <ItemGroup>
-      <Compile Include="AppComponents.wxs" />
-    </ItemGroup>
-  </Target>
-  
-  <PropertyGroup>
-    <DefineConstants>PublishDir=..\publish</DefineConstants>
-  </PropertyGroup>
-</Project>
+  </Package>
+
+  <Fragment>
+    <StandardDirectory Id="ProgramFiles64Folder">
+      <Directory Id="INSTALLFOLDER" Name="LightJockey" />
+    </StandardDirectory>
+    
+    <StandardDirectory Id="ProgramMenuFolder">
+      <Directory Id="ApplicationProgramsFolder" Name="LightJockey" />
+    </StandardDirectory>
+  </Fragment>
+
+  <Fragment>
+    <ComponentGroup Id="ShortcutComponents" Directory="ApplicationProgramsFolder">
+      <Component Id="ApplicationShortcut" Guid="E8D7DD31-09E1-42C1-9C2B-3F9E742E9B19">
+        <Shortcut Id="Shortcut"
+                  Name="LightJockey"
+                  Description="Audio-reactive lighting control"
+                  Target="[INSTALLFOLDER]LightJockey.exe"
+                  WorkingDirectory="INSTALLFOLDER" />
+        <RemoveFolder Id="CleanUpShortCut" Directory="ApplicationProgramsFolder" On="uninstall" />
+        <RegistryValue Root="HKCU" Key="Software\MrLongNight\LightJockey" Name="installed" Type="integer" Value="1" KeyPath="yes" />
+      </Component>
+    </ComponentGroup>
+  </Fragment>
+</Wix>
