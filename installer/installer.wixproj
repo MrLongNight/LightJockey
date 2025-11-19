@@ -1,26 +1,21 @@
 <Project Sdk="WixToolset.Sdk/4.0.5">
-
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Release</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">x64</Platform>
     <Version Condition=" '$(Version)' == '' ">1.0.0</Version>
   </PropertyGroup>
-
   <PropertyGroup>
     <OutputName>LightJockey</OutputName>
     <OutputPath>bin\$(Configuration)\</OutputPath>
     <DefineConstants>Version=$(Version);PublishDir=..\publish</DefineConstants>
   </PropertyGroup>
-
   <ItemGroup>
     <Compile Include="Product.wxs" />
     <Compile Include="AppComponents.wxs" />
   </ItemGroup>
-
   <ItemGroup>
     <PackageReference Include="WixToolset.UI.wixext" Version="4.0.5" />
     <PackageReference Include="WixToolset.Netfx.wixext" Version="4.0.5" />
     <PackageReference Include="WixToolset.Heat" Version="4.0.5" />
   </ItemGroup>
-
 </Project>
