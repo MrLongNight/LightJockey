@@ -1,0 +1,56 @@
+name: Build & Release MSI
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Release Version (z.B. 1.0.0)'
+        required: true
+        default: '0.0.3'
+
+permissions:
+  contents: write
+
+jobs:
+  build-msi:
+    runs-on: windows-latest
+
+    steps:
+    - name: Checkout Code
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+
+    - name: Setup .NET 9
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: '9.0.x'
+
+    - name: Install WiX Toolset
+      run: dotnet tool install --global wix
+
+    - name: Publish Application
+      # WICHTIG: Output Ordner muss "publish" im Root sein, damit der Installer ihn findet
+      run: dotnet publish src/LightJockey/LightJockey.csproj -c Release -r win-x64 --self-contained false -o ./publish /p:Version=${{ github.event.inputs.version }}
+
+    - name: Build MSI Installer
+      working-directory: ./installer
+      # Die .wixproj sucht automatisch im Ordner ../publish (siehe Schritt oben)
+      run: wix build installer.wixproj -o lightjockey.msi -d Version=${{ github.event.inputs.version }}
+
+    - name: Upload Artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: LightJockey-MSI
+        path: installer/lightjockey.msi
+
+    - name: Create GitHub Release
+      uses: softprops/action-gh-release@v2
+      with:
+        tag_name: v${{ github.event.inputs.version }}
+        name: Release v${{ github.event.inputs.version }}
+        draft: false
+        prerelease: false
+        files: installer/lightjockey.msi
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
