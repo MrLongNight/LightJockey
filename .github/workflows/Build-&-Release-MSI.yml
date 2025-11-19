@@ -42,7 +42,15 @@ jobs:
     - name: Publish Application
       run: |
         dotnet publish src/LightJockey/LightJockey.csproj -c Release -r win-x64 --self-contained false -o ./publish /p:Version=${{ env.VERSION }}
-        ls ./publish   # Zeigt Publish-Ordner Inhalt für Debugging
+        ls ./publish
+
+    - name: Fail if Publish Output is Empty
+      shell: bash
+      run: |
+        if [ -z "$(ls -A ./publish)" ]; then
+          echo "ERROR: Publish output is empty!";
+          exit 1;
+        fi
 
     - name: Build MSI Installer
       run: dotnet build installer/installer.wixproj -c Release -p:Platform=x64 -p:Version=${{ env.VERSION }}
