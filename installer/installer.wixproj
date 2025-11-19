@@ -1,13 +1,16 @@
 <Project Sdk="WixToolset.Sdk/4.0.5">
   
-  <!-- FIX: Fallback für Configuration Variable, falls sie nicht übergeben wird -->
+  <!-- FIX: Robuste Defaults für ALLE Variablen -->
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Release</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">x64</Platform>
+    <!-- Sicherstellen, dass diese auch als Preprocessor Variable verfügbar sind -->
+    <DefineConstants>Configuration=$(Configuration);Platform=$(Platform);PublishDir=..\publish</DefineConstants>
   </PropertyGroup>
 
   <PropertyGroup>
     <OutputName>LightJockey</OutputName>
+    <!-- Hier trat der Fehler auf, weil Platform fehlte -->
     <OutputPath>bin\$(Configuration)\</OutputPath>
   </PropertyGroup>
 
@@ -22,7 +25,6 @@
   </ItemGroup>
 
   <!-- Harvest: Sammelt automatisch alles aus dem Publish-Ordner ein -->
-  <!-- Der Pfad ..\publish bezieht sich auf das Verzeichnis eine Ebene über der .wixproj Datei -->
   <Target Name="Harvest" BeforeTargets="Build">
     <Exec Command="wix heat dir ..\publish -o AppComponents.wxs -gg -sreg -srd -dr INSTALLFOLDER -cg AppComponents -var var.PublishDir" />
     <ItemGroup>
@@ -30,7 +32,4 @@
     </ItemGroup>
   </Target>
   
-  <PropertyGroup>
-    <DefineConstants>PublishDir=..\publish</DefineConstants>
-  </PropertyGroup>
 </Project>
