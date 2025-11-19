@@ -14,21 +14,13 @@
 
   <ItemGroup>
     <Compile Include="Product.wxs" />
+    <Compile Include="AppComponents.wxs" />
   </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="WixToolset.UI.wixext" Version="4.0.5" />
     <PackageReference Include="WixToolset.Netfx.wixext" Version="4.0.5" />
     <PackageReference Include="WixToolset.Heat" Version="4.0.5" />
-  </ItemGroup>
-
-  <Target Name="Harvest" BeforeTargets="BeforeBuild">
-    <Delete Files="AppComponents.wxs" />
-    <Exec Command="wix heat dir ..\publish -o AppComponents.wxs -gg -sreg -srd -dr INSTALLFOLDER -cg AppComponents -var var.PublishDir" />
-  </Target>
-
-  <ItemGroup>
-    <Compile Include="AppComponents.wxs" />
   </ItemGroup>
 
 </Project>
