@@ -21,8 +21,6 @@ jobs:
       with:
         fetch-depth: 0
 
-    # Wir nutzen .NET 9, da das Projekt darauf basiert.
-    # Falls LTS gewünscht: '8.0.x' verwenden.
     - name: Setup .NET
       uses: actions/setup-dotnet@v4
       with:
@@ -42,21 +40,17 @@ jobs:
         echo "VERSION=$ver" >> $env:GITHUB_ENV
 
     - name: Publish Application
-      # Veröffentlicht die App für x64 in den Ordner 'publish' im Root
-      run: dotnet publish src/LightJockey/LightJockey.csproj -c Release -r win-x64 --self-contained false -o ./publish /p:Version=${{ env.VERSION }}
+      run: |
+        dotnet publish src/LightJockey/LightJockey.csproj -c Release -r win-x64 --self-contained false -o ./publish /p:Version=${{ env.VERSION }}
+        ls ./publish   # Zeigt Publish-Ordner Inhalt für Debugging
 
     - name: Build MSI Installer
-      # WICHTIG: Wir nutzen 'dotnet build' für die .wixproj Datei!
-      # 'wix build' ist für .wxs Dateien direkt.
-      # Wir übergeben explizit Platform und Configuration.
       run: dotnet build installer/installer.wixproj -c Release -p:Platform=x64 -p:Version=${{ env.VERSION }}
 
     - name: Upload Artifact
       uses: actions/upload-artifact@v4
       with:
         name: LightJockey-MSI
-        # Der Output landet standardmäßig in bin/Release/ (oder dem in der wixproj definierten Pfad)
-        # Da wir OutputPath in der wixproj auf bin\$(Configuration)\ gesetzt haben:
         path: installer/bin/Release/LightJockey.msi
 
     - name: Create GitHub Release
