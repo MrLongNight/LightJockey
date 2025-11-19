@@ -1,35 +1,50 @@
-<Project Sdk="WixToolset.Sdk/4.0.5">
+<Wix xmlns="http://wixtoolset.org/schemas/v4/wxs" xmlns:ui="http://wixtoolset.org/schemas/v4/wxs/ui">
   
-  <!-- FIX: Robuste Defaults für ALLE Variablen -->
-  <PropertyGroup>
-    <Configuration Condition=" '$(Configuration)' == '' ">Release</Configuration>
-    <Platform Condition=" '$(Platform)' == '' ">x64</Platform>
-    <!-- Sicherstellen, dass diese auch als Preprocessor Variable verfügbar sind -->
-    <DefineConstants>Configuration=$(Configuration);Platform=$(Platform);PublishDir=..\publish</DefineConstants>
-  </PropertyGroup>
+  <!-- Package Definition -->
+  <!-- UpgradeCode muss konstant bleiben für Upgrades -->
+  <Package Name="LightJockey" Manufacturer="MrLongNight" Version="$(var.Version)" UpgradeCode="310AE6A6-71B7-4D90-9433-5AC246A60189" Language="1033">
+    
+    <MajorUpgrade DowngradeErrorMessage="A newer version of [ProductName] is already installed." />
+    
+    <!-- Einbettung der Dateien -->
+    <MediaTemplate EmbedCab="yes" />
 
-  <PropertyGroup>
-    <OutputName>LightJockey</OutputName>
-    <!-- Hier trat der Fehler auf, weil Platform fehlte -->
-    <OutputPath>bin\$(Configuration)\</OutputPath>
-  </PropertyGroup>
+    <!-- Feature Struktur -->
+    <Feature Id="ProductFeature" Title="LightJockey" Level="1">
+      <!-- Dateien aus dem Publish-Ordner (generiert durch Heat) -->
+      <ComponentGroupRef Id="AppComponents" />
+      <!-- Manuelle Shortcuts -->
+      <ComponentGroupRef Id="ShortcutComponents" />
+    </Feature>
 
-  <ItemGroup>
-    <Content Include="Product.wxs" />
-  </ItemGroup>
+    <!-- UI -->
+    <ui:WixUI Id="WixUI_InstallDir" InstallDirectory="INSTALLFOLDER" />
 
-  <ItemGroup>
-    <PackageReference Include="WixToolset.UI.wixext" Version="4.0.5" />
-    <PackageReference Include="WixToolset.Netfx.wixext" Version="4.0.5" />
-    <PackageReference Include="WixToolset.Heat" Version="4.0.5" />
-  </ItemGroup>
+  </Package>
 
-  <!-- Harvest: Sammelt automatisch alles aus dem Publish-Ordner ein -->
-  <Target Name="Harvest" BeforeTargets="Build">
-    <Exec Command="wix heat dir ..\publish -o AppComponents.wxs -gg -sreg -srd -dr INSTALLFOLDER -cg AppComponents -var var.PublishDir" />
-    <ItemGroup>
-      <Compile Include="AppComponents.wxs" />
-    </ItemGroup>
-  </Target>
-  
-</Project>
+  <!-- Verzeichnisstruktur -->
+  <Fragment>
+    <StandardDirectory Id="ProgramFiles64Folder">
+      <Directory Id="INSTALLFOLDER" Name="LightJockey" />
+    </StandardDirectory>
+    
+    <StandardDirectory Id="ProgramMenuFolder">
+      <Directory Id="ApplicationProgramsFolder" Name="LightJockey" />
+    </StandardDirectory>
+  </Fragment>
+
+  <!-- Shortcuts -->
+  <Fragment>
+    <ComponentGroup Id="ShortcutComponents" Directory="ApplicationProgramsFolder">
+      <Component Id="ApplicationShortcut" Guid="E8D7DD31-09E1-42C1-9C2B-3F9E742E9B19">
+        <Shortcut Id="Shortcut"
+                  Name="LightJockey"
+                  Description="Audio-reactive lighting control"
+                  Target="[INSTALLFOLDER]LightJockey.exe"
+                  WorkingDirectory="INSTALLFOLDER" />
+        <RemoveFolder Id="CleanUpShortCut" Directory="ApplicationProgramsFolder" On="uninstall" />
+        <RegistryValue Root="HKCU" Key="Software\MrLongNight\LightJockey" Name="installed" Type="integer" Value="1" KeyPath="yes" />
+      </Component>
+    </ComponentGroup>
+  </Fragment>
+</Wix>
