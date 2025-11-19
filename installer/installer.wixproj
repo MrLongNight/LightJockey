@@ -1,7 +1,6 @@
 <Project Sdk="WixToolset.Sdk/4.0.5">
-  
+
   <PropertyGroup>
-    <!-- Fallbacks für wichtige Variablen -->
     <Configuration Condition=" '$(Configuration)' == '' ">Release</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">x64</Platform>
     <Version Condition=" '$(Version)' == '' ">1.0.0</Version>
@@ -10,12 +9,10 @@
   <PropertyGroup>
     <OutputName>LightJockey</OutputName>
     <OutputPath>bin\$(Configuration)\</OutputPath>
-    <!-- Wichtig: Defines für den Preprocessor -->
     <DefineConstants>Version=$(Version);PublishDir=..\publish</DefineConstants>
   </PropertyGroup>
 
   <ItemGroup>
-    <!-- Source-Datei muss kompiliert werden -->
     <Compile Include="Product.wxs" />
   </ItemGroup>
 
@@ -25,22 +22,13 @@
     <PackageReference Include="WixToolset.Heat" Version="4.0.5" />
   </ItemGroup>
 
-  <!-- Harvest: Sammelt automatisch alles aus dem Publish-Ordner ein -->
-  <!-- Dieser Schritt wird VOR dem Build ausgeführt -->
   <Target Name="Harvest" BeforeTargets="BeforeBuild">
-    <!-- Löschen alter generierter Dateien -->
     <Delete Files="AppComponents.wxs" />
-    
-    <!-- Heat ausführen -->
-    <!-- -dr INSTALLFOLDER: Referenziert das Directory-Element in Product.wxs -->
-    <!-- -cg AppComponents: Name der ComponentGroup -->
-    <!-- -var var.PublishDir: Variable für Quellpfad -->
     <Exec Command="wix heat dir ..\publish -o AppComponents.wxs -gg -sreg -srd -dr INSTALLFOLDER -cg AppComponents -var var.PublishDir" />
   </Target>
 
   <ItemGroup>
-    <!-- Das generierte File muss mit kompiliert werden -->
     <Compile Include="AppComponents.wxs" />
   </ItemGroup>
-  
+
 </Project>
