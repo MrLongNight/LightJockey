@@ -27,13 +27,13 @@ jobs:
         dotnet-version: '9.0.x'
 
     - name: Install WiX Toolset
+      shell: pwsh
       run: |
-        dotnet tool install --global wix
-        dotnet tool update --global wix
-
-    - name: Add local tools to PATH
-      run: |
-        echo "$HOME/.dotnet/tools" >> $GITHUB_PATH
+        dotnet tool install --global wix --version 5.0.0 2>$null
+        if ($LASTEXITCODE -ne 0) {
+          dotnet tool update --global wix --version 5.0.0
+        }
+        wix --version
 
     - name: Set Version
       id: set_version
@@ -43,31 +43,129 @@ jobs:
         if ([string]::IsNullOrWhiteSpace($ver)) { $ver = "1.0.0" }
         echo "VERSION=$ver" >> $env:GITHUB_ENV
 
+    - name: Restore Dependencies
+      run: dotnet restore src/LightJockey/LightJockey.csproj
+
     - name: Publish Application
+      shell: pwsh
       run: |
-        dotnet publish src/LightJockey/LightJockey.csproj -c Release -r win-x64 --self-contained false -o ./publish /p:Version=${{ env.VERSION }}
-        ls ./publish
+        dotnet publish src/LightJockey/LightJockey.csproj `
+          --configuration Release `
+          --runtime win-x64 `
+          --self-contained false `
+          --output ./publish `
+          /p:Version=${{ env.VERSION }}
+        
+        Write-Host "Published files:"
+        Get-ChildItem -Path ./publish -Recurse | Select-Object FullName
 
-    - name: Fail if Publish Output is Empty
-      shell: bash
+    - name: Verify Publish Output
+      shell: pwsh
       run: |
-        if [ -z "$(ls -A ./publish)" ]; then
-          echo "ERROR: Publish output is empty!";
-          exit 1;
-        fi
+        $fileCount = (Get-ChildItem -Path ./publish -Recurse -File).Count
+        if ($fileCount -eq 0) {
+          Write-Error "ERROR: Publish output is empty!"
+          exit 1
+        }
+        Write-Host "Found $fileCount files in publish directory"
 
-    - name: Generate AppComponents.wxs with Heat
+    - name: Generate AppComponents.wxs
+      shell: pwsh
       run: |
-        wix heat dir ./publish -o installer/AppComponents.wxs -gg -sreg -srd -dr INSTALLFOLDER -cg AppComponents -var var.PublishDir
+        # Generiere WiX Komponenten mit organisierter Verzeichnisstruktur
+        
+        $files = Get-ChildItem -Path "publish" -Recurse -File
+        $rootComponents = ""
+        $resourcesComponents = ""
+        $themesComponents = ""
+        $componentRefs = ""
+        $fileId = 1
+        
+        foreach ($file in $files) {
+          $relativePath = $file.FullName.Replace("$PWD\publish\", "").Replace("\", "/")
+          $componentId = "Comp$fileId"
+          $fileGuid = [guid]::NewGuid().ToString().ToUpper()
+          
+          # Bestimme Zielverzeichnis basierend auf Dateityp/Pfad
+          $targetDir = "INSTALLFOLDER"
+          $componentList = [ref]$rootComponents
+          
+          if ($relativePath -match "ressources/") {
+            $targetDir = "ResourcesFolder"
+            $componentList = [ref]$resourcesComponents
+            $relativePath = $relativePath -replace "ressources/", ""
+          }
+          elseif ($relativePath -match "Themes/") {
+            $targetDir = "ThemesFolder"
+            $componentList = [ref]$themesComponents
+            $relativePath = $relativePath -replace "Themes/", ""
+          }
+          
+          $component = @"
+          <Component Id="$componentId" Guid="$fileGuid">
+            <File Id="File$fileId" Source="`$(var.PublishDir)\$relativePath" KeyPath="yes" />
+          </Component>
+        "@
+          
+          $componentList.Value += $component
+          $componentRefs += "      <ComponentRef Id=`"$componentId`" />`n"
+          $fileId++
+        }
+        
+        $wxsContent = @"
+        <?xml version="1.0" encoding="utf-8"?>
+        <Wix xmlns="http://wixtoolset.org/schemas/v4/wxs">
+          <Fragment>
+            <DirectoryRef Id="INSTALLFOLDER">
+        $rootComponents
+            </DirectoryRef>
+            <DirectoryRef Id="ResourcesFolder">
+        $resourcesComponents
+            </DirectoryRef>
+            <DirectoryRef Id="ThemesFolder">
+        $themesComponents
+            </DirectoryRef>
+            <ComponentGroup Id="AppComponents">
+        $componentRefs
+            </ComponentGroup>
+          </Fragment>
+        </Wix>
+        "@
+        
+        $wxsContent | Out-File -FilePath "installer/AppComponents.wxs" -Encoding UTF8
+        Write-Host "AppComponents.wxs generated successfully with organized directory structure"
 
     - name: Build MSI Installer
-      run: dotnet build installer/installer.wixproj -c Release -p:Platform=x64 -p:Version=${{ env.VERSION }}
+      shell: pwsh
+      run: |
+        dotnet build installer/installer.wixproj `
+          --configuration Release `
+          -p:Platform=x64 `
+          -p:Version=${{ env.VERSION }}
+        
+        Write-Host "MSI build completed"
+        Get-ChildItem -Path installer/bin -Recurse -Filter "*.msi" | Select-Object FullName
+
+    - name: Verify MSI Output
+      shell: pwsh
+      run: |
+        $msiPath = "installer/bin/Release/x64/LightJockey.msi"
+        if (-not (Test-Path $msiPath)) {
+          # Fallback-Pfade prüfen
+          $msiPath = Get-ChildItem -Path installer/bin -Recurse -Filter "*.msi" | Select-Object -First 1 -ExpandProperty FullName
+          if (-not $msiPath) {
+            Write-Error "ERROR: MSI file not found!"
+            exit 1
+          }
+        }
+        Write-Host "MSI found at: $msiPath"
+        echo "MSI_PATH=$msiPath" >> $env:GITHUB_ENV
 
     - name: Upload Artifact
       uses: actions/upload-artifact@v4
       with:
-        name: LightJockey-MSI
-        path: installer/bin/Release/LightJockey.msi
+        name: LightJockey-MSI-v${{ env.VERSION }}
+        path: ${{ env.MSI_PATH }}
 
     - name: Create GitHub Release
       uses: softprops/action-gh-release@v2
@@ -76,6 +174,27 @@ jobs:
         name: Release v${{ env.VERSION }}
         draft: false
         prerelease: false
-        files: installer/bin/Release/LightJockey.msi
+        files: ${{ env.MSI_PATH }}
+        body: |
+          ## LightJockey v${{ env.VERSION }}
+          
+          Audio-reactive lighting control application for Philips Hue Entertainment.
+          
+          ### Installation
+          1. Download `LightJockey.msi`
+          2. Double-click to install
+          3. Requires .NET 9.0 Desktop Runtime
+          
+          ### Features
+          - Real-time audio analysis with FFT and beat detection
+          - Philips Hue Entertainment API integration
+          - Multiple lighting effect plugins
+          - Audio visualization
+          - Preset management
+          
+          ### System Requirements
+          - Windows 10/11 (x64)
+          - .NET 9.0 Desktop Runtime
+          - Philips Hue Bridge (optional, for testing with lights)
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
