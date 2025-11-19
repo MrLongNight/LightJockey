@@ -18,7 +18,7 @@
   </ItemGroup>
 
   <!-- Dieser Schritt sammelt automatisch alle Dateien aus dem Publish-Ordner -->
-  <!-- WICHTIG: Der Pfad ../publish muss existieren, bevor dieser Build läuft -->
+  <!-- WICHTIG: Der Pfad ../publish muss existieren, bevor dieser Build läuft (durch dotnet publish) -->
   <Target Name="Harvest" BeforeTargets="Build">
     <Exec Command="wix heat dir ..\publish -o AppComponents.wxs -gg -sreg -srd -dr INSTALLFOLDER -cg AppComponents -var var.PublishDir" />
     <ItemGroup>
