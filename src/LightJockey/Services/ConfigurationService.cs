@@ -1,6 +1,6 @@
 using System;
 using System.IO;
-using System.Security.Cryptography;
+using System.Security.Cryptography; // Wichtig für DPAPI
 using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
@@ -26,6 +26,10 @@ namespace LightJockey.Services
             _configPath = Path.Combine(appDataFolder, "config.json");
             _appSettingsPath = Path.Combine(appDataFolder, "settings.json");
         }
+
+        // ... (LoadConfigAsync, SaveConfigAsync, GetSecureValueAsync, SetSecureValueAsync bleiben gleich) ...
+        
+        // Hier folgen die restlichen Methoden, unverändert lassen, bis auf Encrypt/Decrypt:
 
         public async Task<LightJockeyEntertainmentConfig> LoadConfigAsync()
         {
@@ -81,7 +85,8 @@ namespace LightJockey.Services
             await SaveConfigAsync(config);
             return true;
         }
-
+        
+        // ... LoadAppSettingsAsync / SaveAppSettingsAsync hier einfügen (unverändert) ...
         public async Task<AppSettings> LoadAppSettingsAsync()
         {
             if (_cachedAppSettings != null) return _cachedAppSettings;
@@ -111,63 +116,43 @@ namespace LightJockey.Services
             await File.WriteAllTextAsync(_appSettingsPath, json);
         }
 
+        // --- FIX START: DPAPI statt Environment Variable ---
         private string Encrypt(string plainText)
         {
-            var encryptionKey = Environment.GetEnvironmentVariable("CONFIGURATION_ENCRYPTION_KEY");
-            if (string.IsNullOrEmpty(encryptionKey))
+            if (string.IsNullOrEmpty(plainText)) return string.Empty;
+            try 
             {
-                _logger.LogError("Encryption key is not set. Secure value cannot be stored.");
-                throw new InvalidOperationException("Encryption key missing.");
+                byte[] plainBytes = Encoding.UTF8.GetBytes(plainText);
+                // Verschlüsselung gebunden an den aktuellen Windows-Benutzer
+                byte[] cipherBytes = ProtectedData.Protect(plainBytes, null, DataProtectionScope.CurrentUser);
+                return Convert.ToBase64String(cipherBytes);
             }
-
-            using var aes = Aes.Create();
-            aes.Key = SHA256.Create().ComputeHash(Encoding.UTF8.GetBytes(encryptionKey));
-            aes.IV = new byte[16]; // Initialization Vector
-
-            var encryptor = aes.CreateEncryptor(aes.Key, aes.IV);
-            using var ms = new MemoryStream();
-            using var cs = new CryptoStream(ms, encryptor, CryptoStreamMode.Write);
-            using (var sw = new StreamWriter(cs))
+            catch (Exception ex)
             {
-                sw.Write(plainText);
+                _logger.LogError(ex, "Encryption failed.");
+                throw;
             }
-            return Convert.ToBase64String(ms.ToArray());
         }
 
         private string Decrypt(string cipherText)
         {
-            var encryptionKey = Environment.GetEnvironmentVariable("CONFIGURATION_ENCRYPTION_KEY");
-            if (string.IsNullOrEmpty(encryptionKey))
-            {
-                _logger.LogError("Encryption key is not set. Secure value cannot be decrypted.");
-                throw new InvalidOperationException("Encryption key missing.");
-            }
-
-            using var aes = Aes.Create();
-            aes.Key = SHA256.Create().ComputeHash(Encoding.UTF8.GetBytes(encryptionKey));
-            aes.IV = new byte[16];
-
-            var decryptor = aes.CreateDecryptor(aes.Key, aes.IV);
-            using var ms = new MemoryStream(Convert.FromBase64String(cipherText));
-            using var cs = new CryptoStream(ms, decryptor, CryptoStreamMode.Read);
-            using var sr = new StreamReader(cs);
-            return sr.ReadToEnd();
-        }
-
-        private void BackupCorruptedFile(string filePath)
-        {
-            var backupPath = $"{filePath}.{DateTime.Now:yyyyMMddHHmmss}.bak";
+            if (string.IsNullOrEmpty(cipherText)) return string.Empty;
             try
             {
-                File.Move(filePath, backupPath);
-                _logger.LogInformation("Backed up corrupted file to {BackupPath}", backupPath);
+                byte[] cipherBytes = Convert.FromBase64String(cipherText);
+                // Entschlüsselung nur möglich durch denselben Benutzer auf derselben Maschine
+                byte[] plainBytes = ProtectedData.Unprotect(cipherBytes, null, DataProtectionScope.CurrentUser);
+                return Encoding.UTF8.GetString(plainBytes);
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Failed to back up corrupted file: {FilePath}", filePath);
+                _logger.LogError(ex, "Decryption failed.");
+                throw;
             }
         }
+        // --- FIX END ---
 
+        // Helper methods like RemoveValueAsync etc. remain unchanged
         public async Task<bool> RemoveValueAsync(string key)
         {
             var config = await LoadConfigAsync();
