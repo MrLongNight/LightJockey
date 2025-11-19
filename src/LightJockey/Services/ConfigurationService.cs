@@ -1,6 +1,6 @@
 using System;
 using System.IO;
-using System.Security.Cryptography; // Wichtig für DPAPI
+using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
@@ -26,10 +26,6 @@ namespace LightJockey.Services
             _configPath = Path.Combine(appDataFolder, "config.json");
             _appSettingsPath = Path.Combine(appDataFolder, "settings.json");
         }
-
-        // ... (LoadConfigAsync, SaveConfigAsync, GetSecureValueAsync, SetSecureValueAsync bleiben gleich) ...
-        
-        // Hier folgen die restlichen Methoden, unverändert lassen, bis auf Encrypt/Decrypt:
 
         public async Task<LightJockeyEntertainmentConfig> LoadConfigAsync()
         {
@@ -85,8 +81,7 @@ namespace LightJockey.Services
             await SaveConfigAsync(config);
             return true;
         }
-        
-        // ... LoadAppSettingsAsync / SaveAppSettingsAsync hier einfügen (unverändert) ...
+
         public async Task<AppSettings> LoadAppSettingsAsync()
         {
             if (_cachedAppSettings != null) return _cachedAppSettings;
@@ -116,14 +111,13 @@ namespace LightJockey.Services
             await File.WriteAllTextAsync(_appSettingsPath, json);
         }
 
-        // --- FIX START: DPAPI statt Environment Variable ---
         private string Encrypt(string plainText)
         {
             if (string.IsNullOrEmpty(plainText)) return string.Empty;
             try 
             {
                 byte[] plainBytes = Encoding.UTF8.GetBytes(plainText);
-                // Verschlüsselung gebunden an den aktuellen Windows-Benutzer
+                // Verschlüsselung mit Windows DPAPI (User Scope)
                 byte[] cipherBytes = ProtectedData.Protect(plainBytes, null, DataProtectionScope.CurrentUser);
                 return Convert.ToBase64String(cipherBytes);
             }
@@ -140,7 +134,7 @@ namespace LightJockey.Services
             try
             {
                 byte[] cipherBytes = Convert.FromBase64String(cipherText);
-                // Entschlüsselung nur möglich durch denselben Benutzer auf derselben Maschine
+                // Entschlüsselung mit Windows DPAPI (User Scope)
                 byte[] plainBytes = ProtectedData.Unprotect(cipherBytes, null, DataProtectionScope.CurrentUser);
                 return Encoding.UTF8.GetString(plainBytes);
             }
@@ -150,9 +144,21 @@ namespace LightJockey.Services
                 throw;
             }
         }
-        // --- FIX END ---
 
-        // Helper methods like RemoveValueAsync etc. remain unchanged
+        private void BackupCorruptedFile(string filePath)
+        {
+            var backupPath = $"{filePath}.{DateTime.Now:yyyyMMddHHmmss}.bak";
+            try
+            {
+                File.Move(filePath, backupPath);
+                _logger.LogInformation("Backed up corrupted file to {BackupPath}", backupPath);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to back up corrupted file: {FilePath}", filePath);
+            }
+        }
+
         public async Task<bool> RemoveValueAsync(string key)
         {
             var config = await LoadConfigAsync();
