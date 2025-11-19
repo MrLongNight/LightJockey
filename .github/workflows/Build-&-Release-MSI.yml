@@ -21,36 +21,51 @@ jobs:
       with:
         fetch-depth: 0
 
-    - name: Setup .NET 9
+    # Wir nutzen .NET 9, da das Projekt darauf basiert.
+    # Falls LTS gewünscht: '8.0.x' verwenden.
+    - name: Setup .NET
       uses: actions/setup-dotnet@v4
       with:
         dotnet-version: '9.0.x'
 
     - name: Install WiX Toolset
-      run: dotnet tool install --global wix
+      run: |
+        dotnet tool install --global wix
+        dotnet tool update --global wix
+
+    - name: Set Version
+      id: set_version
+      shell: pwsh
+      run: |
+        $ver = "${{ github.event.inputs.version }}"
+        if ([string]::IsNullOrWhiteSpace($ver)) { $ver = "1.0.0" }
+        echo "VERSION=$ver" >> $env:GITHUB_ENV
 
     - name: Publish Application
-      # Veröffentlicht die App für x64 in den Ordner 'publish'
-      run: dotnet publish src/LightJockey/LightJockey.csproj -c Release -r win-x64 --self-contained false -o ./publish /p:Version=${{ github.event.inputs.version }}
+      # Veröffentlicht die App für x64 in den Ordner 'publish' im Root
+      run: dotnet publish src/LightJockey/LightJockey.csproj -c Release -r win-x64 --self-contained false -o ./publish /p:Version=${{ env.VERSION }}
 
     - name: Build MSI Installer
-      working-directory: ./installer
-      # FIX: -d Platform=x64 und -d Configuration=Release müssen explizit übergeben werden!
-      run: wix build installer.wixproj -o lightjockey.msi -d Version=${{ github.event.inputs.version }} -d Configuration=Release -d Platform=x64
+      # WICHTIG: Wir nutzen 'dotnet build' für die .wixproj Datei!
+      # 'wix build' ist für .wxs Dateien direkt.
+      # Wir übergeben explizit Platform und Configuration.
+      run: dotnet build installer/installer.wixproj -c Release -p:Platform=x64 -p:Version=${{ env.VERSION }}
 
     - name: Upload Artifact
       uses: actions/upload-artifact@v4
       with:
         name: LightJockey-MSI
-        path: installer/lightjockey.msi
+        # Der Output landet standardmäßig in bin/Release/ (oder dem in der wixproj definierten Pfad)
+        # Da wir OutputPath in der wixproj auf bin\$(Configuration)\ gesetzt haben:
+        path: installer/bin/Release/LightJockey.msi
 
     - name: Create GitHub Release
       uses: softprops/action-gh-release@v2
       with:
-        tag_name: v${{ github.event.inputs.version }}
-        name: Release v${{ github.event.inputs.version }}
+        tag_name: v${{ env.VERSION }}
+        name: Release v${{ env.VERSION }}
         draft: false
         prerelease: false
-        files: installer/lightjockey.msi
+        files: installer/bin/Release/LightJockey.msi
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
