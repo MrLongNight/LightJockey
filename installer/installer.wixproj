@@ -1,24 +1,28 @@
 <Project Sdk="WixToolset.Sdk/4.0.5">
+  
+  <!-- FIX: Fallback für Configuration Variable, falls sie nicht übergeben wird -->
   <PropertyGroup>
-    <!-- Name der Ausgabe-MSI -->
+    <Configuration Condition=" '$(Configuration)' == '' ">Release</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">x64</Platform>
+  </PropertyGroup>
+
+  <PropertyGroup>
     <OutputName>LightJockey</OutputName>
     <OutputPath>bin\$(Configuration)\</OutputPath>
   </PropertyGroup>
 
   <ItemGroup>
-    <!-- Referenz auf die Haupt-Logik -->
     <Content Include="Product.wxs" />
   </ItemGroup>
 
   <ItemGroup>
-    <!-- WiX Erweiterungen für UI und .NET Checks -->
     <PackageReference Include="WixToolset.UI.wixext" Version="4.0.5" />
     <PackageReference Include="WixToolset.Netfx.wixext" Version="4.0.5" />
     <PackageReference Include="WixToolset.Heat" Version="4.0.5" />
   </ItemGroup>
 
-  <!-- Dieser Schritt sammelt automatisch alle Dateien aus dem Publish-Ordner -->
-  <!-- WICHTIG: Der Pfad ../publish muss existieren, bevor dieser Build läuft (durch dotnet publish) -->
+  <!-- Harvest: Sammelt automatisch alles aus dem Publish-Ordner ein -->
+  <!-- Der Pfad ..\publish bezieht sich auf das Verzeichnis eine Ebene über der .wixproj Datei -->
   <Target Name="Harvest" BeforeTargets="Build">
     <Exec Command="wix heat dir ..\publish -o AppComponents.wxs -gg -sreg -srd -dr INSTALLFOLDER -cg AppComponents -var var.PublishDir" />
     <ItemGroup>
